@@ -2,79 +2,123 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import client from "../api/axios";
 import { toast } from "sonner";
-import { Plus, Wifi, Power } from "lucide-react";
+import { Plus, Pencil, Gauge, Zap } from "lucide-react";
 import styles from "./styles/Planes.module.css";
 
 function Planes() {
     const [planes, setPlanes] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const { register, handleSubmit, reset } = useForm();
+    const [planEditar, setPlanEditar] = useState(null);
+    const { register, handleSubmit, reset, setValue } = useForm();
 
-    useEffect(() => {
-        cargarPlanes();
-    }, []);
+    useEffect(() => { cargarPlanes(); }, []);
 
     const cargarPlanes = async () => {
         try {
-            const res = await client.get("/planes");
+            const res = await client.get("/");
             setPlanes(res.data);
+        } catch (error) { toast.error("Error al cargar planes"); }
+    };
+
+    // --- CORRECCIÓN AQUÍ ---
+    const togglePlan = async (id) => {
+        try {
+            // Llamamos a la ruta específica que creamos en el backend
+            await client.patch(`/planes/${id}/toggle`);
+            
+            // Actualizamos la interfaz visualmente
+            setPlanes(planes.map(p => {
+                if (p.id === id) return { ...p, activo: !p.activo };
+                return p;
+            }));
+            
+            toast.success("Estado del plan actualizado");
         } catch (error) {
             console.error(error);
-            toast.error("Error al cargar planes");
+            toast.error("Error al cambiar estado");
         }
+    };
+
+    const openModal = (plan = null) => {
+        setPlanEditar(plan);
+        if (plan) {
+            setValue("nombre", plan.nombre);
+            setValue("velocidad_mb", plan.velocidad_mb);
+            setValue("precio_mensual", plan.precio_mensual);
+            setValue("descripcion", plan.descripcion);
+        } else {
+            reset();
+        }
+        setShowModal(true);
     };
 
     const onSubmit = async (data) => {
         try {
-            await client.post("/planes", data);
-            toast.success("Plan creado exitosamente");
-            setShowModal(false);
-            reset();
-            cargarPlanes();
-        } catch (error) {
-            console.error(error);
-            toast.error("Error al crear plan");
-        }
-    };
+            const payload = {
+                ...data,
+                velocidad_mb: parseInt(data.velocidad_mb),
+                precio_mensual: parseFloat(data.precio_mensual),
+                // activo: No lo enviamos aquí, eso se maneja con el toggle
+            };
 
-    const toggleEstado = async (id, estadoActual) => {
-        try {
-            await client.put(`/planes/${id}/toggle`);
-            toast.success(estadoActual ? "Plan desactivado" : "Plan reactivado");
-            cargarPlanes();
-        } catch (error) {
-            toast.error("Error al cambiar estado");
-        }
+            if (planEditar) {
+                await client.put(`/${planEditar.id}`, payload);
+                toast.success("Plan actualizado");
+            } else {
+                await client.post("/planes", payload);
+                toast.success("Plan creado");
+            }
+            setShowModal(false); reset(); setPlanEditar(null); cargarPlanes();
+        } catch (error) { toast.error("Error al guardar plan"); }
     };
 
     return (
         <div className={styles.container}>
             <div className={styles.header}>
                 <h1 className={styles.title}>Planes de Internet</h1>
-                <button className={styles.addButton} onClick={() => setShowModal(true)}>
+                <button className={styles.addButton} onClick={() => openModal(null)}>
                     <Plus size={20} /> Nuevo Plan
                 </button>
             </div>
 
             <div className={styles.grid}>
-                {planes.map(plan => (
-                    <div key={plan.id} className={`${styles.card} ${!plan.activo ? styles.inactiveCard : ''}`}>
-                        <h3 className={styles.planName}>{plan.nombre}</h3>
-                        <div className={styles.planSpeed}>
-                            <Wifi size={16} style={{marginRight:5, verticalAlign:'middle'}}/>
-                            {plan.velocidad_mb} Megas
-                        </div>
-                        <div className={styles.planPrice}>
-                            ${plan.precio_mensual}<span>/mes</span>
+                {planes.map(p => (
+                    <div key={p.id} className={styles.card} style={{opacity: p.activo ? 1 : 0.6, filter: p.activo ? 'none' : 'grayscale(100%)'}}>
+                        <div className={styles.cardHeader}>
+                            <h3 className={styles.planName}>{p.nombre}</h3>
+                            {/* SWITCH DE ESTADO */}
+                            <label className={styles.switch} title={p.activo ? "Desactivar Plan" : "Activar Plan"}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={p.activo} 
+                                    onChange={() => togglePlan(p.id)} 
+                                />
+                                <span className={styles.slider}></span>
+                            </label>
                         </div>
                         
-                        <button 
-                            className={styles.switchBtn}
-                            onClick={() => toggleEstado(plan.id, plan.activo)}
-                        >
-                            <Power size={14} style={{marginRight:5, verticalAlign:'middle'}}/>
-                            {plan.activo ? "Desactivar Plan" : "Reactivar Plan"}
-                        </button>
+                        <div className={styles.priceTag}>
+                            ${p.precio_mensual} <span>/mes</span>
+                        </div>
+                        
+                        <div className={styles.details}>
+                            <div className={styles.detailRow}>
+                                <Gauge size={18} style={{color:'var(--primary)'}}/> 
+                                <b>{p.velocidad_mb} MB</b> de Velocidad
+                            </div>
+                            {p.descripcion && (
+                                <div className={styles.detailRow}>
+                                    <Zap size={18} style={{color:'var(--primary)'}}/> 
+                                    {p.descripcion}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className={styles.cardActions}>
+                            <button className={styles.btnEdit} onClick={() => openModal(p)}>
+                                <Pencil size={14} /> Editar
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -83,28 +127,18 @@ function Planes() {
             {showModal && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modal}>
-                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:20}}>
-                            <h2>Nuevo Plan</h2>
-                            <button onClick={()=>setShowModal(false)} style={{background:'none', border:'none', cursor:'pointer', fontSize:'1.5rem'}}>&times;</button>
-                        </div>
-                        
+                        <h2>{planEditar ? "Editar Plan" : "Nuevo Plan"}</h2>
                         <form onSubmit={handleSubmit(onSubmit)}>
-                            <div className={styles.formGroup}>
-                                <label>Nombre del Plan</label>
-                                <input {...register("nombre", {required:true})} className={styles.input} placeholder="Ej: Básico Familiar" />
+                            <input {...register("nombre", { required: true })} className={styles.input} placeholder="Nombre (Ej: Básico)" />
+                            <div style={{display:'flex', gap:10}}>
+                                <input type="number" {...register("velocidad_mb")} className={styles.input} placeholder="Velocidad (MB)" />
+                                <input type="number" step="0.01" {...register("precio_mensual")} className={styles.input} placeholder="Precio ($)" />
                             </div>
-                            
-                            <div className={styles.formGroup}>
-                                <label>Velocidad (Megas)</label>
-                                <input type="number" {...register("velocidad_mb", {required:true})} className={styles.input} placeholder="Ej: 20" />
+                            <textarea {...register("descripcion")} className={styles.textarea} rows="3" placeholder="Descripción opcional..." />
+                            <div className={styles.modalActions}>
+                                <button type="button" onClick={() => setShowModal(false)} className={styles.btnCancel}>Cancelar</button>
+                                <button type="submit" className={styles.btnSubmit}>Guardar</button>
                             </div>
-
-                            <div className={styles.formGroup}>
-                                <label>Precio Mensual ($)</label>
-                                <input type="number" step="0.01" {...register("precio_mensual", {required:true})} className={styles.input} placeholder="Ej: 350.00" />
-                            </div>
-
-                            <button type="submit" className={styles.btnSubmit}>Crear Plan</button>
                         </form>
                     </div>
                 </div>
@@ -112,5 +146,4 @@ function Planes() {
         </div>
     );
 }
-
 export default Planes;

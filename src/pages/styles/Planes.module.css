@@ -1,6 +1,6 @@
 .container {
     padding: 20px;
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
@@ -8,7 +8,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 .title {
@@ -30,116 +30,154 @@
     gap: 8px;
     transition: background-color 0.2s;
 }
+.addButton:hover { background-color: var(--primary-hover); }
 
-.addButton:hover {
-    background-color: var(--primary-hover);
-}
-
-/* --- GRID DE TARJETAS --- */
+/* GRID DE TARJETAS LIMPIO */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    gap: 25px;
 }
 
 .card {
     background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 25px;
-    text-align: center;
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    border: 1px solid var(--border);
     position: relative;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s;
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0,0,0,0.05);
     border-color: var(--primary);
 }
 
-/* Banda de color superior */
-.card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 6px;
-    background: var(--primary);
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 15px;
 }
-
-.inactiveCard {
-    opacity: 0.7;
-    filter: grayscale(0.8);
-}
-.inactiveCard::before { background: #94a3b8; }
 
 .planName {
-    font-size: 1.2rem;
-    font-weight: bold;
+    margin: 0;
     color: var(--text-main);
-    margin-bottom: 10px;
+    font-size: 1.3rem;
+    font-weight: 700;
 }
 
-.planPrice {
-    font-size: 2.5rem;
+/* ESTILO DEL PRECIO */
+.priceTag {
+    font-size: 2.2rem;
     font-weight: 800;
     color: var(--primary);
     margin: 10px 0;
 }
 
-.planPrice span {
+.priceTag span {
     font-size: 1rem;
-    font-weight: normal;
     color: var(--text-muted);
+    font-weight: 500;
 }
 
-.planSpeed {
-    display: inline-block;
-    background: #e0f2fe;
-    color: #0369a1;
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.9rem;
+.details {
     margin-bottom: 20px;
 }
 
-.switchBtn {
+.detailRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+/* BOTÓN EDITAR FLOTANTE O EN PIE */
+.cardActions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: auto;
+}
+
+.btnEdit {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--text-muted);
-    padding: 8px 15px;
-    border-radius: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
     cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
     font-size: 0.85rem;
-    width: 100%;
-    margin-top: 10px;
+    font-weight: 600;
 }
 
-.switchBtn:hover {
+.btnEdit:hover {
     background: var(--body-bg);
-    color: var(--text-main);
+    color: var(--primary);
+    border-color: var(--primary);
 }
 
-/* --- MODAL (Reutilizamos estilos base) --- */
+/* --- SWITCH (INTERRUPTOR) --- */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #16a34a; /* Verde activo */
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* MODAL */
 .modalOverlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    display: flex; justify-content: center; align-items: center; z-index: 1000;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;
 }
-.modal {
-    background: var(--card-bg); width: 400px; padding: 25px;
-    border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-}
-.formGroup { margin-bottom: 15px; text-align: left; }
-.formGroup label { display: block; margin-bottom: 5px; color: var(--text-muted); }
-.input {
-    width: 100%; padding: 10px; border: 1px solid var(--border);
-    border-radius: 6px; background: var(--body-bg); color: var(--text-main);
-}
-.btnSubmit {
-    width: 100%; padding: 12px; background: var(--primary);
-    color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
-}
+.modal { background: var(--card-bg); width: 400px; padding: 30px; border-radius: 12px; }
+.input, .textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; background: var(--body-bg); color: var(--text-main); }
+.modalActions { display: flex; gap: 10px; }
+.btnCancel { flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--text-muted); }
+.btnSubmit { flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }

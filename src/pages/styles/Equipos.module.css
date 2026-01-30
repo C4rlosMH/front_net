@@ -35,7 +35,7 @@
     background-color: var(--primary-hover);
 }
 
-/* --- FILTROS TIPO PESTAÑA --- */
+/* --- TABS --- */
 .tabs {
     display: flex;
     gap: 10px;
@@ -55,13 +55,18 @@
     transition: all 0.2s;
 }
 
+.tab:hover {
+    background-color: rgba(0,0,0,0.05);
+    color: var(--text-main);
+}
+
 .tabActive {
     background-color: rgba(47, 154, 255, 0.1);
     color: var(--primary);
     font-weight: bold;
 }
 
-/* --- TABLA (Reutilizamos estilos base, pero modular) --- */
+/* --- TABLA --- */
 .tableWrapper {
     background: var(--card-bg);
     border-radius: 12px;
@@ -97,6 +102,21 @@
     font-weight: 600;
 }
 
+/* --- BOTONES DE ACCIÓN (NUEVO) --- */
+.btnEdit {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #d97706; /* Color Ámbar */
+    padding: 6px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.btnEdit:hover {
+    background-color: rgba(217, 119, 6, 0.1);
+}
+
 /* --- MODAL --- */
 .modalOverlay {
     position: fixed;
@@ -111,16 +131,18 @@
 
 .modal {
     background: var(--card-bg);
-    width: 500px;
-    padding: 25px;
+    width: 550px; /* Un poco más ancho para las columnas */
+    padding: 30px;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modalHeader {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .closeBtn {
@@ -135,28 +157,42 @@
     margin-bottom: 15px;
 }
 
+/* --- NUEVO: CLASE PARA FILAS DOBLES --- */
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
 .formGroup label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     color: var(--text-muted);
     font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .input, .select {
     width: 100%;
-    padding: 10px;
+    padding: 10px 12px;
     border: 1px solid var(--border);
     border-radius: 6px;
     background: var(--body-bg);
     color: var(--text-main);
-    box-sizing: border-box; /* Importante para que no se salga */
+    box-sizing: border-box;
+    font-size: 0.95rem;
+}
+
+.input:focus, .select:focus {
+    outline: none;
+    border-color: var(--primary);
 }
 
 .modalActions {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 25px;
 }
 
 .btnCancel {
@@ -166,6 +202,11 @@
     color: var(--text-main);
     border-radius: 6px;
     cursor: pointer;
+    font-weight: 500;
+}
+
+.btnCancel:hover {
+    background-color: var(--body-bg);
 }
 
 .btnSubmit {
@@ -175,4 +216,9 @@
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    font-weight: 600;
+}
+
+.btnSubmit:hover {
+    background-color: var(--primary-hover);
 }

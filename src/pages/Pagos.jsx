@@ -7,7 +7,7 @@ import styles from "./styles/Pagos.module.css";
 
 function Pagos() {
     const [clientes, setClientes] = useState([]);
-    const [filtroDia, setFiltroDia] = useState(15); // 15 o 30
+    const [filtroDia, setFiltroDia] = useState(15);
     const [busqueda, setBusqueda] = useState("");
     
     // Modal Pagar Rápido
@@ -25,6 +25,7 @@ function Pagos() {
             setClientes(res.data);
         } catch (error) {
             console.error(error);
+            toast.error("Error al cargar lista de cobros");
         }
     };
 
@@ -46,22 +47,18 @@ function Pagos() {
 
     const abrirModal = (c) => {
         setClienteSelect(c);
-        // Sugerir monto: si debe, paga la deuda. Si no, paga la mensualidad del plan.
         const sugerido = c.saldo_actual > 0 ? c.saldo_actual : (c.plan?.precio_mensual || "");
         setMontoAbono(sugerido);
         setShowModal(true);
     };
 
-    // --- LÓGICA DE FILTRADO ---
-    // 1. Filtramos por día de pago (15 o 30)
-    // 2. Filtramos por búsqueda de nombre
     const clientesFiltrados = clientes.filter(c => {
-        const coincideDia = parseInt(c.dia_pago || 15) === filtroDia; // Si es null, asume 15
+        const diaPagoCliente = c.dia_pago ? parseInt(c.dia_pago) : 15;
+        const coincideDia = diaPagoCliente === filtroDia;
         const coincideNombre = c.nombre_completo.toLowerCase().includes(busqueda.toLowerCase());
         return coincideDia && coincideNombre;
     });
 
-    // Calcular totales de la lista actual
     const totalDeuda = clientesFiltrados.reduce((acc, c) => acc + Number(c.saldo_actual), 0);
 
     return (
@@ -72,7 +69,6 @@ function Pagos() {
                     <p style={{color:'var(--text-muted)'}}>Gestión de pagos por fecha de corte</p>
                 </div>
                 
-                {/* Resumen Rápido */}
                 <div style={{textAlign:'right'}}>
                     <span style={{display:'block', fontSize:'0.9rem', color:'var(--text-muted)'}}>Deuda Total (Lista actual)</span>
                     <span style={{fontSize:'1.5rem', fontWeight:'bold', color: totalDeuda > 0 ? '#ef4444' : '#10b981'}}>
@@ -81,7 +77,7 @@ function Pagos() {
                 </div>
             </div>
 
-            {/* PESTAÑAS DE FECHA */}
+            {/* PESTAÑAS */}
             <div className={styles.tabs}>
                 <button 
                     className={`${styles.tab} ${filtroDia === 15 ? styles.tabActive : ''}`}
@@ -97,8 +93,8 @@ function Pagos() {
                 </button>
             </div>
 
-            {/* BUSCADOR DENTRO DE LA LISTA */}
-            <div className={styles.searchSection} style={{marginBottom: 20}}>
+            {/* BUSCADOR */}
+            <div className={styles.searchSection}>
                 <Search size={20} style={{color:'gray'}} />
                 <input 
                     type="text" 
@@ -110,31 +106,39 @@ function Pagos() {
             </div>
 
             {/* TABLA DE COBRANZA */}
-            <div className={styles.clientCard} style={{display:'block', padding:0, overflow:'hidden'}}>
-                <table style={{width:'100%', borderCollapse:'collapse'}}>
+            <div className={styles.clientCard}>
+                <table className={styles.table}>
                     <thead>
-                        <tr style={{background:'var(--body-bg)', borderBottom:'1px solid var(--border)', textAlign:'left'}}>
-                            <th style={{padding:15}}>Cliente</th>
-                            <th style={{padding:15}}>Plan Contratado</th>
-                            <th style={{padding:15}}>Estado de Cuenta</th>
-                            <th style={{padding:15, textAlign:'right'}}>Acciones</th>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Plan Contratado</th>
+                            <th>Estado de Cuenta</th>
+                            <th style={{textAlign:'right'}}>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {clientesFiltrados.map(c => (
-                            <tr key={c.id} style={{borderBottom:'1px solid var(--border)'}}>
-                                <td style={{padding:15}}>
+                            <tr key={c.id}>
+                                <td>
                                     <b>{c.nombre_completo}</b>
                                     <div style={{fontSize:'0.8rem', color:'gray'}}>{c.direccion}</div>
                                 </td>
-                                <td style={{padding:15}}>
+                                <td>
                                     {c.plan ? (
-                                        <span style={{background:'#e0f2fe', color:'#0369a1', padding:'2px 8px', borderRadius:10, fontSize:'0.85rem'}}>
-                                            {c.plan.nombre} (${c.plan.precio_mensual})
+                                        /* SOLO NOMBRE DEL PLAN (SIN PRECIO NI VELOCIDAD) */
+                                        <span style={{
+                                            background: '#eff6ff', 
+                                            color: '#1d4ed8', 
+                                            padding: '4px 10px', 
+                                            borderRadius: '6px', 
+                                            fontWeight: '600',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            {c.plan.nombre}
                                         </span>
-                                    ) : <span style={{color:'red'}}>Sin Plan</span>}
+                                    ) : <span style={{color:'var(--text-muted)', fontStyle:'italic'}}>Sin Plan</span>}
                                 </td>
-                                <td style={{padding:15}}>
+                                <td>
                                     {c.saldo_actual > 0 ? (
                                         <div style={{color:'#ef4444', fontWeight:'bold', display:'flex', alignItems:'center', gap:5}}>
                                             <AlertCircle size={16}/> Debe: ${c.saldo_actual}
@@ -145,20 +149,22 @@ function Pagos() {
                                         </div>
                                     )}
                                 </td>
-                                <td style={{padding:15, textAlign:'right'}}>
-                                    <button 
-                                        onClick={() => abrirModal(c)}
-                                        className={styles.payButton} 
-                                        style={{padding:'6px 12px', fontSize:'0.85rem', marginRight:10}}
-                                    >
-                                        <Wallet size={16} style={{marginRight:5}}/> Cobrar
-                                    </button>
-                                    
-                                    <Link to={`/pagos/cliente/${c.id}`} style={{textDecoration:'none'}}>
-                                        <button className={styles.payButton} style={{padding:'6px 12px', fontSize:'0.85rem', background:'transparent', border:'1px solid var(--border)', color:'var(--text-main)'}}>
-                                            Ver Historial <ArrowRight size={14} style={{marginLeft:5}}/>
+                                <td>
+                                    <div className={styles.actionsCell}>
+                                        <button 
+                                            onClick={() => abrirModal(c)}
+                                            className={`${styles.btnAction} ${styles.btnPay}`}
+                                        >
+                                            <Wallet size={16} style={{marginRight:5}}/> Cobrar
                                         </button>
-                                    </Link>
+                                        
+                                        <Link 
+                                            to={`/pagos/cliente/${c.id}`} 
+                                            className={`${styles.btnAction} ${styles.btnHistory}`}
+                                        >
+                                            Historial <ArrowRight size={14} style={{marginLeft:5}}/>
+                                        </Link>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -187,7 +193,7 @@ function Pagos() {
                             autoFocus
                         />
                         <button onClick={handlePagar} className={styles.btnSubmit}>Confirmar</button>
-                        <button onClick={() => setShowModal(false)} className={styles.btnCancel} style={{marginTop:10, width:'100%'}}>Cancelar</button>
+                        <button onClick={() => setShowModal(false)} className={styles.btnCancel}>Cancelar</button>
                     </div>
                 </div>
             )}

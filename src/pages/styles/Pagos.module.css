@@ -1,6 +1,6 @@
 .container {
     padding: 20px;
-    max-width: 1200px; /* Hacemos la pantalla más ancha */
+    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -17,7 +17,7 @@
     margin: 0;
 }
 
-/* --- NUEVOS ESTILOS PARA LAS PESTAÑAS (TABS) --- */
+/* --- TABS (Pestañas) --- */
 .tabs {
     display: flex;
     gap: 15px;
@@ -63,6 +63,7 @@
     border-radius: 8px;
     width: 100%;
     max-width: 400px;
+    margin-bottom: 20px;
 }
 
 .searchInput {
@@ -73,78 +74,77 @@
     font-size: 0.95rem;
 }
 
-.searchInput:focus {
-    outline: none;
-}
+.searchInput:focus { outline: none; }
 
-/* --- TABLA DE CLIENTES (Reutilizamos estilo de tarjeta) --- */
+/* --- TABLA --- */
 .clientCard {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    overflow: hidden; /* Para que las esquinas de la tabla no se salgan */
-    margin-top: 20px;
+    overflow: hidden;
 }
 
-/* --- BOTONES DE ACCIÓN --- */
-.payButton {
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    background: var(--body-bg);
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    padding: 15px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-main);
+}
+
+.table tr:last-child td { border-bottom: none; }
+
+/* --- BOTONES DE ACCIÓN (NUEVO) --- */
+.actionsCell {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px; /* Espacio entre Cobrar y Ver Historial */
+}
+
+.btnAction {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 16px;
-    border: none;
+    padding: 8px 14px;
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.1s, opacity 0.2s;
+    transition: all 0.2s;
+    text-decoration: none;
 }
 
-.payButton:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+/* Botón Cobrar (Verde Sólido) */
+.btnPay {
+    background: #16a34a;
+    color: white;
+    border: none;
 }
+.btnPay:hover { background: #15803d; transform: translateY(-1px); }
 
-/* --- ESTILOS PARA HISTORIAL (Perfil Individual) --- */
-.historySection {
-    background: var(--card-bg);
-    border-radius: 12px;
+/* Botón Historial (Borde Gris) */
+.btnHistory {
+    background: transparent;
     border: 1px solid var(--border);
-    overflow: hidden;
-    margin-top: 20px;
+    color: var(--text-main);
 }
-
-.historyHeader {
-    padding: 15px 20px;
+.btnHistory:hover {
     background: var(--body-bg);
-    border-bottom: 1px solid var(--border);
-    font-weight: bold;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
+    border-color: var(--text-muted);
 }
-
-.historyList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.historyItem {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid var(--border);
-    transition: background-color 0.2s;
-}
-
-.historyItem:hover {
-    background-color: var(--body-bg);
-}
-
-.historyItem:last-child { border-bottom: none; }
 
 /* --- MODAL --- */
 .modalOverlay {
@@ -162,21 +162,13 @@
     text-align: center;
 }
 
-.modal h3 { margin-top: 0; color: var(--text-main); }
-.modal p { color: var(--text-muted); margin-bottom: 20px; }
-
 .input { 
-    width: 100%; 
-    padding: 15px; 
-    border: 2px solid var(--border); 
-    border-radius: 8px; 
-    margin-bottom: 20px; 
-    font-size: 1.5rem; 
-    text-align: center; 
-    font-weight: bold; 
-    color: var(--text-main);
+    width: 100%; padding: 15px; 
+    border: 2px solid var(--border); border-radius: 8px; 
+    margin-bottom: 20px; font-size: 1.5rem; 
+    text-align: center; font-weight: bold; color: var(--text-main);
+    background: var(--body-bg);
 }
-
 .input:focus { border-color: var(--primary); outline: none; }
 
 .btnSubmit { 
@@ -184,10 +176,8 @@
     color: white; border: none; border-radius: 8px; 
     cursor: pointer; font-weight: bold; font-size: 1rem; 
 }
-
 .btnCancel {
     background: transparent; border: 1px solid var(--border);
     color: var(--text-muted); padding: 10px; border-radius: 8px;
-    cursor: pointer; font-weight: 500;
+    cursor: pointer; font-weight: 500; margin-top: 10px; width: 100%;
 }
-.btnCancel:hover { background: var(--body-bg); color: var(--text-main); }
