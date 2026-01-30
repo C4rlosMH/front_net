@@ -9,9 +9,10 @@ import { ThemeProvider } from "./context/ThemeContext";
 import Mapa from "./pages/Mapa";
 import Equipos from "./pages/Equipos";
 import Planes from "./pages/Planes";
+import Clientes from "./pages/Clientes";
+import Pagos from "./pages/Pagos";
+import HistorialPagos from "./pages/HistorialPagos"
 
-// --- AGREGA ESTO PARA QUE NO FALLE ---
-const ClientesTemp = () => <h2>Gestión de Equipos (En construcción)</h2>;
 
 function App() {
   return (
@@ -28,9 +29,11 @@ function App() {
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/equipos" element={<Equipos />} />
-              <Route path="/clientes" element={<ClientesTemp />} />
+              <Route path="/clientes" element={<Clientes />} />
               <Route path="/mapa" element={<Mapa />} />
               <Route path="/planes" element={<Planes />} />
+              <Route path="/pagos" element={<Pagos />} />
+              <Route path="/pagos/cliente/:id" element={<HistorialPagos />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/login" replace />} />
