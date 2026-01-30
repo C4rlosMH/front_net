@@ -1,34 +1,40 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import { Toaster } from "sonner"; // Importante para las notificaciones
+import { Toaster } from "sonner";
 
-// Importamos Vistas y Layouts
 import Login from "./pages/Login";
 import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
+import { ThemeProvider } from "./context/ThemeContext";
+import Mapa from "./pages/Mapa";
 
+// --- AGREGA ESTO PARA QUE NO FALLE ---
+const EquiposTemp = () => <h2>Gestión de Equipos (En construcción)</h2>;
+const ClientesTemp = () => <h2>Gestión de Equipos (En construcción)</h2>;
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Toaster position="top-right" richColors />
-        
-        <Routes>
-          {/* Ruta Pública */}
-          <Route path="/login" element={<Login />} />
+      <ThemeProvider>
+        <BrowserRouter>
+          <Toaster position="top-right" richColors />
+          
+          <Routes>
+            {/* Ruta Pública */}
+            <Route path="/login" element={<Login />} />
 
-          {/* Rutas Privadas (Protegidas por MainLayout) */}
-          <Route element={<MainLayout />}>
-             <Route path="/dashboard" element={<Dashboard />} />
-             <Route path="/equipos" element={<EquiposTemp />} />
-             {/* Aquí agregaremos la página de Clientes en el siguiente paso */}
-          </Route>
+            {/* Rutas Privadas */}
+            <Route element={<MainLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/equipos" element={<EquiposTemp />} />
+              <Route path="/clientes" element={<ClientesTemp />} />
+              <Route path="/mapa" element={<Mapa />} />
+            </Route>
 
-          {/* Redirección por defecto */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </BrowserRouter>
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

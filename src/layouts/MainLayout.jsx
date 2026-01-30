@@ -1,20 +1,36 @@
 import { Outlet, Navigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import styles from "./MainLayout.module.css"; // Estilos modulares
+import { useTheme } from "../context/ThemeContext";
+import styles from "./MainLayout.module.css"; //
+import logo from "../assets/logo.png"; // Importamos el logo pequeño
+
+// Importamos los iconos
+import { 
+    LayoutDashboard, 
+    Users, 
+    Router, 
+    Wallet, 
+    LogOut, 
+    Moon, 
+    Sun, 
+    User,
+    Map
+} from "lucide-react";
 
 const MainLayout = () => {
-    const { isAuthenticated, loading, logout, user } = useAuth();
+    const { isAuthenticated, loading, logout, user } = useAuth(); //
+    const { theme, toggleTheme } = useTheme();
     const location = useLocation();
 
     if (loading) return <div>Cargando...</div>;
-    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    if (!isAuthenticated) return <Navigate to="/login" replace />; //
 
     return (
         <div className={styles.layout}>
             <aside className={styles.sidebar}>
                 <div className={styles.logoArea}>
-                    <img src="/logo_icon.png" alt="M" className={styles.logoImg} /> 
-                    <span className={styles.brandName}>MirandaNet</span>
+                    <img src={logo} alt="M" className={styles.logoImg} /> 
+
                 </div>
 
                 <nav className={styles.nav}>
@@ -22,31 +38,59 @@ const MainLayout = () => {
                         to="/dashboard" 
                         className={`${styles.link} ${location.pathname === '/dashboard' ? styles.linkActive : ''}`}
                     >
-                        📊 Dashboard
+                        <LayoutDashboard size={20} /> 
+                        <span>Dashboard</span>
                     </Link>
+                    
                     <Link 
                         to="/clientes" 
                         className={`${styles.link} ${location.pathname === '/clientes' ? styles.linkActive : ''}`}
                     >
-                        👥 Clientes & Mapa
+                        <Users size={20} />
+                        <span>Clientes</span>
                     </Link>
+
+                    <Link 
+                        to="/mapa" 
+                        className={`${styles.link} ${location.pathname === '/mapa' ? styles.linkActive : ''}`}
+                    >
+                        <Map size={20} />
+                        <span>Mapa de Red</span>
+                    </Link>
+                    
                     <Link 
                         to="/equipos" 
                         className={`${styles.link} ${location.pathname === '/equipos' ? styles.linkActive : ''}`}
                     >
-                        📡 Inventario
+                        <Router size={20} />
+                        <span>Inventario</span>
                     </Link>
+                    
                     <Link 
                         to="/pagos" 
                         className={`${styles.link} ${location.pathname === '/pagos' ? styles.linkActive : ''}`}
                     >
-                        💰 Finanzas
+                        <Wallet size={20} />
+                        <span>Finanzas</span>
                     </Link>
                 </nav>
 
                 <div className={styles.userArea}>
-                    <div className={styles.userName}>👤 {user?.nombre}</div>
-                    <button onClick={logout} className={styles.logoutBtn}>Cerrar Sesión</button>
+                    <div className={styles.userName} style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                        <User size={18} /> 
+                        {user?.nombre}
+                    </div>
+                    
+                    {/* --- AQUÍ USAMOS LA CLASE DEL CSS --- */}
+                    <button onClick={toggleTheme} className={styles.themeBtn}>
+                        {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+                        {theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
+                    </button>
+
+                    <button onClick={logout} className={styles.logoutBtn}>
+                        <LogOut size={16} />
+                        Cerrar Sesión
+                    </button>
                 </div>
             </aside>
 

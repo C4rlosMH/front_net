@@ -3,7 +3,7 @@ import axios from "axios";
 const client = axios.create({
     // Ajusta el puerto si tu backend corre en el 4000 o 3000
     baseURL: "http://localhost:4000/api", 
-    withCredentials: true
+    //withCredentials: true
 });
 
 // Interceptor: Antes de cada petición, inyectamos el Token si existe
@@ -15,4 +15,4 @@ client.interceptors.request.use((config) => {
     return config;
 });
 
-export default client;
+export default client;      

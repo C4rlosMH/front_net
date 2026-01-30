@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import logo from "../assets/logo.png"
-import styles from "../pages/styles/Login.module.css"; // <--- AQUÍ IMPORTAMOS LOS ESTILOS
+import styles from "./styles/Login.module.css";
 
 function Login() {
     const { register, handleSubmit, formState: { errors: formErrors } } = useForm();

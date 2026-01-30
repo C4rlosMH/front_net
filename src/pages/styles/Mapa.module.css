@@ -1,0 +1,41 @@
+.container {
+    padding: 20px;
+    height: 90vh; /* Ocupa casi toda la altura visible */
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.title {
+    font-size: 1.5rem;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.badge {
+    background-color: var(--primary);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.mapWrapper {
+    flex: 1; /* Ocupa el espacio restante */
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.popupContent {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}

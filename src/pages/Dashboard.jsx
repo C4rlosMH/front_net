@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import client from "../api/axios"; // Tu cliente configurado con el token
+import client from "../api/axios";
 import { toast } from "sonner";
-import styles from "./DashboardPage.module.css";
+import styles from "./styles/Dashboard.module.css"; // Recuerda la ruta correcta
+
+// Iconos
+import { DollarSign, Users, TrendingDown, Package, Wifi, Radio, Server } from "lucide-react";
 
 function Dashboard() {
     const [stats, setStats] = useState(null);
@@ -10,48 +13,49 @@ function Dashboard() {
     useEffect(() => {
         const fetchDashboard = async () => {
             try {
-                // Petición GET al backend (El token se envía solo gracias a axios.js)
                 const res = await client.get("/dashboard");
                 setStats(res.data);
             } catch (error) {
                 console.error(error);
-                toast.error("No se pudo cargar la información del dashboard");
+                toast.error("No se pudo cargar la información");
             } finally {
                 setLoading(false);
             }
         };
-
         fetchDashboard();
     }, []);
 
-    if (loading) return <div className={styles.loading}>Cargando estadísticas... 📡</div>;
-    if (!stats) return <div className={styles.loading}>No hay datos disponibles</div>;
+    if (loading) return <div className={styles.loading}>Cargando...</div>;
+    if (!stats) return <div className={styles.loading}>No hay datos</div>;
 
     return (
         <div className={styles.container}>
             <h1 className={styles.title}>Resumen General</h1>
 
             <div className={styles.grid}>
-                {/* --- TARJETA DE FINANZAS --- */}
+                {/* --- FINANZAS --- */}
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
                         <h3 className={styles.cardTitle}>Recaudado (Mes)</h3>
-                        <span style={{fontSize: '1.5rem'}}>💰</span>
+                        <div style={{color: '#10b981', background: '#d1fae5', padding: '8px', borderRadius: '50%'}}>
+                            <DollarSign size={24} />
+                        </div>
                     </div>
                     <p className={`${styles.cardValue} ${styles.money}`}>
                         ${stats.financiero.recaudado_actual}
                     </p>
                     <div className={styles.details}>
                          <span>Meta: ${stats.financiero.proyeccion_mensual}</span>
-                         <span>({stats.financiero.porcentaje_recuperacion})</span>
                     </div>
                 </div>
 
-                {/* --- TARJETA DE CLIENTES --- */}
+                {/* --- CLIENTES --- */}
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
                         <h3 className={styles.cardTitle}>Total Clientes</h3>
-                        <span style={{fontSize: '1.5rem'}}>👥</span>
+                        <div style={{color: '#3b82f6', background: '#dbeafe', padding: '8px', borderRadius: '50%'}}>
+                            <Users size={24} />
+                        </div>
                     </div>
                     <p className={styles.cardValue}>{stats.clientes.total}</p>
                     <div className={styles.details}>
@@ -60,30 +64,40 @@ function Dashboard() {
                     </div>
                 </div>
 
-                {/* --- TARJETA DE CARTERA VENCIDA --- */}
+                {/* --- DEUDA --- */}
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
                         <h3 className={styles.cardTitle}>Deuda Total</h3>
-                        <span style={{fontSize: '1.5rem'}}>📉</span>
+                        <div style={{color: '#ef4444', background: '#fee2e2', padding: '8px', borderRadius: '50%'}}>
+                            <TrendingDown size={24} />
+                        </div>
                     </div>
                     <p className={`${styles.cardValue} ${styles.danger}`}>
                         ${stats.financiero.deuda_total_clientes}
                     </p>
                     <div className={styles.details}>
-                         <span>Dinero pendiente de cobro</span>
+                         <span>Pendiente de cobro</span>
                     </div>
                 </div>
                 
-                 {/* --- TARJETA DE INVENTARIO --- */}
+                 {/* --- INVENTARIO --- */}
                  <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>Inventario (Almacén)</h3>
-                        <span style={{fontSize: '1.5rem'}}>📦</span>
+                        <h3 className={styles.cardTitle}>Almacén</h3>
+                        <div style={{color: '#f59e0b', background: '#fef3c7', padding: '8px', borderRadius: '50%'}}>
+                            <Package size={24} />
+                        </div>
                     </div>
-                    <div style={{display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '10px'}}>
-                        <div>📡 Antenas: <b>{stats.inventario_disponible.antenas}</b></div>
-                        <div>Rn Routers: <b>{stats.inventario_disponible.routers}</b></div>
-                        <div>F. Optica (ONUs): <b>{stats.inventario_disponible.onus}</b></div>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px'}}>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                            <Radio size={16} /> Antenas: <b>{stats.inventario_disponible.antenas}</b>
+                        </div>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                            <Wifi size={16} /> Routers: <b>{stats.inventario_disponible.routers}</b>
+                        </div>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                            <Server size={16} /> ONUs: <b>{stats.inventario_disponible.onus}</b>
+                        </div>
                     </div>
                 </div>
             </div>

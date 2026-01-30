@@ -12,7 +12,8 @@
     display: flex;
     flex-direction: column;
     box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-    flex-shrink: 0; /* Evita que se encoja */
+    flex-shrink: 0;
+    transition: background-color 0.3s;
 }
 
 .logoArea {
@@ -30,7 +31,7 @@
 .brandName {
     font-size: 1.1rem;
     font-weight: bold;
-    color: white;
+    color: var(--dark-text); /* Se adapta al modo claro/oscuro si cambias la variable */
     letter-spacing: 0.5px;
 }
 
@@ -39,8 +40,12 @@
     flex: 1;
 }
 
+/* --- ESTILOS DEL ENLACE (Actualizado para Iconos) --- */
 .link {
-    display: block;
+    display: flex;             /* <--- IMPORTANTE: Alinea icono y texto horizontalmente */
+    align-items: center;       /* <--- Centra verticalmente */
+    gap: 12px;                 /* <--- Espacio entre el icono y el texto */
+    
     padding: 12px 15px;
     margin-bottom: 5px;
     border-radius: 8px;
@@ -51,7 +56,7 @@
 }
 
 .link:hover {
-    background-color: rgba(255,255,255,0.05);
+    background-color: rgba(255,255,255,0.08);
     color: white;
 }
 
@@ -70,14 +75,15 @@
 .userName {
     margin-bottom: 10px;
     font-size: 0.9rem;
-    color: white;
+    color: var(--dark-text);
+    font-weight: 500;
 }
 
 .logoutBtn {
     width: 100%;
     padding: 8px;
     background: transparent;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.4);
     color: #f87171;
     border-radius: 6px;
     cursor: pointer;
@@ -86,13 +92,71 @@
 }
 
 .logoutBtn:hover {
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(239, 68, 68, 0.15);
 }
 
 .content {
     flex: 1;
     background-color: var(--body-bg);
+    color: var(--text-main);
     overflow-y: auto;
     position: relative;
-    padding: 0; /* El padding lo manejará cada página internamente */
+    padding: 0;
+    transition: background-color 0.3s;
+}
+
+.userArea {
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    background-color: rgba(0,0,0,0.2);
+}
+
+.userName {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: var(--dark-text);
+    font-weight: 500;
+}
+
+/* --- NUEVA CLASE PARA EL BOTÓN DE TEMA --- */
+.themeBtn {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--dark-text);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.themeBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.logoutBtn {
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #f87171;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+    display: flex;             /* Agregado para alinear icono */
+    align-items: center;       /* Agregado */
+    justify-content: center;   /* Agregado */
+    gap: 8px;                  /* Agregado */
+}
+
+.logoutBtn:hover {
+    background: rgba(239, 68, 68, 0.15);
 }
