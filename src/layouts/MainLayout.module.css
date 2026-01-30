@@ -1,0 +1,98 @@
+.layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar Oscuro */
+.sidebar {
+    width: 260px;
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    flex-shrink: 0; /* Evita que se encoja */
+}
+
+.logoArea {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.logoImg {
+    height: 32px;
+}
+
+.brandName {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+    letter-spacing: 0.5px;
+}
+
+.nav {
+    padding: 20px 10px;
+    flex: 1;
+}
+
+.link {
+    display: block;
+    padding: 12px 15px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--dark-text);
+    transition: all 0.2s;
+    font-weight: 400;
+}
+
+.link:hover {
+    background-color: rgba(255,255,255,0.05);
+    color: white;
+}
+
+.linkActive {
+    background-color: var(--primary);
+    color: white;
+    font-weight: 600;
+}
+
+.userArea {
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    background-color: rgba(0,0,0,0.2);
+}
+
+.userName {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.logoutBtn {
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.logoutBtn:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.content {
+    flex: 1;
+    background-color: var(--body-bg);
+    overflow-y: auto;
+    position: relative;
+    padding: 0; /* El padding lo manejará cada página internamente */
+}
