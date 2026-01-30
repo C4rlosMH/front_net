@@ -7,9 +7,10 @@ import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import { ThemeProvider } from "./context/ThemeContext";
 import Mapa from "./pages/Mapa";
+import Equipos from "./pages/Equipos";
+import Planes from "./pages/Planes";
 
 // --- AGREGA ESTO PARA QUE NO FALLE ---
-const EquiposTemp = () => <h2>Gestión de Equipos (En construcción)</h2>;
 const ClientesTemp = () => <h2>Gestión de Equipos (En construcción)</h2>;
 
 function App() {
@@ -26,9 +27,10 @@ function App() {
             {/* Rutas Privadas */}
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/equipos" element={<EquiposTemp />} />
+              <Route path="/equipos" element={<Equipos />} />
               <Route path="/clientes" element={<ClientesTemp />} />
               <Route path="/mapa" element={<Mapa />} />
+              <Route path="/planes" element={<Planes />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/login" replace />} />

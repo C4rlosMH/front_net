@@ -14,7 +14,8 @@ import {
     Moon, 
     Sun, 
     User,
-    Map
+    Map,
+    FileText
 } from "lucide-react";
 
 const MainLayout = () => {
@@ -73,6 +74,12 @@ const MainLayout = () => {
                         <Wallet size={20} />
                         <span>Finanzas</span>
                     </Link>
+
+                    <Link to="/planes" className={`${styles.link} ...`}>
+                        <FileText size={20} />
+                        <span>Planes</span>
+                    </Link>
+
                 </nav>
 
                 <div className={styles.userArea}>

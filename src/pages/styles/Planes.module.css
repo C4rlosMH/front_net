@@ -1,0 +1,145 @@
+.container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.title {
+    font-size: 1.8rem;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.addButton {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.addButton:hover {
+    background-color: var(--primary-hover);
+}
+
+/* --- GRID DE TARJETAS --- */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+    border-color: var(--primary);
+}
+
+/* Banda de color superior */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: var(--primary);
+}
+
+.inactiveCard {
+    opacity: 0.7;
+    filter: grayscale(0.8);
+}
+.inactiveCard::before { background: #94a3b8; }
+
+.planName {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-main);
+    margin-bottom: 10px;
+}
+
+.planPrice {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 10px 0;
+}
+
+.planPrice span {
+    font-size: 1rem;
+    font-weight: normal;
+    color: var(--text-muted);
+}
+
+.planSpeed {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.switchBtn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.switchBtn:hover {
+    background: var(--body-bg);
+    color: var(--text-main);
+}
+
+/* --- MODAL (Reutilizamos estilos base) --- */
+.modalOverlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex; justify-content: center; align-items: center; z-index: 1000;
+}
+.modal {
+    background: var(--card-bg); width: 400px; padding: 25px;
+    border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+.formGroup { margin-bottom: 15px; text-align: left; }
+.formGroup label { display: block; margin-bottom: 5px; color: var(--text-muted); }
+.input {
+    width: 100%; padding: 10px; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--body-bg); color: var(--text-main);
+}
+.btnSubmit {
+    width: 100%; padding: 12px; background: var(--primary);
+    color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
+}
