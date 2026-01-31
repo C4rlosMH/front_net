@@ -16,7 +16,8 @@ import {
     User,
     Map,
     FileText,
-    BarChart2 // <--- AGREGADO AQUÍ
+    BarChart2, // <--- AGREGADO AQUÍ
+    Server
 } from "lucide-react";
 
 const MainLayout = () => {
@@ -60,6 +61,14 @@ const MainLayout = () => {
                     >
                         <Users size={20} />
                         <span>Clientes</span>
+                    </Link>
+
+                    <Link 
+                        to="/cajas" 
+                        className={`${styles.link} ${location.pathname === '/cajas' ? styles.linkActive : ''}`}
+                    >
+                        <Server size={20} />
+                        <span>Cajas NAP</span>
                     </Link>
 
                     {/* ENLACE MAPA */}

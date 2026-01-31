@@ -13,6 +13,8 @@ import Clientes from "./pages/Clientes";
 import Pagos from "./pages/Pagos";
 import HistorialPagos from "./pages/HistorialPagos"
 import Estadisticas from "./pages/Estadisticas";
+import Cajas from "./pages/Cajas";
+import Cortes from "./pages/Cortes";
 
 
 function App() {
@@ -36,6 +38,8 @@ function App() {
               <Route path="/pagos" element={<Pagos />} />
               <Route path="/pagos/cliente/:id" element={<HistorialPagos />} />
               <Route path="/estadisticas" element={<Estadisticas />} />
+              <Route path="/cajas" element={<Cajas />} />
+              <Route path="/cortes" element={<Cortes />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/login" replace />} />

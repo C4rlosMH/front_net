@@ -1,30 +1,28 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom"; // Importante para el enlace a Cortes
 import client from "../api/axios";
 import { toast } from "sonner";
-import { Users, Wifi, AlertTriangle, DollarSign, Activity } from "lucide-react";
+import { 
+    Users, 
+    Wifi, 
+    AlertTriangle, 
+    DollarSign, 
+    Activity, 
+    Scissors // Icono para Cortes
+} from "lucide-react";
 import styles from "./styles/Dashboard.module.css";
 
 function Dashboard() {
-    // 1. Inicializamos con la NUEVA estructura anidada para evitar errores
-    const [stats, setStats] = useState({
-        financiero: { recaudado_actual: 0 },
-        clientes: {
-            total: 0,
-            resumen: { activos: 0, suspendidos: 0, cortados: 0 }
-        }
-    });
+    // Inicializamos estado
+    const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 const res = await client.get("/dashboard/stats");
-                console.log("Datos Dashboard:", res.data); // Para verificar en consola
-                
-                // Verificamos si vienen datos antes de setear
-                if (res.data) {
-                    setStats(res.data);
-                }
+                console.log("Datos Dashboard:", res.data); // Para depuración
+                setStats(res.data);
             } catch (error) {
                 console.error(error);
                 toast.error("Error al cargar el resumen");
@@ -35,19 +33,28 @@ function Dashboard() {
         fetchStats();
     }, []);
 
+    // Formateador de moneda
     const formatoDinero = (num) => `$${parseFloat(num || 0).toFixed(2)}`;
 
     if (loading) return <div className={styles.loading}>Cargando resumen...</div>;
 
-    // Accesos seguros a los datos anidados
-    const totalClientes = stats.clientes?.total || 0;
-    const activos = stats.clientes?.resumen?.activos || 0;
-    const suspendidos = stats.clientes?.resumen?.suspendidos || 0;
-    const cortados = stats.clientes?.resumen?.cortados || 0;
+    // --- LÓGICA DE DATOS SEGURA ---
+    // Detectamos si el backend envía la estructura "Nueva" (anidada) o "Vieja" (plana)
+    // para que el dashboard funcione en ambos casos.
     
-    // Sumamos suspendidos y cortados para mostrar alertas, o solo cortados según prefieras
-    const clientesConProblemas = suspendidos + cortados;
-    const recaudadoMes = stats.financiero?.recaudado_actual || 0;
+    // 1. Clientes
+    const totalClientes = stats?.clientes?.total || stats?.totalClientes || 0;
+    const activos = stats?.clientes?.resumen?.activos || stats?.clientesActivos || 0;
+    
+    // 2. Cortes y Suspendidos
+    const cortados = stats?.clientes?.resumen?.cortados || stats?.clientesCortados || 0;
+    const suspendidos = stats?.clientes?.resumen?.suspendidos || 0;
+    // Si tienes estructura plana, 'clientesCortados' suele incluir a todos los morosos
+    const pendientesCorte = suspendidos + cortados; 
+
+    // 3. Finanzas
+    // En la estructura nueva es 'financiero.recaudado_actual', en la vieja 'totalIngresos'
+    const ingresos = stats?.financiero?.recaudado_actual || stats?.totalIngresos || 0;
 
     return (
         <div className={styles.container}>
@@ -58,6 +65,43 @@ function Dashboard() {
 
             <div className={styles.grid}>
                 
+                {/* --- NUEVA TARJETA: ACCESO A CORTES --- */}
+                {/* La ponemos primero o en posición destacada porque es operativa diaria */}
+                <div className={styles.card} style={{borderColor: '#fca5a5', backgroundColor: '#fef2f2'}}>
+                    <div className={styles.cardHeader}>
+                        <h3 className={styles.cardTitle} style={{color: '#b91c1c'}}>Reporte Cortes</h3>
+                        <div style={{color: '#b91c1c', background: '#fee2e2', padding: '8px', borderRadius: '50%'}}>
+                            <Scissors size={24} />
+                        </div>
+                    </div>
+                    
+                    <p className={styles.cardValue} style={{color: '#b91c1c'}}>
+                        {pendientesCorte} <span style={{fontSize:'1rem', fontWeight:'normal'}}>Pendientes</span>
+                    </p>
+                    
+                    <div className={styles.details} style={{borderTop:'1px solid #fecaca'}}>
+                        <Link to="/cortes" style={{textDecoration:'none', width:'100%'}}>
+                            <button style={{
+                                width: '100%',
+                                padding: '8px',
+                                marginTop: '5px',
+                                background: '#ef4444',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontWeight: '600',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: '5px'
+                            }}>
+                                <Scissors size={16} /> Ver Lista de Corte
+                            </button>
+                        </Link>
+                    </div>
+                </div>
+
                 {/* 1. Clientes Totales */}
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
@@ -66,7 +110,6 @@ function Dashboard() {
                             <Users size={24} />
                         </div>
                     </div>
-                    {/* [CORREGIDO] Acceso a la nueva estructura */}
                     <p className={styles.cardValue}>{totalClientes}</p>
                     <div className={styles.details}>
                         <span>Clientes registrados</span>
@@ -81,43 +124,25 @@ function Dashboard() {
                             <Wifi size={24} />
                         </div>
                     </div>
-                    {/* [CORREGIDO] Acceso a la nueva estructura */}
                     <p className={styles.cardValue}>{activos}</p>
                     <div className={styles.details}>
                         <span style={{color: '#16a34a'}}>Servicio activo</span>
                     </div>
                 </div>
 
-                {/* 3. Clientes con Problemas (Suspendidos/Cortados) */}
+                {/* 3. Recaudado (Mes / Total) */}
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>Suspendidos/Corte</h3>
-                        <div style={{color: '#ea580c', background: '#ffedd5', padding: '8px', borderRadius: '50%'}}>
-                            <AlertTriangle size={24} />
-                        </div>
-                    </div>
-                    <p className={`${styles.cardValue}`} style={{color: '#ea580c'}}>
-                        {clientesConProblemas}
-                    </p>
-                    <div className={styles.details}>
-                        <span>Requieren atención</span>
-                    </div>
-                </div>
-
-                {/* 4. Ingresos del Mes (Actualizado desde Histórico a Mes Actual) */}
-                <div className={styles.card}>
-                    <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>Recaudado (Mes)</h3>
+                        <h3 className={styles.cardTitle}>Recaudado</h3>
                         <div style={{color: '#9333ea', background: '#f3e8ff', padding: '8px', borderRadius: '50%'}}>
                             <DollarSign size={24} />
                         </div>
                     </div>
-                    {/* [CORREGIDO] Acceso a la nueva estructura */}
                     <p className={styles.cardValue}>
-                        {formatoDinero(recaudadoMes)}
+                        {formatoDinero(ingresos)}
                     </p>
                     <div className={styles.details}>
-                        <span>Cobrado este mes</span>
+                        <span>Ingresos registrados</span>
                     </div>
                 </div>
             </div>

@@ -5,20 +5,20 @@ import client from "../api/axios";
 import LocationPicker from "../components/LocationPicker";
 import TablePagination from "../components/TablePagination";
 import { toast } from "sonner";
-import { Plus, Wallet, Eye, Pencil } from "lucide-react";
+import { Plus, Wallet, Eye, Pencil, Wifi, Cable } from "lucide-react";
 import styles from "./styles/Clientes.module.css";
 
 function Clientes() {
     const [clientes, setClientes] = useState([]);
     const [planes, setPlanes] = useState([]);
-    const [equiposLibres, setEquiposLibres] = useState([]);
+    const [antenasLibres, setAntenasLibres] = useState([]);
+    const [routersLibres, setRoutersLibres] = useState([]);
     const [cajasList, setCajasList] = useState([]);
     
-    // Paginación
+    const [tipoInstalacion, setTipoInstalacion] = useState("FIBRA");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-
-    // Estados Modales
+    
     const [showModal, setShowModal] = useState(false);
     const [clienteEditar, setClienteEditar] = useState(null);
     const [showPagoModal, setShowPagoModal] = useState(false);
@@ -27,8 +27,9 @@ function Clientes() {
 
     const { register, handleSubmit, setValue, reset, watch } = useForm();
     
-    // Para ver si seleccionó un equipo nuevo
-    const watchEquipo = watch("equipoId");
+    // Validación visual
+    const watchAntena = watch("antenaId");
+    const watchRouter = watch("routerId");
 
     useEffect(() => { cargarDatos(); }, []);
 
@@ -43,10 +44,13 @@ function Clientes() {
 
             setClientes(resClientes.data);
             setPlanes(resPlanes.data);
-            setEquiposLibres(resEquipos.data.filter(e => e.estado === 'ALMACEN'));
             setCajasList(resCajas.data);
+
+            const libres = resEquipos.data.filter(e => e.estado === 'ALMACEN');
+            setAntenasLibres(libres.filter(e => e.tipo === 'ANTENA'));
+            setRoutersLibres(libres.filter(e => e.tipo === 'ROUTER' || e.tipo === 'MODEM'));
         } catch (error) {
-            console.error("Error al cargar datos:", error);
+            console.error(error);
             toast.error("Error al cargar datos.");
         }
     };
@@ -63,10 +67,24 @@ function Clientes() {
             setValue("fecha_instalacion", cliente.fecha_instalacion ? cliente.fecha_instalacion.split('T')[0] : "");
             setValue("latitud", cliente.latitud);
             setValue("longitud", cliente.longitud);
-            setValue("cajaId", cliente.caja?.id);
-            setValue("equipoId", ""); 
+            
+            if (cliente.caja) {
+                setTipoInstalacion("FIBRA");
+                setValue("cajaId", cliente.caja.id);
+                const routerAsignado = cliente.equipos?.find(e => e.tipo === 'ROUTER' || e.tipo === 'MODEM');
+                setValue("routerId", routerAsignado?.id || "");
+                setValue("antenaId", "");
+            } else {
+                setTipoInstalacion("RADIO");
+                setValue("cajaId", "");
+                const antenaAsignada = cliente.equipos?.find(e => e.tipo === 'ANTENA');
+                const routerAsignado = cliente.equipos?.find(e => e.tipo === 'ROUTER' || e.tipo === 'MODEM');
+                setValue("antenaId", antenaAsignada?.id || "");
+                setValue("routerId", routerAsignado?.id || "");
+            }
         } else {
             reset();
+            setTipoInstalacion("FIBRA");
         }
         setShowModal(true);
     };
@@ -74,7 +92,19 @@ function Clientes() {
     const onSubmit = async (data) => {
         try {
             if (!data.latitud || !data.longitud) {
-                return toast.warning("Por favor selecciona la ubicación en el mapa");
+                return toast.warning("La ubicación en el mapa es requerida");
+            }
+
+            let equiposIds = [];
+
+            if (tipoInstalacion === 'RADIO') {
+                if (!clienteEditar && (!data.antenaId || !data.routerId)) {
+                   return toast.error("En Radio debes seleccionar Antena Y Router");
+                }
+                if (data.antenaId) equiposIds.push(parseInt(data.antenaId));
+                if (data.routerId) equiposIds.push(parseInt(data.routerId));
+            } else {
+                if (data.routerId) equiposIds.push(parseInt(data.routerId));
             }
 
             const payload = {
@@ -82,9 +112,9 @@ function Clientes() {
                 latitud: parseFloat(data.latitud),
                 longitud: parseFloat(data.longitud),
                 planId: data.planId ? parseInt(data.planId) : null,
-                equipoId: data.equipoId ? parseInt(data.equipoId) : null,
                 dia_pago: parseInt(data.dia_pago),
-                cajaId: data.cajaId ? parseInt(data.cajaId) : null
+                cajaId: tipoInstalacion === 'FIBRA' && data.cajaId ? parseInt(data.cajaId) : null,
+                equiposIds: equiposIds 
             };
 
             if (clienteEditar) {
@@ -105,7 +135,6 @@ function Clientes() {
         }
     };
 
-    // Paginación
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentClientes = clientes.slice(indexOfFirstItem, indexOfLastItem);
@@ -154,45 +183,51 @@ function Clientes() {
                     </thead>
                     <tbody>
                         {currentClientes.length === 0 ? (
-                            <tr><td colSpan="5" style={{textAlign:'center', padding: 20}}>No hay clientes registrados.</td></tr>
+                            <tr><td colSpan="5" style={{textAlign:'center', padding:20}}>No hay clientes registrados.</td></tr>
                         ) : (
                             currentClientes.map(c => (
                                 <tr key={c.id}>
                                     <td>
-                                        <div style={{fontWeight:'bold'}}>{c.nombre_completo}</div>
-                                        <small style={{color:'var(--text-muted)'}}>{c.telefono}</small>
+                                        <div className={styles.bold}>{c.nombre_completo}</div>
+                                        <div className={styles.muted}>{c.telefono}</div>
                                     </td>
                                     <td>
-                                        {c.ip_asignada || "DHCP"}
-                                        <br/>
-                                        <small style={{color:'var(--text-muted)'}}>{c.direccion}</small>
+                                        {c.ip_asignada || "DHCP"} <br/>
+                                        <div className={styles.muted}>{c.direccion}</div>
                                     </td>
                                     <td>
-                                        <div style={{fontWeight:500}}>{c.plan ? c.plan.nombre : "Sin Plan"}</div>
-                                        {c.caja && (
-                                            <span className={styles.cajaBadge}>
-                                                NAP: {c.caja.nombre}
+                                        <div className={styles.medium}>{c.plan?.nombre || "Sin Plan"}</div>
+                                        
+                                        <div className={styles.smallMuted}>
+                                            {c.equipos && c.equipos.map(e => (
+                                                <div key={e.id}>• {e.tipo}: {e.modelo}</div>
+                                            ))}
+                                        </div>
+
+                                        {c.caja ? (
+                                            <span className={`${styles.cajaBadge} ${styles.badgeFibra}`}>
+                                                <Cable size={12} /> NAP: {c.caja.nombre}
+                                            </span>
+                                        ) : (
+                                            <span className={`${styles.cajaBadge} ${styles.badgeRadio}`}>
+                                                <Wifi size={12} /> Antena / Radio
                                             </span>
                                         )}
-                                        <div style={{fontSize:'0.75rem', color:'var(--text-muted)', marginTop:2}}>
-                                            Corte: Día {c.dia_pago || 15}
-                                        </div>
+                                        
+                                        <div className={styles.smallMuted}>Corte: Día {c.dia_pago || 15}</div>
                                     </td>
                                     <td>
-                                        <span className={styles.statusBadge} style={{
-                                            backgroundColor: c.estado === 'ACTIVO' ? '#dcfce7' : '#fee2e2',
-                                            color: c.estado === 'ACTIVO' ? '#166534' : '#991b1b'
-                                        }}>
+                                        <span className={`${styles.statusBadge} ${c.estado === 'ACTIVO' ? styles.statusActive : styles.statusInactive}`}>
                                             {c.estado}
                                         </span>
                                     </td>
                                     <td>
-                                        <div style={{display:'flex'}}>
-                                            <button className={`${styles.actionBtn} ${styles.btnPay}`} onClick={() => abrirModalPago(c)} title="Registrar Pago">
+                                        <div className={styles.flexActions}>
+                                            <button className={`${styles.actionBtn} ${styles.btnPay}`} onClick={() => abrirModalPago(c)} title="Pagar">
                                                 <Wallet size={18} />
                                             </button>
                                             <Link to={`/pagos/cliente/${c.id}`}>
-                                                <button className={`${styles.actionBtn} ${styles.btnProfile}`} title="Ver Historial">
+                                                <button className={`${styles.actionBtn} ${styles.btnProfile}`} title="Historial">
                                                     <Eye size={18} />
                                                 </button>
                                             </Link>
@@ -214,7 +249,7 @@ function Clientes() {
                 />
             </div>
 
-            {/* MODAL PRINCIPAL */}
+            {/* MODAL CLIENTE */}
             {showModal && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modal}>
@@ -223,7 +258,27 @@ function Clientes() {
                             <button onClick={() => setShowModal(false)} className={styles.closeBtn}>&times;</button>
                         </div>
                         <form onSubmit={handleSubmit(onSubmit)}>
-                            {/* Fila 1 */}
+                            
+                            <div className={styles.formGroup}>
+                                <label>Tipo de Instalación</label>
+                                <div className={styles.typeSelector}>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setTipoInstalacion("FIBRA")}
+                                        className={`${styles.typeButton} ${tipoInstalacion === 'FIBRA' ? styles.typeActive : styles.typeInactive}`}
+                                    >
+                                        <Cable size={18}/> Fibra Óptica
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setTipoInstalacion("RADIO")}
+                                        className={`${styles.typeButton} ${tipoInstalacion === 'RADIO' ? styles.typeActive : styles.typeInactive}`}
+                                    >
+                                        <Wifi size={18}/> Radio / Antena
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label>Nombre Completo</label>
@@ -234,32 +289,28 @@ function Clientes() {
                                     <input {...register("telefono")} className={styles.input} />
                                 </div>
                             </div>
-                            
-                            {/* Fila 2 */}
+
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label>IP Asignada</label>
-                                    <input {...register("ip_asignada")} className={styles.input} placeholder="Ej: 192.168.1.XX" />
+                                    <input {...register("ip_asignada")} className={styles.input} placeholder="192.168..." />
                                 </div>
-                                <div className={styles.formGroup}>
-                                    <label>Dirección</label>
-                                    <input {...register("direccion")} className={styles.input} />
-                                </div>
-                            </div>
-                            
-                            {/* Fila 3 */}
-                            <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label>Plan</label>
                                     <select {...register("planId")} className={styles.select}>
                                         <option value="">-- Seleccionar --</option>
-                                        {planes.map(p => (
-                                            <option key={p.id} value={p.id}>{p.nombre}</option>
-                                        ))}
+                                        {planes.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                                     </select>
                                 </div>
+                            </div>
+
+                            <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
-                                    <label>Día de Pago</label>
+                                    <label>Dirección</label>
+                                    <input {...register("direccion")} className={styles.input} />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label>Día Pago</label>
                                     <select {...register("dia_pago")} className={styles.select}>
                                         <option value="15">Día 15</option>
                                         <option value="30">Día 30</option>
@@ -267,51 +318,69 @@ function Clientes() {
                                 </div>
                             </div>
 
-                            {/* Fila 4: Caja y Fecha */}
-                            <div className={styles.formRow}>
-                                <div className={styles.formGroup}>
-                                    <label>Caja (NAP)</label>
-                                    <select {...register("cajaId")} className={styles.select}>
-                                        <option value="">-- Sin Conexión --</option>
-                                        {cajasList.map(caja => (
-                                            <option key={caja.id} value={caja.id}>{caja.nombre}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>Fecha Instalación</label>
-                                    <input type="date" {...register("fecha_instalacion")} className={styles.input} />
-                                </div>
-                            </div>
-
-                            {/* SECCIÓN EQUIPO (Ancho completo) */}
-                            <div className={styles.formGroup}>
-                                <label>Equipo (Router/Antena)</label>
-                                {clienteEditar && clienteEditar.equipo && !watchEquipo && (
-                                    <div className={styles.infoBox}>
-                                        <strong>Actual:</strong> {clienteEditar.equipo.modelo} ({clienteEditar.equipo.mac_address})
+                            {/* SECCIÓN DE CONEXIÓN */}
+                            <div className={styles.specificSection}>
+                                <h4 className={styles.sectionTitle}>
+                                    {tipoInstalacion === 'FIBRA' ? 'Conexión de Fibra Óptica' : 'Equipos de Radio Enlace'}
+                                </h4>
+                                
+                                {tipoInstalacion === 'FIBRA' ? (
+                                    <>
+                                        <div className={styles.formGroup}>
+                                            <label>Caja NAP</label>
+                                            <select {...register("cajaId")} className={styles.select}>
+                                                <option value="">-- Seleccionar NAP --</option>
+                                                {cajasList.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>Router / ONU (Opcional)</label>
+                                            <select {...register("routerId")} className={styles.select}>
+                                                <option value="">-- Seleccionar --</option>
+                                                {routersLibres.map(e => <option key={e.id} value={e.id}>{e.modelo} ({e.mac_address})</option>)}
+                                            </select>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className={styles.formRow}>
+                                        <div className={styles.formGroup}>
+                                            <label>Antena <span className={styles.required}>*</span></label>
+                                            <select 
+                                                {...register("antenaId")} 
+                                                className={`${styles.select} ${(!clienteEditar && !watchAntena) ? styles.selectError : ''}`}
+                                            >
+                                                <option value="">-- Seleccionar Antena --</option>
+                                                {antenasLibres.map(e => <option key={e.id} value={e.id}>{e.modelo} ({e.mac_address})</option>)}
+                                            </select>
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>Router Wi-Fi <span className={styles.required}>*</span></label>
+                                            <select 
+                                                {...register("routerId")} 
+                                                className={`${styles.select} ${(!clienteEditar && !watchRouter) ? styles.selectError : ''}`}
+                                            >
+                                                <option value="">-- Seleccionar Router --</option>
+                                                {routersLibres.map(e => <option key={e.id} value={e.id}>{e.modelo} ({e.mac_address})</option>)}
+                                            </select>
+                                        </div>
                                     </div>
                                 )}
-                                <select {...register("equipoId")} className={styles.select} style={{marginTop:5}}>
-                                    <option value="">
-                                        {clienteEditar ? "-- Cambiar Equipo (Opcional) --" : "-- Seleccionar Equipo --"}
-                                    </option>
-                                    {equiposLibres.map(e => (
-                                        <option key={e.id} value={e.id}>
-                                            {e.modelo} - {e.mac_address}
-                                        </option>
-                                    ))}
-                                </select>
+                                
+                                <div className={`${styles.formGroup} ${styles.noMargin}`}>
+                                     <label>Fecha Instalación</label>
+                                     <input type="date" {...register("fecha_instalacion")} className={styles.input} />
+                                </div>
                             </div>
 
-                            {/* UBICACIÓN */}
                             <div className={styles.formGroup}>
                                 <label>Ubicación</label>
-                                <LocationPicker 
-                                    initialLat={clienteEditar?.latitud} 
-                                    initialLng={clienteEditar?.longitud}
-                                    onLocationChange={(c) => { setValue("latitud", c.lat); setValue("longitud", c.lng); }} 
-                                />
+                                <div style={{height: 250, borderRadius: 8, overflow:'hidden', border:'1px solid var(--border)'}}>
+                                    <LocationPicker 
+                                        initialLat={clienteEditar?.latitud} 
+                                        initialLng={clienteEditar?.longitud}
+                                        onLocationChange={(c) => { setValue("latitud", c.lat); setValue("longitud", c.lng); }} 
+                                    />
+                                </div>
                                 <input type="hidden" {...register("latitud")} />
                                 <input type="hidden" {...register("longitud")} />
                             </div>
@@ -325,10 +394,9 @@ function Clientes() {
                 </div>
             )}
             
-            {/* Modal de Pago Rápido (Simplificado) */}
             {showPagoModal && (
                  <div className={styles.modalOverlay}>
-                    <div className={styles.modal} style={{width: 400, overflow:'hidden'}}>
+                    <div className={styles.modal} style={{width: 400}}>
                         <div className={styles.modalHeader}>
                             <h3>Registrar Pago</h3>
                             <button onClick={()=>setShowPagoModal(false)} className={styles.closeBtn}>&times;</button>

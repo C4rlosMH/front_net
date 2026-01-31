@@ -36,13 +36,14 @@ function Equipos() {
         setEquipoEditar(equipo);
         if (equipo) {
             // Cargar datos existentes
+            setValue("nombre", equipo.nombre); // <--- NUEVO CAMPO
             setValue("marca", equipo.marca);
             setValue("modelo", equipo.modelo);
             setValue("tipo", equipo.tipo);
             setValue("mac", equipo.mac_address); 
             setValue("serie", equipo.serie);
             setValue("precio_compra", equipo.precio_compra);
-            setValue("estado", equipo.estado); // <--- IMPORTANTE: Cargar el estado actual
+            setValue("estado", equipo.estado);
             
             if (equipo.fecha_compra) {
                 setValue("fecha_compra", new Date(equipo.fecha_compra).toISOString().split('T')[0]);
@@ -58,6 +59,7 @@ function Equipos() {
     const onSubmit = async (data) => {
         try {
             const payload = {
+                nombre: data.nombre, // <--- NUEVO CAMPO
                 tipo: data.tipo,
                 marca: data.marca,
                 modelo: data.modelo,
@@ -121,7 +123,7 @@ function Equipos() {
                 <table className={styles.table}>
                     <thead>
                         <tr>
-                            <th>Marca / Modelo</th>
+                            <th>Nombre / Equipo</th>
                             <th>Tipo</th>
                             <th>Serie / MAC</th>
                             <th>Compra</th>
@@ -136,8 +138,13 @@ function Equipos() {
                             currentEquipos.map(e => (
                                 <tr key={e.id}>
                                     <td>
-                                        <div style={{fontWeight:'bold'}}>{e.marca}</div>
-                                        <small style={{color:'var(--text-muted)'}}>{e.modelo}</small>
+                                        {/* MEJORA VISUAL: Nombre arriba, marca/modelo abajo */}
+                                        <div style={{fontWeight:'bold', color: e.nombre ? 'var(--text-main)' : 'var(--text-muted)'}}>
+                                            {e.nombre || e.marca}
+                                        </div>
+                                        <small style={{color:'var(--text-muted)'}}>
+                                            {e.nombre ? `${e.marca} ${e.modelo}` : e.modelo}
+                                        </small>
                                     </td>
                                     <td>
                                         {e.tipo === 'ANTENA' && <span className={styles.badge} style={{background:'#dbeafe', color:'#1e40af'}}>Antena</span>}
@@ -194,6 +201,17 @@ function Equipos() {
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)}>
+                            {/* --- CAMPO NUEVO: NOMBRE IDENTIFICADOR --- */}
+                            <div className={styles.formGroup}>
+                                <label>Nombre Identificador (Opcional)</label>
+                                <input 
+                                    {...register("nombre")} 
+                                    className={styles.input} 
+                                    placeholder="Ej: Router Principal, Antena Sector 1..." 
+                                    autoFocus 
+                                />
+                            </div>
+
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label>Marca *</label>
