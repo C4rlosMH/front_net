@@ -1,86 +1,136 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css"; // Estilos del mapa
+import "leaflet/dist/leaflet.css";
 import client from "../api/axios";
 import { toast } from "sonner";
 import styles from "./styles/Mapa.module.css";
+import { User, Server, Building2 } from "lucide-react";
+import ReactDOMServer from "react-dom/server";
 
-// Solución para iconos de Leaflet en React
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
+// COORDENADAS DE TU NEGOCIO
 const UBICACION_NEGOCIO = [17.6852292,-91.0269451];
 
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-});
-L.Marker.prototype.options.icon = DefaultIcon;
+// Función auxiliar para crear iconos HTML
+const createCustomIcon = (iconComponent, bgColor) => {
+    const iconHtml = ReactDOMServer.renderToString(
+        <div style={{
+            backgroundColor: bgColor,
+            color: 'white',
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '2px solid white',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+        }}>
+            {iconComponent}
+        </div>
+    );
+
+    return new L.DivIcon({
+        html: iconHtml,
+        className: 'custom-marker', // Clase vacía para limpiar estilos default
+        iconSize: [32, 32],
+        iconAnchor: [16, 32], // La "punta" del pin (centro abajo)
+        popupAnchor: [0, -32]
+    });
+};
+
+const iconCliente = createCustomIcon(<User size={18} />, '#2563eb'); // Azul
+const iconCaja = createCustomIcon(<Server size={18} />, '#f97316'); // Naranja
+const iconSede = createCustomIcon(<Building2 size={18} />, '#dc2626'); // Rojo
 
 function Mapa() {
     const [clientes, setClientes] = useState([]);
-    
+    const [cajas, setCajas] = useState([]);
 
     useEffect(() => {
-        const cargarPuntos = async () => {
+        const cargarDatos = async () => {
             try {
-                const res = await client.get("/clientes");
-                // Filtramos solo los que tienen coordenadas válidas
-                const clientesConUbicacion = res.data.filter(c => c.latitud && c.longitud);
-                setClientes(clientesConUbicacion);
-                toast.success(`${clientesConUbicacion.length} puntos cargados en el mapa`);
+                // Intentamos cargar clientes y cajas
+                // Si aún no tienes cajas en BD, el array estará vacío pero no fallará
+                const [resClientes, resCajas] = await Promise.all([
+                    client.get("/clientes"),
+                    client.get("/cajas").catch(() => ({ data: [] })) // Fallback si falla
+                ]);
+                setClientes(resClientes.data);
+                setCajas(resCajas.data);
             } catch (error) {
                 console.error(error);
-                toast.error("Error al cargar el mapa de red");
+                toast.error("Error al cargar datos del mapa");
             }
         };
-        cargarPuntos();
+        cargarDatos();
     }, []);
 
     return (
-        <div className={styles.container}>
-            <div className={styles.header}>
-                <h1 className={styles.title}>Mapa de Red</h1>
-                <span className={styles.badge}>
-                    {clientes.length} Puntos Activos
-                </span>
-            </div>
+        <div className={styles.mapContainer}>
+            <MapContainer 
+                center={UBICACION_NEGOCIO} 
+                zoom={16} 
+                scrollWheelZoom={true} 
+                style={{ height: "100%", width: "100%" }}
+            >
+                <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; OpenStreetMap contributors'
+                />
 
-            <div className={styles.mapWrapper}>
-                <MapContainer center={UBICACION_NEGOCIO} zoom={17} style={{ height: "100%", width: "100%" }}>
-                    <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; OpenStreetMap contributors'
-                    />
+                {/* 1. MARCADOR SEDE/NEGOCIO */}
+                <Marker position={UBICACION_NEGOCIO} icon={iconSede}>
+                    <Popup>
+                        <div style={{textAlign:'center'}}>
+                            <strong style={{color:'#dc2626'}}>Base Central</strong><br/>
+                            Oficina Principal
+                        </div>
+                    </Popup>
+                </Marker>
 
-                    {clientes.map((cliente) => (
+                {/* 2. MARCADORES DE CAJAS (NAPs) */}
+                {cajas.map(caja => (
+                    caja.latitud && caja.longitud ? (
                         <Marker 
-                            key={cliente.id} 
-                            position={[cliente.latitud, cliente.longitud]}
+                            key={`caja-${caja.id}`} 
+                            position={[caja.latitud, caja.longitud]} 
+                            icon={iconCaja}
                         >
                             <Popup>
-                                <div className={styles.popupContent}>
-                                    <strong>{cliente.nombre_completo}</strong>
-                                    <br />
-                                    IP: {cliente.ip_asignada || "Sin IP"}
-                                    <br />
-                                    <span 
-                                        style={{
-                                            color: cliente.estado === 'ACTIVO' ? 'green' : 'red',
-                                            fontWeight: 'bold'
-                                        }}
-                                    >
-                                        {cliente.estado}
-                                    </span>
-                                </div>
+                                <strong>NAP: {caja.nombre}</strong><br/>
+                                <small>Capacidad: {caja.puertos_totales} puertos</small>
                             </Popup>
                         </Marker>
-                    ))}
-                </MapContainer>
-            </div>
+                    ) : null
+                ))}
+
+                {/* 3. MARCADORES DE CLIENTES */}
+                {clientes.map(c => (
+                    c.latitud && c.longitud ? (
+                        <Marker 
+                            key={`cli-${c.id}`} 
+                            position={[c.latitud, c.longitud]} 
+                            icon={iconCliente}
+                        >
+                            <Popup>
+                                <strong>👤 {c.nombre_completo}</strong><br/>
+                                <span style={{fontSize:'0.85rem'}}>{c.direccion}</span><br/>
+                                <span style={{fontSize:'0.8rem', color:'gray'}}>
+                                    Plan: {c.plan?.nombre || "Sin Plan"}
+                                </span>
+                                {c.caja && (
+                                    <div style={{marginTop:5, borderTop:'1px solid #eee', paddingTop:3}}>
+                                        <small style={{color:'#f97316', fontWeight:'bold'}}>
+                                            🔌 Conectado a: {c.caja.nombre}
+                                        </small>
+                                    </div>
+                                )}
+                            </Popup>
+                        </Marker>
+                    ) : null
+                ))}
+            </MapContainer>
         </div>
     );
 }
