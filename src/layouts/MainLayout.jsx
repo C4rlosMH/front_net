@@ -1,10 +1,10 @@
 import { Outlet, Navigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import styles from "./MainLayout.module.css"; //
-import logo from "../assets/logo.png"; // Importamos el logo pequeño
+import styles from "./MainLayout.module.css"; 
+import logo from "../assets/logo.png"; 
 
-// Importamos los iconos
+// 1. IMPORTAMOS EL ÍCONO QUE FALTABA (BarChart2)
 import { 
     LayoutDashboard, 
     Users, 
@@ -15,34 +15,45 @@ import {
     Sun, 
     User,
     Map,
-    FileText
+    FileText,
+    BarChart2 // <--- AGREGADO AQUÍ
 } from "lucide-react";
 
 const MainLayout = () => {
-    const { isAuthenticated, loading, logout, user } = useAuth(); //
+    const { isAuthenticated, loading, logout, user } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const location = useLocation();
 
     if (loading) return <div>Cargando...</div>;
-    if (!isAuthenticated) return <Navigate to="/login" replace />; //
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
 
     return (
         <div className={styles.layout}>
             <aside className={styles.sidebar}>
                 <div className={styles.logoArea}>
                     <img src={logo} alt="M" className={styles.logoImg} /> 
-
                 </div>
 
                 <nav className={styles.nav}>
+                    {/* ENLACE DASHBOARD */}
                     <Link 
                         to="/dashboard" 
-                        className={`${styles.link} ${location.pathname === '/dashboard' ? styles.linkActive : ''}`}
+                        className={`${styles.link} ${location.pathname === '/dashboard' || location.pathname === '/' ? styles.linkActive : ''}`}
                     >
                         <LayoutDashboard size={20} /> 
                         <span>Dashboard</span>
                     </Link>
+
+                    {/* 2. ENLACE ESTADÍSTICAS (NUEVO) */}
+                    <Link 
+                        to="/estadisticas" 
+                        className={`${styles.link} ${location.pathname === '/estadisticas' ? styles.linkActive : ''}`}
+                    >
+                        <BarChart2 size={20} />
+                        <span>Estadísticas</span>
+                    </Link>
                     
+                    {/* ENLACE CLIENTES */}
                     <Link 
                         to="/clientes" 
                         className={`${styles.link} ${location.pathname === '/clientes' ? styles.linkActive : ''}`}
@@ -51,6 +62,7 @@ const MainLayout = () => {
                         <span>Clientes</span>
                     </Link>
 
+                    {/* ENLACE MAPA */}
                     <Link 
                         to="/mapa" 
                         className={`${styles.link} ${location.pathname === '/mapa' ? styles.linkActive : ''}`}
@@ -59,6 +71,7 @@ const MainLayout = () => {
                         <span>Mapa de Red</span>
                     </Link>
                     
+                    {/* ENLACE INVENTARIO */}
                     <Link 
                         to="/equipos" 
                         className={`${styles.link} ${location.pathname === '/equipos' ? styles.linkActive : ''}`}
@@ -67,6 +80,7 @@ const MainLayout = () => {
                         <span>Inventario</span>
                     </Link>
                     
+                    {/* ENLACE FINANZAS */}
                     <Link 
                         to="/pagos" 
                         className={`${styles.link} ${location.pathname === '/pagos' ? styles.linkActive : ''}`}
@@ -75,7 +89,11 @@ const MainLayout = () => {
                         <span>Finanzas</span>
                     </Link>
 
-                    <Link to="/planes" className={`${styles.link} ...`}>
+                    {/* ENLACE PLANES */}
+                    <Link 
+                        to="/planes" 
+                        className={`${styles.link} ${location.pathname === '/planes' ? styles.linkActive : ''}`}
+                    >
                         <FileText size={20} />
                         <span>Planes</span>
                     </Link>
@@ -88,7 +106,6 @@ const MainLayout = () => {
                         {user?.nombre}
                     </div>
                     
-                    {/* --- AQUÍ USAMOS LA CLASE DEL CSS --- */}
                     <button onClick={toggleTheme} className={styles.themeBtn}>
                         {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
                         {theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}

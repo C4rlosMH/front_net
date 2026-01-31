@@ -12,6 +12,7 @@ import Planes from "./pages/Planes";
 import Clientes from "./pages/Clientes";
 import Pagos from "./pages/Pagos";
 import HistorialPagos from "./pages/HistorialPagos"
+import Estadisticas from "./pages/Estadisticas";
 
 
 function App() {
@@ -19,7 +20,7 @@ function App() {
     <AuthProvider>
       <ThemeProvider>
         <BrowserRouter>
-          <Toaster position="top-right" richColors />
+          <Toaster position="bottom-right" richColors />
           
           <Routes>
             {/* Ruta Pública */}
@@ -34,6 +35,7 @@ function App() {
               <Route path="/planes" element={<Planes />} />
               <Route path="/pagos" element={<Pagos />} />
               <Route path="/pagos/cliente/:id" element={<HistorialPagos />} />
+              <Route path="/estadisticas" element={<Estadisticas />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/login" replace />} />

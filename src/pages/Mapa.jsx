@@ -10,6 +10,8 @@ import styles from "./styles/Mapa.module.css";
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
+const UBICACION_NEGOCIO = [17.6852292,-91.0269451];
+
 let DefaultIcon = L.icon({
     iconUrl: icon,
     shadowUrl: iconShadow,
@@ -21,8 +23,6 @@ L.Marker.prototype.options.icon = DefaultIcon;
 function Mapa() {
     const [clientes, setClientes] = useState([]);
     
-    // Coordenadas iniciales (Centro aproximado, luego se puede ajustar dinámicamente)
-    const center = [19.4326, -99.1332]; 
 
     useEffect(() => {
         const cargarPuntos = async () => {
@@ -50,7 +50,7 @@ function Mapa() {
             </div>
 
             <div className={styles.mapWrapper}>
-                <MapContainer center={center} zoom={12} style={{ height: "100%", width: "100%" }}>
+                <MapContainer center={UBICACION_NEGOCIO} zoom={17} style={{ height: "100%", width: "100%" }}>
                     <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         attribution='&copy; OpenStreetMap contributors'

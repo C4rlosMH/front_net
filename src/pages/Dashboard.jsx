@@ -1,105 +1,114 @@
 import { useEffect, useState } from "react";
 import client from "../api/axios";
 import { toast } from "sonner";
-import styles from "./styles/Dashboard.module.css"; // Recuerda la ruta correcta
-
-// Iconos
-import { DollarSign, Users, TrendingDown, Package, Wifi, Radio, Server } from "lucide-react";
+import { Users, Wifi, AlertTriangle, DollarSign, Activity } from "lucide-react";
+import styles from "./styles/Dashboard.module.css";
 
 function Dashboard() {
-    const [stats, setStats] = useState(null);
+    // Inicializamos con la estructura PLANA que devuelve el backend actual
+    const [stats, setStats] = useState({
+        totalClientes: 0,
+        clientesActivos: 0,
+        clientesCortados: 0,
+        totalIngresos: 0
+    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchDashboard = async () => {
+        const fetchStats = async () => {
             try {
-                const res = await client.get("/dashboard");
+                // Asegúrate de que esta ruta coincida con tu backend (usamos /dashboard/stats)
+                const res = await client.get("/dashboard/stats");
                 setStats(res.data);
             } catch (error) {
                 console.error(error);
-                toast.error("No se pudo cargar la información");
+                toast.error("Error al cargar el resumen");
             } finally {
                 setLoading(false);
             }
         };
-        fetchDashboard();
+        fetchStats();
     }, []);
 
-    if (loading) return <div className={styles.loading}>Cargando...</div>;
-    if (!stats) return <div className={styles.loading}>No hay datos</div>;
+    // Formateador de moneda
+    const formatoDinero = (num) => `$${parseFloat(num || 0).toFixed(2)}`;
+
+    if (loading) return <div style={{padding: 20}}>Cargando resumen...</div>;
 
     return (
         <div className={styles.container}>
-            <h1 className={styles.title}>Resumen General</h1>
+            <div className={styles.header}>
+                <h1 className={styles.title}>Resumen Operativo</h1>
+                <p className={styles.subtitle}>Estado actual de la red y facturación</p>
+            </div>
 
-            <div className={styles.grid}>
-                {/* --- FINANZAS --- */}
-                <div className={styles.card}>
+            {/* GRID DE KPIs */}
+            <div className={styles.grid}> {/* Usamos .grid si es lo que tienes en tu CSS, o .kpiGrid */}
+                
+                {/* 1. Clientes Totales */}
+                <div className={styles.card}> {/* Usamos .card para aprovechar tus estilos existentes */}
                     <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>Recaudado (Mes)</h3>
-                        <div style={{color: '#10b981', background: '#d1fae5', padding: '8px', borderRadius: '50%'}}>
-                            <DollarSign size={24} />
-                        </div>
-                    </div>
-                    <p className={`${styles.cardValue} ${styles.money}`}>
-                        ${stats.financiero.recaudado_actual}
-                    </p>
-                    <div className={styles.details}>
-                         <span>Meta: ${stats.financiero.proyeccion_mensual}</span>
-                    </div>
-                </div>
-
-                {/* --- CLIENTES --- */}
-                <div className={styles.card}>
-                    <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>Total Clientes</h3>
+                        <h3 className={styles.cardTitle}>Cartera Total</h3>
                         <div style={{color: '#3b82f6', background: '#dbeafe', padding: '8px', borderRadius: '50%'}}>
                             <Users size={24} />
                         </div>
                     </div>
-                    <p className={styles.cardValue}>{stats.clientes.total}</p>
+                    <p className={styles.cardValue}>{stats.totalClientes}</p>
                     <div className={styles.details}>
-                         <span style={{color: '#16a34a'}}>Activos: {stats.clientes.resumen.activos}</span>
-                         <span style={{color: '#dc2626'}}>Cortados: {stats.clientes.resumen.cortados}</span>
+                        <span>Clientes registrados</span>
                     </div>
                 </div>
 
-                {/* --- DEUDA --- */}
+                {/* 2. Clientes Activos */}
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>Deuda Total</h3>
-                        <div style={{color: '#ef4444', background: '#fee2e2', padding: '8px', borderRadius: '50%'}}>
-                            <TrendingDown size={24} />
+                        <h3 className={styles.cardTitle}>En Línea</h3>
+                        <div style={{color: '#16a34a', background: '#dcfce7', padding: '8px', borderRadius: '50%'}}>
+                            <Wifi size={24} />
                         </div>
                     </div>
-                    <p className={`${styles.cardValue} ${styles.danger}`}>
-                        ${stats.financiero.deuda_total_clientes}
+                    <p className={styles.cardValue}>{stats.clientesActivos}</p>
+                    <div className={styles.details}>
+                        <span style={{color: '#16a34a'}}>Servicio activo</span>
+                    </div>
+                </div>
+
+                {/* 3. Clientes Suspendidos */}
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <h3 className={styles.cardTitle}>Suspendidos</h3>
+                        <div style={{color: '#ea580c', background: '#ffedd5', padding: '8px', borderRadius: '50%'}}>
+                            <AlertTriangle size={24} />
+                        </div>
+                    </div>
+                    <p className={`${styles.cardValue}`} style={{color: '#ea580c'}}>
+                        {stats.clientesCortados}
                     </p>
                     <div className={styles.details}>
-                         <span>Pendiente de cobro</span>
+                        <span>Por falta de pago</span>
                     </div>
                 </div>
-                
-                 {/* --- INVENTARIO --- */}
-                 <div className={styles.card}>
+
+                {/* 4. Ingresos Totales */}
+                <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>Almacén</h3>
-                        <div style={{color: '#f59e0b', background: '#fef3c7', padding: '8px', borderRadius: '50%'}}>
-                            <Package size={24} />
+                        <h3 className={styles.cardTitle}>Ingresos Históricos</h3>
+                        <div style={{color: '#9333ea', background: '#f3e8ff', padding: '8px', borderRadius: '50%'}}>
+                            <DollarSign size={24} />
                         </div>
                     </div>
-                    <div style={{display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px'}}>
-                        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                            <Radio size={16} /> Antenas: <b>{stats.inventario_disponible.antenas}</b>
-                        </div>
-                        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                            <Wifi size={16} /> Routers: <b>{stats.inventario_disponible.routers}</b>
-                        </div>
-                        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                            <Server size={16} /> ONUs: <b>{stats.inventario_disponible.onus}</b>
-                        </div>
+                    <p className={styles.cardValue}>
+                        {formatoDinero(stats.totalIngresos)}
+                    </p>
+                    <div className={styles.details}>
+                        <span>Total recaudado</span>
                     </div>
                 </div>
+            </div>
+
+            <div style={{marginTop: 40, textAlign:'center', color:'gray', fontStyle:'italic'}}>
+                <Activity size={48} style={{opacity:0.1, marginBottom:10}} />
+                <p>Sistema funcionando correctamente.</p>
             </div>
         </div>
     );

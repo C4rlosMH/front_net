@@ -15,18 +15,18 @@ function Planes() {
 
     const cargarPlanes = async () => {
         try {
-            const res = await client.get("/");
+            // Ruta: /api/planes
+            const res = await client.get("/planes");
             setPlanes(res.data);
         } catch (error) { toast.error("Error al cargar planes"); }
     };
 
-    // --- CORRECCIÓN AQUÍ ---
+    // --- CORRECCIÓN: TOGGLE ---
     const togglePlan = async (id) => {
         try {
-            // Llamamos a la ruta específica que creamos en el backend
-            await client.patch(`/planes/${id}/toggle`);
+            // El backend pide PUT a /api/planes/:id/toggle
+            await client.put(`/planes/${id}/toggle`);
             
-            // Actualizamos la interfaz visualmente
             setPlanes(planes.map(p => {
                 if (p.id === id) return { ...p, activo: !p.activo };
                 return p;
@@ -58,18 +58,24 @@ function Planes() {
                 ...data,
                 velocidad_mb: parseInt(data.velocidad_mb),
                 precio_mensual: parseFloat(data.precio_mensual),
-                // activo: No lo enviamos aquí, eso se maneja con el toggle
             };
 
             if (planEditar) {
-                await client.put(`/${planEditar.id}`, payload);
+                // --- CORRECCIÓN: EDITAR ---
+                // Tu backend define la ruta como: router.put("/planes/:id") dentro de "/api/planes"
+                // Por lo tanto, la URL final es: /api/planes/planes/:id
+                await client.put(`/planes/planes/${planEditar.id}`, payload);
                 toast.success("Plan actualizado");
             } else {
+                // Ruta: /api/planes
                 await client.post("/planes", payload);
                 toast.success("Plan creado");
             }
             setShowModal(false); reset(); setPlanEditar(null); cargarPlanes();
-        } catch (error) { toast.error("Error al guardar plan"); }
+        } catch (error) { 
+            console.error(error);
+            toast.error("Error al guardar plan"); 
+        }
     };
 
     return (
