@@ -1,8 +1,7 @@
 .container {
     padding: 20px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    max-width: 1200px; /* Igual que Equipos */
+    margin: 0 auto;
 }
 
 /* --- HEADER --- */
@@ -10,43 +9,40 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .title {
     font-size: 1.8rem;
-    color: var(--text-main); /* Adaptable */
+    color: var(--text-main);
     margin: 0;
 }
 
 .addButton {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px; /* Radio de 8px consistente */
+    cursor: pointer;
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: var(--primary);
-    color: white; /* El texto en botones primarios suele mantenerse blanco */
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background 0.2s;
+    transition: background-color 0.2s;
 }
 
 .addButton:hover {
-    filter: brightness(1.1);
+    background-color: var(--primary-hover, #1d4ed8);
 }
 
-/* --- TABLA --- */
+/* --- TABLA (Estilo Equipos) --- */
 .tableWrapper {
-    background: var(--bg-card); /* Fondo adaptable (blanco o gris oscuro) */
+    background: var(--card-bg);
     border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--border); /* Borde adaptable */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     overflow: hidden;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    border: 1px solid var(--border);
 }
 
 .table {
@@ -55,32 +51,25 @@
     text-align: left;
 }
 
-.table thead {
-    background-color: var(--bg-hover); /* Fondo cabecera adaptable */
-    border-bottom: 2px solid var(--border);
-}
-
 .table th {
+    background-color: var(--body-bg); /* Fondo sutil para cabecera */
     padding: 15px;
     font-weight: 600;
-    color: var(--text-muted); /* Texto gris adaptable */
-    font-size: 0.9rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
     text-transform: uppercase;
+    font-size: 0.85rem;
 }
 
 .table td {
     padding: 15px;
     border-bottom: 1px solid var(--border);
-    color: var(--text-main); /* Texto principal adaptable */
+    color: var(--text-main);
     vertical-align: middle;
 }
 
 .table tbody tr:last-child td {
     border-bottom: none;
-}
-
-.table tbody tr:hover {
-    background-color: var(--bg-hover); /* Hover fila adaptable */
 }
 
 /* --- ESTADOS Y BADGES --- */
@@ -93,136 +82,137 @@
 }
 
 .cajaBadge {
-    font-size: 0.8rem;
-    color: #f97316; /* Naranja (se ve bien en claro y oscuro) */
-    font-weight: bold;
-    margin-top: 2px;
+    display: inline-block;
+    background-color: #ffedd5; /* Naranja muy suave */
+    color: #c2410c;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 4px;
+    border: 1px solid #fed7aa;
 }
 
-/* --- BOTONES DE ACCIÓN --- */
+/* --- BOTONES DE ACCIÓN (Estilo Equipos/Pagos) --- */
 .actionBtn {
     border: none;
-    background: none;
+    background: transparent;
     cursor: pointer;
     padding: 6px;
     border-radius: 6px;
-    transition: all 0.2s;
+    transition: background-color 0.2s;
     margin-right: 4px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
 }
 
-/* Usamos RGBA para que los fondos sean semitransparentes y se adapten al modo oscuro */
-.btnPay { color: #10b981; background-color: rgba(16, 185, 129, 0.1); }
-.btnPay:hover { background-color: rgba(16, 185, 129, 0.2); }
+.btnPay { color: #10b981; }
+.btnPay:hover { background-color: rgba(16, 185, 129, 0.1); }
 
-.btnProfile { color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
-.btnProfile:hover { background-color: rgba(59, 130, 246, 0.2); }
+.btnProfile { color: #3b82f6; }
+.btnProfile:hover { background-color: rgba(59, 130, 246, 0.1); }
 
-.btnEdit { color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
-.btnEdit:hover { background-color: rgba(245, 158, 11, 0.2); }
+.btnEdit { color: #d97706; /* Ámbar igual que equipos */ }
+.btnEdit:hover { background-color: rgba(217, 119, 6, 0.1); }
 
-/* --- MODALES --- */
+/* --- MODAL (Idéntico a Equipos) --- */
 .modalOverlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    backdrop-filter: blur(3px);
 }
 
 .modal {
-    background: var(--bg-card); /* IMPORTANTE: Fondo del modal */
-    color: var(--text-main);    /* IMPORTANTE: Texto del modal */
-    padding: 25px;
-    border-radius: 16px;
-    width: 95%;
-    max-width: 600px;
+    background: var(--card-bg);
+    width: 650px; /* Un poco más ancho para el form de clientes */
+    padding: 30px;
+    border-radius: 12px; /* Radio consistente */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     max-height: 90vh;
     overflow-y: auto;
-    border: 1px solid var(--border); /* Borde sutil para modo oscuro */
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .modalHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border);
+    margin-bottom: 25px;
 }
 
 .modalHeader h2, .modalHeader h3 {
     margin: 0;
+    font-size: 1.4rem;
     color: var(--text-main);
 }
 
 .closeBtn {
-    background: none;
+    background: transparent;
     border: none;
-    font-size: 2rem;
-    line-height: 1;
+    font-size: 1.5rem;
     cursor: pointer;
     color: var(--text-muted);
-    padding: 0;
-    margin: 0;
 }
 
-.closeBtn:hover {
-    color: var(--text-main);
-}
-
-/* --- FORMULARIOS --- */
-.formGrid {
+/* --- FORMULARIOS (Grid System de Equipos) --- */
+.formRow {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
+    margin-bottom: 15px;
 }
 
-.inputGroup {
+.formGroup {
+    margin-bottom: 15px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
 }
 
 .fullWidth {
     grid-column: 1 / -1;
 }
 
-.inputGroup label {
+.formGroup label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-muted);
     font-size: 0.9rem;
     font-weight: 500;
-    color: var(--text-main);
 }
 
 .input, .select {
-    padding: 10px;
-    border: 1px solid var(--border);
-    background-color: var(--bg-card); /* Fondo del input adaptable */
-    color: var(--text-main);          /* Texto del input adaptable */
-    border-radius: 8px;
-    font-size: 0.95rem;
     width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--body-bg); /* Fondo grisáceo en modo claro, oscuro en dark */
+    color: var(--text-main);
     box-sizing: border-box;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
 }
 
 .input:focus, .select:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
 }
 
-/* Placeholder adaptable */
-.input::placeholder {
+/* Info box para mostrar equipo actual */
+.infoBox {
+    background-color: var(--body-bg);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
     color: var(--text-muted);
+    border: 1px solid var(--border);
+    margin-top: 5px;
 }
 
-/* --- BOTONES DEL FOOTER (MODAL) --- */
 .modalActions {
     display: flex;
     justify-content: flex-end;
@@ -234,17 +224,16 @@
 
 .btnCancel {
     padding: 10px 20px;
-    border: 1px solid var(--border);
     background: transparent;
+    border: 1px solid var(--border);
     color: var(--text-main);
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
-    transition: background 0.2s;
 }
 
 .btnCancel:hover {
-    background-color: var(--bg-hover);
+    background-color: var(--body-bg);
 }
 
 .btnSubmit {
@@ -252,12 +241,11 @@
     background: var(--primary);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: 500;
-    transition: filter 0.2s;
+    font-weight: 600;
 }
 
 .btnSubmit:hover {
-    filter: brightness(1.1);
+    background-color: var(--primary-hover, #1d4ed8);
 }

@@ -25,7 +25,8 @@
 }
 
 .logoImg {
-    height: 32px;
+    height: 60px;
+    align-items: center;
 }
 
 .brandName {
