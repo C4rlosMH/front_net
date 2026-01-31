@@ -4,37 +4,31 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import client from "../api/axios";
 import { toast } from "sonner";
-import styles from "./styles/Mapa.module.css";
+import styles from "./styles/Mapa.module.css"; // Importamos los estilos
 import { User, Server, Building2 } from "lucide-react";
 import ReactDOMServer from "react-dom/server";
 
 // COORDENADAS DE TU NEGOCIO
 const UBICACION_NEGOCIO = [17.6852292,-91.0269451];
+const Sede = [17.687171, -91.029577]
 
 // Función auxiliar para crear iconos HTML
 const createCustomIcon = (iconComponent, bgColor) => {
+    // Usamos la clase del CSS Module. Nota: bgColor sigue inline porque es dinámico.
     const iconHtml = ReactDOMServer.renderToString(
-        <div style={{
-            backgroundColor: bgColor,
-            color: 'white',
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '2px solid white',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
-        }}>
+        <div 
+            className={styles.iconMarker} 
+            style={{ backgroundColor: bgColor }}
+        >
             {iconComponent}
         </div>
     );
 
     return new L.DivIcon({
         html: iconHtml,
-        className: 'custom-marker', // Clase vacía para limpiar estilos default
+        className: 'custom-marker', // Clase vacía de Leaflet para no interferir
         iconSize: [32, 32],
-        iconAnchor: [16, 32], // La "punta" del pin (centro abajo)
+        iconAnchor: [16, 32],
         popupAnchor: [0, -32]
     });
 };
@@ -50,11 +44,9 @@ function Mapa() {
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                // Intentamos cargar clientes y cajas
-                // Si aún no tienes cajas en BD, el array estará vacío pero no fallará
                 const [resClientes, resCajas] = await Promise.all([
                     client.get("/clientes"),
-                    client.get("/cajas").catch(() => ({ data: [] })) // Fallback si falla
+                    client.get("/cajas").catch(() => ({ data: [] }))
                 ]);
                 setClientes(resClientes.data);
                 setCajas(resCajas.data);
@@ -67,70 +59,77 @@ function Mapa() {
     }, []);
 
     return (
-        <div className={styles.mapContainer}>
-            <MapContainer 
-                center={UBICACION_NEGOCIO} 
-                zoom={16} 
-                scrollWheelZoom={true} 
-                style={{ height: "100%", width: "100%" }}
-            >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; OpenStreetMap contributors'
-                />
+        // [CORREGIDO] Usamos styles.container en lugar de styles.mapContainer
+        <div className={styles.container}>
+            <div className={styles.header}>
+                <h1 className={styles.title}>Mapa de Red</h1>
+            </div>
 
-                {/* 1. MARCADOR SEDE/NEGOCIO */}
-                <Marker position={UBICACION_NEGOCIO} icon={iconSede}>
-                    <Popup>
-                        <div style={{textAlign:'center'}}>
-                            <strong style={{color:'#dc2626'}}>Base Central</strong><br/>
-                            Oficina Principal
-                        </div>
-                    </Popup>
-                </Marker>
+            <div className={styles.mapWrapper}>
+                <MapContainer 
+                    center={UBICACION_NEGOCIO} 
+                    zoom={16} 
+                    scrollWheelZoom={true} 
+                    className={styles.mapInstance} // Clase CSS reemplaza style inline
+                >
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; OpenStreetMap contributors'
+                    />
 
-                {/* 2. MARCADORES DE CAJAS (NAPs) */}
-                {cajas.map(caja => (
-                    caja.latitud && caja.longitud ? (
-                        <Marker 
-                            key={`caja-${caja.id}`} 
-                            position={[caja.latitud, caja.longitud]} 
-                            icon={iconCaja}
-                        >
-                            <Popup>
-                                <strong>NAP: {caja.nombre}</strong><br/>
-                                <small>Capacidad: {caja.puertos_totales} puertos</small>
-                            </Popup>
-                        </Marker>
-                    ) : null
-                ))}
+                    {/* 1. MARCADOR SEDE/NEGOCIO */}
+                    <Marker position={Sede} icon={iconSede}>
+                        <Popup>
+                            <div className={styles.popupCenter}>
+                                <strong className={styles.popupTitleRed}>Base Central</strong><br/>
+                                Oficina Principal
+                            </div>
+                        </Popup>
+                    </Marker>
 
-                {/* 3. MARCADORES DE CLIENTES */}
-                {clientes.map(c => (
-                    c.latitud && c.longitud ? (
-                        <Marker 
-                            key={`cli-${c.id}`} 
-                            position={[c.latitud, c.longitud]} 
-                            icon={iconCliente}
-                        >
-                            <Popup>
-                                <strong>👤 {c.nombre_completo}</strong><br/>
-                                <span style={{fontSize:'0.85rem'}}>{c.direccion}</span><br/>
-                                <span style={{fontSize:'0.8rem', color:'gray'}}>
-                                    Plan: {c.plan?.nombre || "Sin Plan"}
-                                </span>
-                                {c.caja && (
-                                    <div style={{marginTop:5, borderTop:'1px solid #eee', paddingTop:3}}>
-                                        <small style={{color:'#f97316', fontWeight:'bold'}}>
-                                            🔌 Conectado a: {c.caja.nombre}
-                                        </small>
-                                    </div>
-                                )}
-                            </Popup>
-                        </Marker>
-                    ) : null
-                ))}
-            </MapContainer>
+                    {/* 2. MARCADORES DE CAJAS (NAPs) */}
+                    {cajas.map(caja => (
+                        caja.latitud && caja.longitud ? (
+                            <Marker 
+                                key={`caja-${caja.id}`} 
+                                position={[caja.latitud, caja.longitud]} 
+                                icon={iconCaja}
+                            >
+                                <Popup>
+                                    <strong>NAP: {caja.nombre}</strong><br/>
+                                    <small>Capacidad: {caja.puertos_totales} puertos</small>
+                                </Popup>
+                            </Marker>
+                        ) : null
+                    ))}
+
+                    {/* 3. MARCADORES DE CLIENTES */}
+                    {clientes.map(c => (
+                        c.latitud && c.longitud ? (
+                            <Marker 
+                                key={`cli-${c.id}`} 
+                                position={[c.latitud, c.longitud]} 
+                                icon={iconCliente}
+                            >
+                                <Popup>
+                                    <strong>👤 {c.nombre_completo}</strong>
+                                    <span className={styles.popupAddress}>{c.direccion}</span>
+                                    <span className={styles.popupPlan}>
+                                        Plan: {c.plan?.nombre || "Sin Plan"}
+                                    </span>
+                                    {c.caja && (
+                                        <div className={styles.popupConnectionBox}>
+                                            <small className={styles.popupConnectionText}>
+                                                🔌 Conectado a: {c.caja.nombre}
+                                            </small>
+                                        </div>
+                                    )}
+                                </Popup>
+                            </Marker>
+                        ) : null
+                    ))}
+                </MapContainer>
+            </div>
         </div>
     );
 }

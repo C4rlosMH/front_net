@@ -1,47 +1,52 @@
 .container {
     padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
+/* --- HEADER --- */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .title {
     font-size: 1.8rem;
-    color: var(--text-main);
+    color: var(--text-main); /* Adaptable */
     margin: 0;
 }
 
 .addButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background-color: var(--primary);
-    color: white;
+    color: white; /* El texto en botones primarios suele mantenerse blanco */
     border: none;
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s;
+    font-weight: 500;
+    transition: background 0.2s;
 }
 
 .addButton:hover {
-    background-color: var(--primary-hover);
+    filter: brightness(1.1);
 }
 
 /* --- TABLA --- */
 .tableWrapper {
-    background: var(--card-bg);
+    background: var(--bg-card); /* Fondo adaptable (blanco o gris oscuro) */
     border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border); /* Borde adaptable */
     overflow: hidden;
-    border: 1px solid var(--border);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .table {
@@ -50,124 +55,209 @@
     text-align: left;
 }
 
+.table thead {
+    background-color: var(--bg-hover); /* Fondo cabecera adaptable */
+    border-bottom: 2px solid var(--border);
+}
+
 .table th {
-    background-color: var(--body-bg);
     padding: 15px;
     font-weight: 600;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
+    color: var(--text-muted); /* Texto gris adaptable */
+    font-size: 0.9rem;
+    text-transform: uppercase;
 }
 
 .table td {
     padding: 15px;
     border-bottom: 1px solid var(--border);
-    color: var(--text-main);
+    color: var(--text-main); /* Texto principal adaptable */
+    vertical-align: middle;
 }
 
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table tbody tr:hover {
+    background-color: var(--bg-hover); /* Hover fila adaptable */
+}
+
+/* --- ESTADOS Y BADGES --- */
 .statusBadge {
     padding: 4px 10px;
     border-radius: 20px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
+    display: inline-block;
+}
+
+.cajaBadge {
+    font-size: 0.8rem;
+    color: #f97316; /* Naranja (se ve bien en claro y oscuro) */
+    font-weight: bold;
+    margin-top: 2px;
 }
 
 /* --- BOTONES DE ACCIÓN --- */
 .actionBtn {
     border: none;
-    background: transparent;
+    background: none;
     cursor: pointer;
     padding: 6px;
     border-radius: 6px;
-    transition: background 0.2s;
-    margin-right: 5px;
-    color: var(--text-muted);
+    transition: all 0.2s;
+    margin-right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.actionBtn:hover {
-    background: rgba(0,0,0,0.05);
-}
+/* Usamos RGBA para que los fondos sean semitransparentes y se adapten al modo oscuro */
+.btnPay { color: #10b981; background-color: rgba(16, 185, 129, 0.1); }
+.btnPay:hover { background-color: rgba(16, 185, 129, 0.2); }
 
-.btnPay { color: #16a34a; background: rgba(22, 163, 74, 0.1); }
-.btnPay:hover { background: #16a34a; color: white; }
+.btnProfile { color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
+.btnProfile:hover { background-color: rgba(59, 130, 246, 0.2); }
 
-.btnProfile { color: #2563eb; background: rgba(37, 99, 235, 0.1); }
-.btnProfile:hover { background: #2563eb; color: white; }
+.btnEdit { color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
+.btnEdit:hover { background-color: rgba(245, 158, 11, 0.2); }
 
-/* NUEVO: Botón de Editar */
-.btnEdit { color: #d97706; background: rgba(217, 119, 6, 0.1); }
-.btnEdit:hover { background: #d97706; color: white; }
-
-
-/* --- MODAL --- */
+/* --- MODALES --- */
 .modalOverlay {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    backdrop-filter: blur(3px);
 }
 
 .modal {
-    background: var(--card-bg);
-    width: 700px;
-    max-height: 90vh;
-    border-radius: 12px;
+    background: var(--bg-card); /* IMPORTANTE: Fondo del modal */
+    color: var(--text-main);    /* IMPORTANTE: Texto del modal */
     padding: 25px;
+    border-radius: 16px;
+    width: 95%;
+    max-width: 600px;
+    max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border: 1px solid var(--border); /* Borde sutil para modo oscuro */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .modalHeader {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.modalHeader h2, .modalHeader h3 {
+    margin: 0;
+    color: var(--text-main);
 }
 
 .closeBtn {
-    background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);
+    background: none;
+    border: none;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0;
+    margin: 0;
 }
 
-/* GRILLA DEL FORMULARIO */
+.closeBtn:hover {
+    color: var(--text-main);
+}
+
+/* --- FORMULARIOS --- */
 .formGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
-    margin-bottom: 15px;
-}
-
-.fullWidth {
-    grid-column: span 2;
 }
 
 .inputGroup {
-    display: flex; flex-direction: column; gap: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
 }
 
 .inputGroup label {
-    font-size: 0.9rem; font-weight: 500; color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-main);
 }
 
 .input, .select {
     padding: 10px;
     border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--body-bg);
-    color: var(--text-main);
+    background-color: var(--bg-card); /* Fondo del input adaptable */
+    color: var(--text-main);          /* Texto del input adaptable */
+    border-radius: 8px;
+    font-size: 0.95rem;
     width: 100%;
     box-sizing: border-box;
 }
 
+.input:focus, .select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+
+/* Placeholder adaptable */
+.input::placeholder {
+    color: var(--text-muted);
+}
+
+/* --- BOTONES DEL FOOTER (MODAL) --- */
 .modalActions {
-    display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
 }
 
 .btnCancel {
-    padding: 10px 20px; border: 1px solid var(--border); background: transparent; color: var(--text-main); border-radius: 6px; cursor: pointer;
+    padding: 10px 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-main);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.btnCancel:hover {
+    background-color: var(--bg-hover);
 }
 
 .btnSubmit {
-    padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;
+    padding: 10px 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: filter 0.2s;
+}
+
+.btnSubmit:hover {
+    filter: brightness(1.1);
 }

@@ -12,17 +12,15 @@ function Clientes() {
     const [clientes, setClientes] = useState([]);
     const [planes, setPlanes] = useState([]);
     const [equiposLibres, setEquiposLibres] = useState([]);
-    const [cajasList, setCajasList] = useState([]); // <--- NUEVO: Estado para las cajas
+    const [cajasList, setCajasList] = useState([]);
     
     // Paginación
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    // Estados Modales y Lógica
+    // Estados Modales
     const [showModal, setShowModal] = useState(false);
     const [clienteEditar, setClienteEditar] = useState(null);
-    
-    // Estados Pago Rápido
     const [showPagoModal, setShowPagoModal] = useState(false);
     const [clienteAPagar, setClienteAPagar] = useState(null);
     const [montoAbono, setMontoAbono] = useState("");
@@ -33,8 +31,6 @@ function Clientes() {
 
     const cargarDatos = async () => {
         try {
-            // Cargamos Clientes, Planes, Equipos y CAJAS
-            // Usamos .catch en cajas por si la ruta aun no existe en tu backend, para que no rompa todo
             const [resClientes, resPlanes, resEquipos, resCajas] = await Promise.all([
                 client.get("/clientes"),
                 client.get("/planes"),
@@ -44,46 +40,35 @@ function Clientes() {
 
             setClientes(resClientes.data);
             setPlanes(resPlanes.data);
-            // Filtramos solo equipos que estén en almacén
             setEquiposLibres(resEquipos.data.filter(e => e.estado === 'ALMACEN'));
-            setCajasList(resCajas.data); // <--- Guardamos las cajas
+            setCajasList(resCajas.data);
         } catch (error) {
-            console.error(error);
-            toast.error("Error al cargar datos");
+            console.error("Error al cargar datos:", error);
+            toast.error("Error al cargar datos de clientes. Revisa la consola.");
         }
     };
 
-    // --- ABRIR MODAL (CREAR O EDITAR) ---
     const openModal = (cliente = null) => {
         setClienteEditar(cliente);
         if (cliente) {
-            // Rellenar formulario
             setValue("nombre_completo", cliente.nombre_completo);
             setValue("telefono", cliente.telefono);
             setValue("ip_asignada", cliente.ip_asignada);
             setValue("direccion", cliente.direccion);
             setValue("planId", cliente.plan?.id);
             setValue("dia_pago", cliente.dia_pago);
-            // Formatear fecha para input date (YYYY-MM-DD)
             setValue("fecha_instalacion", cliente.fecha_instalacion ? cliente.fecha_instalacion.split('T')[0] : "");
-            
-            // Ubicación
             setValue("latitud", cliente.latitud);
             setValue("longitud", cliente.longitud);
-
-            // --- NUEVO: Cargar la caja seleccionada ---
             setValue("cajaId", cliente.caja?.id);
-
-            // Nota: No pre-cargamos equipoId al editar para evitar conflictos de lógica complejos en el frontend
         } else {
-            reset(); // Limpiar formulario
+            reset();
         }
         setShowModal(true);
     };
 
     const onSubmit = async (data) => {
         try {
-            // Validación básica de ubicación
             if (!data.latitud || !data.longitud) {
                 return toast.warning("Por favor selecciona la ubicación en el mapa");
             }
@@ -95,41 +80,40 @@ function Clientes() {
                 planId: data.planId ? parseInt(data.planId) : null,
                 equipoId: data.equipoId ? parseInt(data.equipoId) : null,
                 dia_pago: parseInt(data.dia_pago),
-                cajaId: data.cajaId ? parseInt(data.cajaId) : null // <--- Enviamos la Caja
+                cajaId: data.cajaId ? parseInt(data.cajaId) : null
             };
 
             if (clienteEditar) {
                 await client.put(`/clientes/${clienteEditar.id}`, payload);
-                toast.success("Cliente actualizado correctamente");
+                toast.success("Cliente actualizado");
             } else {
                 await client.post("/clientes", payload);
-                toast.success("Cliente registrado correctamente");
+                toast.success("Cliente registrado");
             }
 
             setShowModal(false);
             reset();
             setClienteEditar(null);
-            cargarDatos(); // Recargar tablas
+            cargarDatos();
         } catch (error) {
             console.error(error);
             toast.error("Error al guardar cliente");
         }
     };
 
-    // --- LÓGICA PAGINACIÓN ---
+    // Paginación lógica
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentClientes = clientes.slice(indexOfFirstItem, indexOfLastItem);
 
-    // --- LÓGICA DE PAGOS ---
     const abrirModalPago = (c) => { 
         setClienteAPagar(c); 
-        // Sugerir saldo pendiente o precio del plan
         setMontoAbono(c.saldo_actual > 0 ? c.saldo_actual : (c.plan?.precio_mensual || ""));
         setShowPagoModal(true);
     };
     
     const handleRegistrarPago = async (e) => {
+        // ... (misma lógica de antes)
         e.preventDefault();
         try {
             await client.post("/pagos/abono", {
@@ -160,20 +144,20 @@ function Clientes() {
                         <tr>
                             <th>Nombre</th>
                             <th>IP / Dirección</th>
-                            <th>Plan & Conexión</th> {/* Actualizado título */}
+                            <th>Plan & Conexión</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentClientes.length === 0 ? (
-                            <tr><td colSpan="5" style={{textAlign:'center', padding: 20}}>No hay clientes registrados</td></tr>
+                            <tr><td colSpan="5" style={{textAlign:'center', padding: 20}}>No hay clientes registrados o error de carga.</td></tr>
                         ) : (
                             currentClientes.map(c => (
                                 <tr key={c.id}>
                                     <td>
                                         <b>{c.nombre_completo}</b><br/>
-                                        <small style={{color:'var(--text-muted)'}}>{c.telefono}</small>
+                                        <small style={{color:'gray'}}>{c.telefono}</small>
                                     </td>
                                     <td>
                                         {c.ip_asignada || "DHCP"}
@@ -181,18 +165,14 @@ function Clientes() {
                                         <small>{c.direccion}</small>
                                     </td>
                                     <td>
-                                        {/* Plan */}
                                         <div style={{fontWeight:500}}>{c.plan ? c.plan.nombre : "Sin Plan"}</div>
-                                        
-                                        {/* Caja / NAP */}
                                         {c.caja && (
-                                            <div style={{fontSize:'0.8rem', color:'#ea580c', fontWeight:'bold', marginTop:2}}>
-                                                {c.caja.nombre}
+                                            <div className={styles.cajaBadge}>
+                                                🔌 {c.caja.nombre}
                                             </div>
                                         )}
-                                        
                                         <div style={{fontSize:'0.75rem', color:'gray', marginTop:2}}>
-                                            Día de corte: {c.dia_pago || 15}
+                                            Corte: Día {c.dia_pago || 15}
                                         </div>
                                     </td>
                                     <td>
@@ -213,11 +193,7 @@ function Clientes() {
                                                     <Eye size={18} />
                                                 </button>
                                             </Link>
-                                            <button 
-                                                className={`${styles.actionBtn} ${styles.btnEdit}`} 
-                                                onClick={() => openModal(c)}
-                                                title="Editar Datos"
-                                            >
+                                            <button className={`${styles.actionBtn} ${styles.btnEdit}`} onClick={() => openModal(c)} title="Editar">
                                                 <Pencil size={18} />
                                             </button>
                                         </div>
@@ -227,7 +203,6 @@ function Clientes() {
                         )}
                     </tbody>
                 </table>
-                {/* Componente Paginación */}
                 <TablePagination 
                     totalItems={clientes.length} 
                     itemsPerPage={itemsPerPage} 
@@ -236,7 +211,7 @@ function Clientes() {
                 />
             </div>
 
-            {/* --- MODAL CLIENTE --- */}
+            {/* MODALES */}
             {showModal && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modal}>
@@ -256,7 +231,7 @@ function Clientes() {
                                 </div>
                                 <div className={styles.inputGroup}>
                                     <label>IP Asignada</label>
-                                    <input {...register("ip_asignada")} className={styles.input} placeholder="Ej: 192.168.1.50" />
+                                    <input {...register("ip_asignada")} className={styles.input} />
                                 </div>
                                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
                                     <label>Dirección</label>
@@ -264,43 +239,40 @@ function Clientes() {
                                 </div>
                                 
                                 <div className={styles.inputGroup}>
-                                    <label>Plan de Internet</label>
+                                    <label>Plan</label>
                                     <select {...register("planId")} className={styles.select}>
-                                        <option value="">-- Seleccionar Plan --</option>
+                                        <option value="">-- Seleccionar --</option>
                                         {planes.map(p => (
-                                            <option key={p.id} value={p.id}>{p.nombre} - ${p.precio_mensual}</option>
+                                            <option key={p.id} value={p.id}>{p.nombre}</option>
                                         ))}
                                     </select>
                                 </div>
 
-                                {/* --- NUEVO SELECTOR DE CAJA --- */}
                                 <div className={styles.inputGroup}>
-                                    <label>Conectar a Caja (NAP)</label>
+                                    <label>Caja (NAP)</label>
                                     <select {...register("cajaId")} className={styles.select}>
                                         <option value="">-- Sin Conexión --</option>
                                         {cajasList.map(caja => (
-                                            <option key={caja.id} value={caja.id}>
-                                                {caja.nombre} ({caja.puertos_libres ?? '?'} libres)
-                                            </option>
+                                            <option key={caja.id} value={caja.id}>{caja.nombre}</option>
                                         ))}
                                     </select>
                                 </div>
 
                                 <div className={styles.inputGroup}>
-                                    <label>Día de Corte</label>
+                                    <label>Día de Pago</label>
                                     <select {...register("dia_pago")} className={styles.select}>
                                         <option value="15">Día 15</option>
                                         <option value="30">Día 30</option>
                                     </select>
                                 </div>
-
+                                
                                 {!clienteEditar && (
                                     <div className={styles.inputGroup}>
-                                        <label>Equipo (Solo Crear)</label>
+                                        <label>Asignar Equipo</label>
                                         <select {...register("equipoId")} className={styles.select}>
                                             <option value="">-- Ninguno --</option>
                                             {equiposLibres.map(e => (
-                                                <option key={e.id} value={e.id}>{e.modelo} ({e.mac_address})</option>
+                                                <option key={e.id} value={e.id}>{e.modelo}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -312,36 +284,35 @@ function Clientes() {
                                 </div>
 
                                 <div className={`${styles.fullWidth} ${styles.inputGroup}`}>
-                                    <label>Ubicación (Click en el mapa)</label>
+                                    <label>Ubicación</label>
                                     <LocationPicker 
                                         initialLat={clienteEditar?.latitud} 
                                         initialLng={clienteEditar?.longitud}
                                         onLocationChange={(c) => { setValue("latitud", c.lat); setValue("longitud", c.lng); }} 
                                     />
-                                    {/* Inputs ocultos para enviar al form */}
                                     <input type="hidden" {...register("latitud")} />
                                     <input type="hidden" {...register("longitud")} />
                                 </div>
                             </div>
                             <div className={styles.modalActions}>
                                 <button type="button" onClick={() => setShowModal(false)} className={styles.btnCancel}>Cancelar</button>
-                                <button type="submit" className={styles.btnSubmit}>{clienteEditar ? "Actualizar" : "Guardar"}</button>
+                                <button type="submit" className={styles.btnSubmit}>Guardar</button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
             
-            {/* --- MODAL PAGO RÁPIDO --- */}
+            {/* Modal de Pago Rápido (Simplificado en estilos, usa la misma clase modal) */}
             {showPagoModal && (
                  <div className={styles.modalOverlay}>
-                    <div className={styles.modal} style={{height:'auto', width:400}}>
+                    <div className={styles.modal} style={{width: 400}}>
                         <div className={styles.modalHeader}>
                             <h3>Registrar Pago</h3>
                             <button onClick={()=>setShowPagoModal(false)} className={styles.closeBtn}>&times;</button>
                         </div>
-                        <div style={{marginBottom: 15}}>
-                            <label style={{display:'block', marginBottom:5, color:'gray'}}>Monto a abonar ($)</label>
+                        <div className={styles.inputGroup}>
+                            <label>Monto a abonar ($)</label>
                             <input 
                                 type="number" 
                                 value={montoAbono} 
@@ -352,7 +323,7 @@ function Clientes() {
                         </div>
                         <div className={styles.modalActions}>
                             <button onClick={()=>setShowPagoModal(false)} className={styles.btnCancel}>Cancelar</button>
-                            <button onClick={handleRegistrarPago} className={styles.btnSubmit}>Confirmar Pago</button>
+                            <button onClick={handleRegistrarPago} className={styles.btnSubmit}>Confirmar</button>
                         </div>
                     </div>
                  </div>

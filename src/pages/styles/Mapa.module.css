@@ -1,6 +1,6 @@
 .container {
     padding: 20px;
-    height: 90vh; /* Ocupa casi toda la altura visible */
+    height: 90vh;
     display: flex;
     flex-direction: column;
 }
@@ -18,24 +18,91 @@
     margin: 0;
 }
 
-.badge {
-    background-color: var(--primary);
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
 .mapWrapper {
-    flex: 1; /* Ocupa el espacio restante */
+    flex: 1;
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid var(--border);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 0;
+    background-color: var(--bg-card); /* Fondo mientras carga */
 }
 
-.popupContent {
-    font-size: 0.9rem;
-    line-height: 1.5;
+.mapInstance {
+    height: 100%;
+    width: 100%;
+    background-color: var(--bg-card);
+}
+
+/* --- MAGIA DEL MODO OSCURO PARA EL MAPA --- */
+/* Esto invierte los colores del mapa tile layer si definiste --map-filter en index.css */
+.mapInstance :global(.leaflet-tile-pane) {
+    filter: var(--map-filter);
+}
+
+/* --- ICONOS --- */
+.iconMarker {
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* --- POPUPS (Adaptados a modo oscuro) --- */
+/* Leaflet usa sus propias clases globales, necesitamos forzar estilos dentro */
+.mapInstance :global(.leaflet-popup-content-wrapper),
+.mapInstance :global(.leaflet-popup-tip) {
+    background: var(--bg-card);
+    color: var(--text-main);
+    box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+}
+
+.popupCenter {
+    text-align: center;
+}
+
+.popupTitleRed {
+    color: #ef4444; /* Rojo más brillante para oscuro */
+    font-weight: bold;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.popupTitle {
+    font-weight: bold;
+    display: block;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+    color: var(--text-main);
+}
+
+.popupAddress {
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 2px;
+    color: var(--text-main);
+}
+
+.popupPlan {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: block;
+}
+
+.popupConnectionBox {
+    margin-top: 6px;
+    border-top: 1px solid var(--border);
+    padding-top: 4px;
+}
+
+.popupConnectionText {
+    color: #f97316;
+    font-weight: bold;
+    font-size: 0.8rem;
 }
