@@ -26,13 +26,15 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     position: relative;
     z-index: 0;
-    background-color: var(--bg-card); /* Fondo mientras carga */
+    /* CORREGIDO: Usar --card-bg */
+    background-color: var(--card-bg); 
 }
 
 .mapInstance {
     height: 100%;
     width: 100%;
-    background-color: var(--bg-card);
+    /* CORREGIDO: Usar --card-bg */
+    background-color: var(--card-bg);
 }
 
 /* --- MAGIA DEL MODO OSCURO PARA EL MAPA --- */
@@ -58,9 +60,15 @@
 /* Leaflet usa sus propias clases globales, necesitamos forzar estilos dentro */
 .mapInstance :global(.leaflet-popup-content-wrapper),
 .mapInstance :global(.leaflet-popup-tip) {
-    background: var(--bg-card);
+    /* CORREGIDO: Usar --card-bg para que tome el color del tema (blanco o gris oscuro) */
+    background: var(--card-bg);
     color: var(--text-main);
     box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+}
+
+/* Asegurar que el botón de cerrar también se vea bien */
+.mapInstance :global(.leaflet-popup-close-button) {
+    color: var(--text-muted) !important;
 }
 
 .popupCenter {

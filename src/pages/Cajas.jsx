@@ -8,26 +8,30 @@ import styles from "./styles/Cajas.module.css";
 
 function Cajas() {
     const [cajas, setCajas] = useState([]);
+    const [clientes, setClientes] = useState([]); // <--- Estado nuevo para clientes
     const [showModal, setShowModal] = useState(false);
     const [cajaEditar, setCajaEditar] = useState(null);
 
     const { register, handleSubmit, setValue, reset, watch } = useForm();
-    
-    // Watch para coordenadas si quieres mostrarlas en tiempo real (opcional)
     const lat = watch("latitud");
     const lng = watch("longitud");
 
     useEffect(() => {
-        cargarCajas();
+        cargarDatos();
     }, []);
 
-    const cargarCajas = async () => {
+    const cargarDatos = async () => {
         try {
-            const res = await client.get("/cajas");
-            setCajas(res.data);
+            // Cargamos Cajas Y Clientes en paralelo
+            const [resCajas, resClientes] = await Promise.all([
+                client.get("/cajas"),
+                client.get("/clientes").catch(() => ({ data: [] }))
+            ]);
+            setCajas(resCajas.data);
+            setClientes(resClientes.data); // <--- Guardamos clientes
         } catch (error) {
             console.error(error);
-            toast.error("Error al cargar cajas");
+            toast.error("Error al cargar datos");
         }
     };
 
@@ -45,6 +49,7 @@ function Cajas() {
         setShowModal(true);
     };
 
+    // ... (onSubmit y handleDelete se mantienen igual) ...
     const onSubmit = async (data) => {
         try {
             const payload = {
@@ -62,7 +67,7 @@ function Cajas() {
                 toast.success("Caja registrada");
             }
             setShowModal(false);
-            cargarCajas();
+            cargarDatos();
         } catch (error) {
             console.error(error);
             toast.error("Error al guardar caja");
@@ -74,7 +79,7 @@ function Cajas() {
         try {
             await client.delete(`/cajas/${id}`);
             toast.success("Caja eliminada");
-            cargarCajas();
+            cargarDatos();
         } catch (error) {
             toast.error("No se puede eliminar, posiblemente tiene clientes conectados");
         }
@@ -119,7 +124,6 @@ function Cajas() {
                                     )}
                                 </td>
                                 <td>
-                                    {/* Aquí podrías calcular puertos libres si el backend lo envía */}
                                     <span style={{fontWeight:'bold'}}>{c.capacidad_total} Puertos</span>
                                 </td>
                                 <td>
@@ -178,7 +182,7 @@ function Cajas() {
                                         {lat ? `${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)}` : "Seleccionar en mapa"}
                                     </small>
                                 </label>
-                                <div style={{height: 200, borderRadius: 8, overflow:'hidden', border:'1px solid var(--border)'}}>
+                                <div style={{height: 300, borderRadius: 8, overflow:'hidden', border:'1px solid var(--border)'}}>
                                     <LocationPicker 
                                         initialLat={cajaEditar?.latitud}
                                         initialLng={cajaEditar?.longitud}
@@ -186,6 +190,9 @@ function Cajas() {
                                             setValue("latitud", loc.lat);
                                             setValue("longitud", loc.lng);
                                         }}
+                                        // --- PASAMOS TODOS LOS PUNTOS ---
+                                        cajas={cajas}
+                                        clients={clientes}
                                     />
                                 </div>
                                 <input type="hidden" {...register("latitud")} />

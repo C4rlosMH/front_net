@@ -1,201 +1,318 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import client from "../api/axios";
+import TablePagination from "../components/TablePagination";
 import { toast } from "sonner";
-import { Wallet, Calendar, AlertCircle, Search, ArrowRight } from "lucide-react";
+import { 
+    DollarSign, ArrowUpRight, Calendar, Plus, 
+    CheckCircle2, Clock, User 
+} from "lucide-react";
 import styles from "./styles/Pagos.module.css";
 
 function Pagos() {
-    const [clientes, setClientes] = useState([]);
-    const [filtroDia, setFiltroDia] = useState(15);
-    const [busqueda, setBusqueda] = useState("");
+    const [movimientos, setMovimientos] = useState([]);
+    const [loading, setLoading] = useState(true);
     
-    // Modal Pagar Rápido
+    // Estados para el Modal de Pago
     const [showModal, setShowModal] = useState(false);
-    const [clienteSelect, setClienteSelect] = useState(null);
+    const [clientes, setClientes] = useState([]); // Lista para el select
+    const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState("");
+    
+    // Campos del formulario
     const [montoAbono, setMontoAbono] = useState("");
+    const [tipoPago, setTipoPago] = useState("LIQUIDACION");
+    const [metodoPago, setMetodoPago] = useState("EFECTIVO");
+    const [mesPago, setMesPago] = useState("");
+
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 15;
 
     useEffect(() => {
-        cargarClientes();
+        cargarDatos();
     }, []);
 
-    const cargarClientes = async () => {
+    const cargarDatos = async () => {
         try {
-            const res = await client.get("/clientes");
-            setClientes(res.data);
+            const res = await client.get("/pagos");
+            setMovimientos(res.data);
         } catch (error) {
             console.error(error);
-            toast.error("Error al cargar lista de cobros");
+            toast.error("Error al cargar finanzas");
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handlePagar = async (e) => {
+    // Cargar clientes solo cuando se abre el modal para no saturar al inicio
+    const abrirModal = async () => {
+        setShowModal(true);
+        if (clientes.length === 0) {
+            try {
+                const res = await client.get("/clientes");
+                // Ordenar alfabéticamente
+                const lista = res.data.sort((a, b) => a.nombre_completo.localeCompare(b.nombre_completo));
+                setClientes(lista);
+                
+                // Configurar fecha por defecto
+                const meses = generarMeses();
+                setMesPago(meses[1]);
+            } catch (error) {
+                toast.error("Error al cargar lista de clientes");
+            }
+        }
+    };
+
+    // Cuando cambia el cliente en el select, actualizamos monto sugerido
+    const handleClienteChange = (e) => {
+        const id = e.target.value;
+        setClienteSeleccionadoId(id);
+        
+        const cliente = clientes.find(c => c.id === parseInt(id));
+        if (cliente) {
+            const deuda = parseFloat(cliente.saldo_actual || 0);
+            const plan = parseFloat(cliente.plan?.precio_mensual || 0);
+            
+            if (deuda > 0) {
+                setTipoPago("LIQUIDACION");
+                setMontoAbono(deuda);
+            } else {
+                setTipoPago("ABONO");
+                setMontoAbono(plan);
+            }
+        } else {
+            setMontoAbono("");
+        }
+    };
+
+    const generarMeses = () => {
+        const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const hoy = new Date();
+        const opciones = [];
+        for (let i = -1; i <= 1; i++) {
+            const d = new Date(hoy.getFullYear(), hoy.getMonth() + i, 1);
+            opciones.push(`${meses[d.getMonth()]} ${d.getFullYear()}`);
+        }
+        return opciones;
+    };
+
+    const handleRegistrarPago = async (e) => {
         e.preventDefault();
+        if (!clienteSeleccionadoId) return toast.warning("Selecciona un cliente");
+
         try {
             await client.post("/pagos/abono", {
-                clienteId: clienteSelect.id,
+                clienteId: parseInt(clienteSeleccionadoId),
                 monto: parseFloat(montoAbono),
-                descripcion: "Pago rápido desde lista"
+                tipo_pago: tipoPago,
+                metodo_pago: metodoPago,
+                mes_servicio: mesPago,
             });
-            toast.success("Pago registrado");
+            toast.success("Pago registrado correctamente");
             setShowModal(false);
-            cargarClientes(); // Recargar saldos
-        } catch (error) {
-            toast.error("Error al registrar pago");
+            setClienteSeleccionadoId("");
+            setMontoAbono("");
+            cargarDatos(); // Recargar tabla
+        } catch (error) { 
+            toast.error("Error al registrar pago"); 
         }
     };
 
-    const abrirModal = (c) => {
-        setClienteSelect(c);
-        const sugerido = c.saldo_actual > 0 ? c.saldo_actual : (c.plan?.precio_mensual || "");
-        setMontoAbono(sugerido);
-        setShowModal(true);
+    // Helpers
+    const formatoFecha = (fecha) => {
+        return new Date(fecha).toLocaleString('es-MX', {
+            day: '2-digit', month: 'short', year: 'numeric', 
+            hour: '2-digit', minute:'2-digit'
+        });
     };
 
-    const clientesFiltrados = clientes.filter(c => {
-        const diaPagoCliente = c.dia_pago ? parseInt(c.dia_pago) : 15;
-        const coincideDia = diaPagoCliente === filtroDia;
-        const coincideNombre = c.nombre_completo.toLowerCase().includes(busqueda.toLowerCase());
-        return coincideDia && coincideNombre;
-    });
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = movimientos.slice(indexOfFirstItem, indexOfLastItem);
+    const listaMeses = generarMeses();
 
-    const totalDeuda = clientesFiltrados.reduce((acc, c) => acc + Number(c.saldo_actual), 0);
+    // Buscar info del cliente seleccionado para mostrar deuda
+    const clienteActivo = clientes.find(c => c.id === parseInt(clienteSeleccionadoId));
 
     return (
         <div className={styles.container}>
             <div className={styles.header}>
                 <div>
-                    <h1 className={styles.title}>Proyección de Cobranza</h1>
-                    <p style={{color:'var(--text-muted)'}}>Gestión de pagos por fecha de corte</p>
+                    <h1 className={styles.title}>Finanzas y Pagos</h1>
+                    <p className={styles.subtitle}>Registro global de ingresos</p>
                 </div>
-                
-                <div style={{textAlign:'right'}}>
-                    <span style={{display:'block', fontSize:'0.9rem', color:'var(--text-muted)'}}>Deuda Total (Lista actual)</span>
-                    <span style={{fontSize:'1.5rem', fontWeight:'bold', color: totalDeuda > 0 ? '#ef4444' : '#10b981'}}>
-                        ${totalDeuda.toFixed(2)}
-                    </span>
-                </div>
-            </div>
-
-            {/* PESTAÑAS */}
-            <div className={styles.tabs}>
-                <button 
-                    className={`${styles.tab} ${filtroDia === 15 ? styles.tabActive : ''}`}
-                    onClick={() => setFiltroDia(15)}
-                >
-                    <Calendar size={18} /> Corte Día 15
-                </button>
-                <button 
-                    className={`${styles.tab} ${filtroDia === 30 ? styles.tabActive : ''}`}
-                    onClick={() => setFiltroDia(30)}
-                >
-                    <Calendar size={18} /> Corte Día 30
+                <button className={styles.addButton} onClick={abrirModal}>
+                    <Plus size={20} /> Registrar Ingreso
                 </button>
             </div>
 
-            {/* BUSCADOR */}
-            <div className={styles.searchSection}>
-                <Search size={20} style={{color:'gray'}} />
-                <input 
-                    type="text" 
-                    placeholder={`Buscar cliente del día ${filtroDia}...`}
-                    className={styles.searchInput}
-                    value={busqueda}
-                    onChange={e => setBusqueda(e.target.value)}
-                />
+            {/* TARJETAS DE RESUMEN */}
+            <div className={styles.statsRow}>
+                <div className={styles.statCard}>
+                    <div className={styles.iconBoxIngreso}><ArrowUpRight size={24}/></div>
+                    <div>
+                        <span className={styles.statLabel}>Ingresos (Hoy)</span>
+                        <h3 className={styles.statValue}>
+                            ${movimientos
+                                .filter(m => new Date(m.fecha).toDateString() === new Date().toDateString() && m.tipo === 'INGRESO')
+                                .reduce((acc, curr) => acc + parseFloat(curr.monto), 0).toLocaleString()}
+                        </h3>
+                    </div>
+                </div>
+                {/* Puedes agregar más tarjetas aquí (Semana, Mes) */}
             </div>
 
-            {/* TABLA DE COBRANZA */}
-            <div className={styles.clientCard}>
+            {/* TABLA */}
+            <div className={styles.tableWrapper}>
                 <table className={styles.table}>
                     <thead>
                         <tr>
-                            <th>Cliente</th>
-                            <th>Plan Contratado</th>
-                            <th>Estado de Cuenta</th>
-                            <th style={{textAlign:'right'}}>Acciones</th>
+                            <th>Fecha</th>
+                            <th>Cliente / Descripción</th>
+                            <th>Método</th>
+                            <th>Monto</th>
+                            <th>Tipo</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {clientesFiltrados.map(c => (
-                            <tr key={c.id}>
-                                <td>
-                                    <b>{c.nombre_completo}</b>
-                                    <div style={{fontSize:'0.8rem', color:'gray'}}>{c.direccion}</div>
-                                </td>
-                                <td>
-                                    {c.plan ? (
-                                        /* SOLO NOMBRE DEL PLAN (SIN PRECIO NI VELOCIDAD) */
-                                        <span style={{
-                                            background: '#eff6ff', 
-                                            color: '#1d4ed8', 
-                                            padding: '4px 10px', 
-                                            borderRadius: '6px', 
-                                            fontWeight: '600',
-                                            fontSize: '0.9rem'
-                                        }}>
-                                            {c.plan.nombre}
+                        {currentItems.length === 0 ? (
+                            <tr><td colSpan="5" style={{textAlign:'center', padding:20}}>No hay movimientos registrados.</td></tr>
+                        ) : (
+                            currentItems.map(m => (
+                                <tr key={m.id}>
+                                    <td>
+                                        <div style={{display:'flex', alignItems:'center', gap:6, fontSize:'0.9rem'}}>
+                                            <Calendar size={14} className={styles.mutedIcon}/>
+                                            {formatoFecha(m.fecha)}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className={styles.bold}>
+                                            {m.cliente ? m.cliente.nombre_completo : "General"}
+                                        </div>
+                                        <small className={styles.muted}>{m.descripcion}</small>
+                                    </td>
+                                    <td>
+                                        <span className={styles.methodBadge}>{m.metodo_pago}</span>
+                                    </td>
+                                    <td>
+                                        <span className={styles.amount} style={{color: m.tipo === 'INGRESO' ? '#16a34a' : '#dc2626'}}>
+                                            {m.tipo === 'INGRESO' ? '+' : '-'}${parseFloat(m.monto).toFixed(2)}
                                         </span>
-                                    ) : <span style={{color:'var(--text-muted)', fontStyle:'italic'}}>Sin Plan</span>}
-                                </td>
-                                <td>
-                                    {c.saldo_actual > 0 ? (
-                                        <div style={{color:'#ef4444', fontWeight:'bold', display:'flex', alignItems:'center', gap:5}}>
-                                            <AlertCircle size={16}/> Debe: ${c.saldo_actual}
-                                        </div>
-                                    ) : (
-                                        <div style={{color:'#16a34a', fontWeight:'bold'}}>
-                                            Al día
-                                        </div>
-                                    )}
-                                </td>
-                                <td>
-                                    <div className={styles.actionsCell}>
-                                        <button 
-                                            onClick={() => abrirModal(c)}
-                                            className={`${styles.btnAction} ${styles.btnPay}`}
-                                        >
-                                            <Wallet size={16} style={{marginRight:5}}/> Cobrar
-                                        </button>
-                                        
-                                        <Link 
-                                            to={`/pagos/cliente/${c.id}`} 
-                                            className={`${styles.btnAction} ${styles.btnHistory}`}
-                                        >
-                                            Historial <ArrowRight size={14} style={{marginLeft:5}}/>
-                                        </Link>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                        {clientesFiltrados.length === 0 && (
-                            <tr>
-                                <td colSpan="4" style={{padding:30, textAlign:'center', color:'gray'}}>
-                                    No hay clientes para el día {filtroDia} con este criterio.
-                                </td>
-                            </tr>
+                                    </td>
+                                    <td>
+                                        <span className={`${styles.typeBadge} ${m.tipo === 'INGRESO' ? styles.typeIn : styles.typeOut}`}>
+                                            {m.tipo}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
                         )}
                     </tbody>
                 </table>
+                <TablePagination 
+                    totalItems={movimientos.length} 
+                    itemsPerPage={itemsPerPage} 
+                    currentPage={currentPage} 
+                    onPageChange={setCurrentPage} 
+                />
             </div>
 
-            {/* MODAL PAGO RÁPIDO */}
+            {/* --- MODAL DE PAGO GLOBAL --- */}
             {showModal && (
-                <div className={styles.modalOverlay}>
+                 <div className={styles.modalOverlay}>
                     <div className={styles.modal}>
-                        <h3>Registrar Abono</h3>
-                        <p>{clienteSelect.nombre_completo}</p>
-                        <input 
-                            type="number" 
-                            className={styles.input} 
-                            value={montoAbono}
-                            onChange={(e) => setMontoAbono(e.target.value)}
-                            autoFocus
-                        />
-                        <button onClick={handlePagar} className={styles.btnSubmit}>Confirmar</button>
-                        <button onClick={() => setShowModal(false)} className={styles.btnCancel}>Cancelar</button>
+                        <div className={styles.modalHeader}>
+                            <h3>Registrar Ingreso</h3>
+                            <button onClick={()=>setShowModal(false)} className={styles.closeBtn}>&times;</button>
+                        </div>
+                        
+                        <form onSubmit={handleRegistrarPago}>
+                            {/* SELECCIÓN DE CLIENTE */}
+                            <div className={styles.formGroup}>
+                                <label>Seleccionar Cliente</label>
+                                <div style={{display:'flex', gap:10}}>
+                                    <div style={{position:'relative', flex:1}}>
+                                        <User size={18} style={{position:'absolute', top:12, left:10, color:'var(--text-muted)'}}/>
+                                        <select 
+                                            value={clienteSeleccionadoId} 
+                                            onChange={handleClienteChange} 
+                                            className={styles.select}
+                                            style={{paddingLeft: 35}}
+                                            autoFocus
+                                        >
+                                            <option value="">-- Buscar Cliente --</option>
+                                            {clientes.map(c => (
+                                                <option key={c.id} value={c.id}>
+                                                    {c.nombre_completo}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                {/* Mostrar Deuda si hay cliente seleccionado */}
+                                {clienteActivo && (
+                                    <div style={{background: 'var(--body-bg)', padding: '8px 12px', borderRadius: 6, marginTop: 8, border: '1px solid var(--border)', display:'flex', justifyContent:'space-between', fontSize:'0.9rem'}}>
+                                        <span className={styles.muted}>Plan: {clienteActivo.plan?.nombre}</span>
+                                        <span style={{fontWeight:'bold', color: clienteActivo.saldo_actual > 0 ? '#ef4444' : '#16a34a'}}>
+                                            {clienteActivo.saldo_actual > 0 ? `Debe: $${clienteActivo.saldo_actual}` : 'Al día'}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* TABS TIPO PAGO */}
+                            <div className={styles.typeSelector}>
+                                <button type="button" onClick={()=>{setTipoPago("LIQUIDACION"); if(clienteActivo) setMontoAbono(clienteActivo.saldo_actual)}} className={`${styles.typeButton} ${tipoPago==='LIQUIDACION' ? styles.typeActive : styles.typeInactive}`}>
+                                    <CheckCircle2 size={16}/> Liquidar
+                                </button>
+                                <button type="button" onClick={()=>setTipoPago("ABONO")} className={`${styles.typeButton} ${tipoPago==='ABONO' ? styles.typeActive : styles.typeInactive}`}>
+                                    <DollarSign size={16}/> Abono
+                                </button>
+                                <button type="button" onClick={()=>{setTipoPago("APLAZADO"); setMontoAbono(0)}} className={`${styles.typeButton} ${tipoPago==='APLAZADO' ? styles.typeActive : styles.typeInactive}`}>
+                                    <Clock size={16}/> Aplazado
+                                </button>
+                            </div>
+
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Mes Correspondiente</label>
+                                    <select value={mesPago} onChange={e=>setMesPago(e.target.value)} className={styles.select}>
+                                        {listaMeses.map(m => <option key={m} value={m}>{m}</option>)}
+                                    </select>
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label>Método de Pago</label>
+                                    <select value={metodoPago} onChange={e=>setMetodoPago(e.target.value)} className={styles.select} disabled={tipoPago === 'APLAZADO'}>
+                                        <option value="EFECTIVO">Efectivo 💵</option>
+                                        <option value="TRANSFERENCIA">Transferencia 🏦</option>
+                                        <option value="DEPOSITO">Depósito 🏪</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Monto a Pagar ($)</label>
+                                <div style={{position:'relative'}}>
+                                    <input 
+                                        type="number" 
+                                        step="0.01"
+                                        value={montoAbono} 
+                                        onChange={e=>setMontoAbono(e.target.value)} 
+                                        className={styles.input} 
+                                        style={{fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary)', paddingLeft: 35}}
+                                        disabled={tipoPago === 'APLAZADO'} 
+                                    />
+                                    <span style={{position:'absolute', left:12, top:12, color:'var(--text-muted)', fontWeight:'bold'}}>$</span>
+                                </div>
+                            </div>
+
+                            <div className={styles.modalActions}>
+                                <button type="button" onClick={()=>setShowModal(false)} className={styles.btnCancel}>Cancelar</button>
+                                <button type="submit" className={styles.btnSubmit}>Registrar</button>
+                            </div>
+                        </form>
                     </div>
-                </div>
+                 </div>
             )}
         </div>
     );
