@@ -5,7 +5,6 @@ import client from "../api/axios";
 import LocationPicker from "../components/LocationPicker";
 import TablePagination from "../components/TablePagination";
 import { toast } from "sonner";
-// --- CORRECCIÓN: Agregado DollarSign a los imports ---
 import { 
     Plus, Wallet, Eye, Pencil, Wifi, Cable, 
     Calendar, CheckCircle2, Clock, DollarSign 
@@ -13,7 +12,6 @@ import {
 import styles from "./styles/Clientes.module.css";
 
 function Clientes() {
-    // --- ESTADOS PRINCIPALES ---
     const [clientes, setClientes] = useState([]);
     const [planes, setPlanes] = useState([]);
     const [antenasLibres, setAntenasLibres] = useState([]);
@@ -21,19 +19,16 @@ function Clientes() {
     const [cajasList, setCajasList] = useState([]);
     const [tipoInstalacion, setTipoInstalacion] = useState("FIBRA");
     
-    // --- PAGINACIÓN ---
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     
-    // --- MODALES ---
     const [showModal, setShowModal] = useState(false);
     const [clienteEditar, setClienteEditar] = useState(null);
     const [showPagoModal, setShowPagoModal] = useState(false);
     const [clienteAPagar, setClienteAPagar] = useState(null);
 
-    // --- ESTADOS PARA MODAL DE PAGO ---
     const [montoAbono, setMontoAbono] = useState("");
-    const [tipoPago, setTipoPago] = useState("LIQUIDACION"); // LIQUIDACION | ABONO | APLAZADO
+    const [tipoPago, setTipoPago] = useState("LIQUIDACION"); 
     const [metodoPago, setMetodoPago] = useState("EFECTIVO");
     const [mesPago, setMesPago] = useState("");
 
@@ -65,7 +60,6 @@ function Clientes() {
         }
     };
 
-    // --- LÓGICA DE CLIENTES (Crear/Editar) ---
     const openModal = (cliente = null) => {
         setClienteEditar(cliente);
         if (cliente) {
@@ -136,12 +130,10 @@ function Clientes() {
         }
     };
 
-    // --- LÓGICA DE PAGOS (Nuevo) ---
     const generarMeses = () => {
         const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const hoy = new Date();
         const opciones = [];
-        // Generamos opciones: Mes Actual, Mes Anterior, Mes Siguiente
         for (let i = -1; i <= 1; i++) {
             const d = new Date(hoy.getFullYear(), hoy.getMonth() + i, 1);
             opciones.push(`${meses[d.getMonth()]} ${d.getFullYear()}`);
@@ -158,7 +150,7 @@ function Clientes() {
         setMontoAbono(deuda > 0 ? deuda : costoPlan);
         
         const meses = generarMeses();
-        setMesPago(meses[1]); // Mes actual por defecto
+        setMesPago(meses[1]);
         setMetodoPago("EFECTIVO");
         
         setShowPagoModal(true);
@@ -182,7 +174,6 @@ function Clientes() {
         }
     };
 
-    // --- RENDER ---
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentClientes = clientes.slice(indexOfFirstItem, indexOfLastItem);
@@ -261,8 +252,10 @@ function Clientes() {
 
             {/* MODAL CLIENTE */}
             {showModal && (
-                <div className={styles.modalOverlay}>
-                    <div className={styles.modal}>
+                // AÑADIDO: onClick para cerrar al hacer clic fuera
+                <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+                    {/* AÑADIDO: stopPropagation para que el clic dentro del modal no lo cierre */}
+                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
                             <h2>{clienteEditar ? "Editar Cliente" : "Registrar Cliente"}</h2>
                             <button onClick={() => setShowModal(false)} className={styles.closeBtn}>&times;</button>
@@ -289,18 +282,17 @@ function Clientes() {
                                 <div className={styles.formGroup}><label>Día Pago</label><select {...register("dia_pago")} className={styles.select}><option value="15">Día 15</option><option value="30">Día 30</option></select></div>
                             </div>
 
-                            {/* SECCIÓN CONEXIÓN */}
                             <div className={styles.specificSection}>
                                 <h4 className={styles.sectionTitle}>{tipoInstalacion==='FIBRA'?'Conexión Fibra':'Conexión Radio'}</h4>
                                 {tipoInstalacion==='FIBRA' ? (
                                     <div className={styles.formRow}>
                                         <div className={styles.formGroup}><label>Caja NAP</label><select {...register("cajaId")} className={styles.select}><option value="">-- Seleccionar --</option>{cajasList.map(c=><option key={c.id} value={c.id}>{c.nombre}</option>)}</select></div>
-                                        <div className={styles.formGroup}><label>Router (Opcional)</label><select {...register("routerId")} className={styles.select}><option value="">-- Seleccionar --</option>{routersLibres.map(e=><option key={e.id} value={e.id}>{e.modelo}</option>)}</select></div>
+                                        <div className={styles.formGroup}><label>Router (Opcional)</label><select {...register("routerId")} className={styles.select}><option value="">-- Seleccionar --</option>{routersLibres.map(e=><option key={e.id} value={e.id}>{e.nombre ? e.nombre : `${e.modelo} (${e.mac_address})`}</option>)}</select></div>
                                     </div>
                                 ) : (
                                     <div className={styles.formRow}>
-                                        <div className={styles.formGroup}><label>Antena *</label><select {...register("antenaId")} className={styles.select}><option value="">-- Seleccionar --</option>{antenasLibres.map(e=><option key={e.id} value={e.id}>{e.modelo}</option>)}</select></div>
-                                        <div className={styles.formGroup}><label>Router *</label><select {...register("routerId")} className={styles.select}><option value="">-- Seleccionar --</option>{routersLibres.map(e=><option key={e.id} value={e.id}>{e.modelo}</option>)}</select></div>
+                                        <div className={styles.formGroup}><label>Antena *</label><select {...register("antenaId")} className={styles.select}><option value="">-- Seleccionar --</option>{antenasLibres.map(e=><option key={e.id} value={e.id}>{e.nombre ? e.nombre : `${e.modelo} (${e.mac_address})`}</option>)}</select></div>
+                                        <div className={styles.formGroup}><label>Router *</label><select {...register("routerId")} className={styles.select}><option value="">-- Seleccionar --</option>{routersLibres.map(e=><option key={e.id} value={e.id}>{e.nombre ? e.nombre : `${e.modelo} (${e.mac_address})`}</option>)}</select></div>
                                     </div>
                                 )}
                                 <div className={styles.formGroup}><label>Fecha Instalación</label><input type="date" {...register("fecha_instalacion")} className={styles.input}/></div>
@@ -324,16 +316,17 @@ function Clientes() {
                 </div>
             )}
             
-            {/* --- MODAL DE PAGO MEJORADO --- */}
+            {/* Modal de Pago */}
             {showPagoModal && clienteAPagar && (
-                 <div className={styles.modalOverlay}>
-                    <div className={styles.modal} style={{width: 500}}>
+                 // AÑADIDO: onClick para cerrar
+                 <div className={styles.modalOverlay} onClick={() => setShowPagoModal(false)}>
+                    {/* AÑADIDO: stopPropagation */}
+                    <div className={styles.modal} style={{width: 500}} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
                             <h3>Registrar Pago</h3>
                             <button onClick={()=>setShowPagoModal(false)} className={styles.closeBtn}>&times;</button>
                         </div>
                         
-                        {/* Info Cliente */}
                         <div style={{background: 'var(--body-bg)', padding: 15, borderRadius: 8, marginBottom: 20, border: '1px solid var(--border)'}}>
                             <div className={styles.bold}>{clienteAPagar.nombre_completo}</div>
                             <div style={{display:'flex', justifyContent:'space-between', marginTop:5}}>
@@ -344,7 +337,6 @@ function Clientes() {
                             </div>
                         </div>
 
-                        {/* Tipo de Pago (Tabs) */}
                         <div className={styles.typeSelector} style={{marginBottom: 15}}>
                             <button type="button" onClick={()=>{setTipoPago("LIQUIDACION"); setMontoAbono(clienteAPagar.saldo_actual || 0)}} className={`${styles.typeButton} ${tipoPago==='LIQUIDACION' ? styles.typeActive : styles.typeInactive}`}>
                                 <CheckCircle2 size={16}/> Liquidar

@@ -158,7 +158,6 @@ function Pagos() {
                         </h3>
                     </div>
                 </div>
-                {/* Puedes agregar más tarjetas aquí (Semana, Mes) */}
             </div>
 
             {/* TABLA */}
@@ -219,8 +218,10 @@ function Pagos() {
 
             {/* --- MODAL DE PAGO GLOBAL --- */}
             {showModal && (
-                 <div className={styles.modalOverlay}>
-                    <div className={styles.modal}>
+                 // AÑADIDO: onClick en overlay para cerrar
+                 <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+                    {/* AÑADIDO: stopPropagation para evitar cierre interno */}
+                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
                             <h3>Registrar Ingreso</h3>
                             <button onClick={()=>setShowModal(false)} className={styles.closeBtn}>&times;</button>
