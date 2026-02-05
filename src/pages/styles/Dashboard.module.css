@@ -4,33 +4,36 @@
     margin: 0 auto;
 }
 
+.header {
+    margin-bottom: 25px;
+}
+
 .title {
     font-size: 1.8rem;
     color: var(--text-main);
-    margin-bottom: 20px;
+    margin: 0;
+    font-weight: 700;
 }
 
-/* Rejilla para las tarjetas */
+.subtitle {
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+/* GRID PRINCIPAL */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
-/* Diseño de cada tarjeta */
 .card {
-    background-color: var(--card-bg);
+    background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: transform 0.2s;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    border-color: var(--primary);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .cardHeader {
@@ -41,42 +44,93 @@
 }
 
 .cardTitle {
-    font-size: 1rem;
-    color: var(--text-muted);
-    font-weight: 600;
     margin: 0;
+    font-size: 1rem;
+    color: var(--text-main);
+    font-weight: 600;
 }
 
 .cardValue {
-    font-size: 2rem;
-    font-weight: bold;
+    font-size: 2.2rem;
+    font-weight: 700;
     color: var(--text-main);
-    margin: 0;
+    margin: 0 0 10px 0;
 }
 
-/* Colores específicos para números */
-.money {
-    color: var(--primary); /* Azul para dinero */
-}
-
-.danger {
-    color: var(--danger); /* Rojo para deudas */
-}
-
-/* Sección de detalles pequeños */
 .details {
-    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
     padding-top: 10px;
     border-top: 1px solid var(--border);
+}
+
+.actionBtn {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
     display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    transition: filter 0.2s;
+}
+.actionBtn:hover { filter: brightness(1.1); }
+
+/* --- SECCIÓN DINERO (ARQUEO) --- */
+.sectionTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 15px;
+    margin-top: 10px;
+}
+
+.gridMoney {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.moneyCard {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
     gap: 15px;
-    font-size: 0.9rem;
-    color: var(--text-muted);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.moneyIcon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.moneyLabel {
+    display: block; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;
+}
+
+.moneyValue {
+    font-size: 1.4rem; font-weight: 700;
+}
+
+.moneySub {
+    display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;
 }
 
 .loading {
-    text-align: center;
-    padding: 40px;
-    font-size: 1.2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
     color: var(--text-muted);
+    font-size: 1.1rem;
 }
