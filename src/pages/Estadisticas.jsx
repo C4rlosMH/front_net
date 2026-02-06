@@ -57,7 +57,7 @@ function Estadisticas() {
     if (loading) return <div className={styles.loading}>Cargando análisis...</div>;
     if (!data) return <div className={styles.loading}>Sin datos</div>;
 
-    // Datos Gráficas
+    // --- CONFIGURACIÓN GRÁFICAS ---
     const COLORS_CLIENTES = ['#22c55e', '#f59e0b', '#ef4444'];
     const clientesData = [
         { name: 'Activos', value: data.clientes?.resumen?.activos || 0 },
@@ -84,9 +84,9 @@ function Estadisticas() {
                 </button>
             </div>
 
-            {/* --- SECCIÓN 1: ANÁLISIS DE TIEMPO (Quincenas y Proyección) --- */}
+            {/* --- ANÁLISIS DE TIEMPO --- */}
             <div className={styles.gridSplit}>
-                {/* Comparativa Quincenal */}
+                {/* Quincenas */}
                 <div className={styles.splitCard}>
                     <h3><Calendar size={18}/> Rendimiento Quincenal</h3>
                     <div className={styles.quincenaRow}>
@@ -116,7 +116,7 @@ function Estadisticas() {
                 </div>
             </div>
 
-            {/* --- SECCIÓN 2: ALERTA DE MOROSIDAD --- */}
+            {/* --- ALERTA MOROSIDAD --- */}
             <div className={styles.alertBanner}>
                 <div style={{display:'flex', alignItems:'center', gap:10}}>
                     <AlertCircle size={24} />
@@ -129,9 +129,9 @@ function Estadisticas() {
                 </div>
             </div>
 
-            {/* --- SECCIÓN 3: GRÁFICAS --- */}
+            {/* --- GRÁFICAS --- */}
             <div className={styles.chartsGrid}>
-                {/* Tendencia */}
+                {/* Tendencia Ingresos */}
                 <div className={styles.chartCard} style={{gridColumn: 'span 2'}}>
                     <div className={styles.cardHeader}>
                         <Wallet size={20} className={styles.icon} />
@@ -156,7 +156,7 @@ function Estadisticas() {
                     </div>
                 </div>
 
-                {/* Distribución */}
+                {/* Estado Cartera */}
                 <div className={styles.chartCard}>
                     <div className={styles.cardHeader}>
                         <PieIcon size={20} className={styles.icon} />

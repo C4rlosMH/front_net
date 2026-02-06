@@ -32,7 +32,6 @@
     margin-top: 10px;
 }
 
-/* BOTÓN EXPORTAR */
 .exportButton {
     background-color: var(--card-bg);
     color: var(--text-main);
@@ -41,12 +40,16 @@
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
-    display: flex; align-items: center; gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     transition: background 0.2s;
 }
-.exportButton:hover { background-color: var(--body-bg); }
 
-/* SPLIT SECTION (Quincenas y Proyección) */
+.exportButton:hover {
+    background-color: var(--body-bg);
+}
+
 .gridSplit {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -65,25 +68,50 @@
     margin: 0 0 20px 0;
     font-size: 1rem;
     color: var(--text-muted);
-    display: flex; align-items: center; gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* Estilos Quincena */
 .quincenaRow {
     display: flex;
     align-items: center;
     justify-content: space-around;
 }
+
 .qItem { text-align: center; }
-.qItem span { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
-.qItem strong { font-size: 1.4rem; color: var(--text-main); }
-.qDivider { width: 1px; height: 40px; background: var(--border); }
 
-/* Estilos Proyección */
-.projValue { font-size: 2rem; font-weight: 800; color: #2563eb; text-align: center; }
-.projDetails { text-align: center; margin-top: 5px; font-size: 0.85rem; }
+.qItem span {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+}
 
-/* BANNER DEUDORES */
+.qItem strong {
+    font-size: 1.4rem;
+    color: var(--text-main);
+}
+
+.qDivider {
+    width: 1px;
+    height: 40px;
+    background: var(--border);
+}
+
+.projValue {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #2563eb;
+    text-align: center;
+}
+
+.projDetails {
+    text-align: center;
+    margin-top: 5px;
+    font-size: 0.85rem;
+}
+
 .alertBanner {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.2);
@@ -93,7 +121,6 @@
     margin-bottom: 30px;
 }
 
-/* GRÁFICAS */
 .chartsGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -111,9 +138,18 @@
 }
 
 .cardHeader {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
 }
-.cardHeader h3 { margin: 0; font-size: 1rem; color: var(--text-main); }
+
+.cardHeader h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-main);
+}
+
 .icon { color: var(--text-muted); }
 
 .chartWrapper { flex: 1; min-height: 0; }

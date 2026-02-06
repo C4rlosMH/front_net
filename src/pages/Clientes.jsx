@@ -7,18 +7,24 @@ import TablePagination from "../components/TablePagination";
 import { toast } from "sonner";
 import { 
     Plus, Wallet, Eye, Pencil, Wifi, Cable, 
-    Calendar, CheckCircle2, Clock, DollarSign 
+    CheckCircle2, Clock, DollarSign, Search, Users, AlertTriangle, Ban, Scissors 
 } from "lucide-react";
 import styles from "./styles/Clientes.module.css";
 
 function Clientes() {
+    // --- ESTADOS DE DATOS ---
     const [clientes, setClientes] = useState([]);
     const [planes, setPlanes] = useState([]);
     const [antenasLibres, setAntenasLibres] = useState([]);
     const [routersLibres, setRoutersLibres] = useState([]);
     const [cajasList, setCajasList] = useState([]);
-    const [tipoInstalacion, setTipoInstalacion] = useState("FIBRA");
     
+    // --- FILTROS Y BÚSQUEDA ---
+    const [tabActual, setTabActual] = useState("TODOS"); 
+    const [busqueda, setBusqueda] = useState("");
+
+    // --- ESTADOS UI ---
+    const [tipoInstalacion, setTipoInstalacion] = useState("FIBRA");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     
@@ -27,16 +33,18 @@ function Clientes() {
     const [showPagoModal, setShowPagoModal] = useState(false);
     const [clienteAPagar, setClienteAPagar] = useState(null);
 
+    // --- ESTADOS PAGO ---
     const [montoAbono, setMontoAbono] = useState("");
     const [tipoPago, setTipoPago] = useState("LIQUIDACION"); 
     const [metodoPago, setMetodoPago] = useState("EFECTIVO");
     const [mesPago, setMesPago] = useState("");
 
-    const { register, handleSubmit, setValue, reset, watch } = useForm();
-    const watchAntena = watch("antenaId");
-    const watchRouter = watch("routerId");
+    const { register, handleSubmit, setValue, reset } = useForm();
 
     useEffect(() => { cargarDatos(); }, []);
+
+    // Resetear página al filtrar
+    useEffect(() => { setCurrentPage(1); }, [tabActual, busqueda]);
 
     const cargarDatos = async () => {
         try {
@@ -60,6 +68,29 @@ function Clientes() {
         }
     };
 
+    // --- LÓGICA DE FILTRADO ---
+    const clientesFiltrados = clientes.filter(c => {
+        // 1. Filtro por Pestaña
+        if (tabActual !== "TODOS" && c.estado !== tabActual) return false;
+        
+        // 2. Filtro por Buscador
+        if (busqueda) {
+            const term = busqueda.toLowerCase();
+            return (
+                c.nombre_completo.toLowerCase().includes(term) ||
+                (c.telefono && c.telefono.includes(term)) ||
+                (c.ip_asignada && c.ip_asignada.includes(term)) ||
+                (c.direccion && c.direccion.toLowerCase().includes(term))
+            );
+        }
+        return true;
+    });
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentClientes = clientesFiltrados.slice(indexOfFirstItem, indexOfLastItem);
+
+    // --- FUNCIONES DEL FORMULARIO ---
     const openModal = (cliente = null) => {
         setClienteEditar(cliente);
         if (cliente) {
@@ -70,10 +101,7 @@ function Clientes() {
             setValue("planId", cliente.plan?.id);
             setValue("dia_pago", cliente.dia_pago);
             setValue("fecha_instalacion", cliente.fecha_instalacion ? cliente.fecha_instalacion.split('T')[0] : "");
-            
-            // --- NUEVO: Cargar estado actual ---
             setValue("estado", cliente.estado); 
-            
             setValue("latitud", cliente.latitud);
             setValue("longitud", cliente.longitud);
             
@@ -93,7 +121,7 @@ function Clientes() {
         } else {
             reset();
             setTipoInstalacion("FIBRA");
-            setValue("estado", "ACTIVO"); // Estado por defecto
+            setValue("estado", "ACTIVO");
         }
         setShowModal(true);
     };
@@ -135,10 +163,11 @@ function Clientes() {
         }
     };
 
-    // ... (El resto de las funciones de pago y helpers se mantienen igual) ...
+    // --- FUNCIONES DE PAGO ---
     const generarMeses = () => {
         const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const hoy = new Date();
+        // Generamos opciones: Mes Actual, Mes Anterior, Mes Siguiente
         const opciones = [];
         for (let i = -1; i <= 1; i++) {
             const d = new Date(hoy.getFullYear(), hoy.getMonth() + i, 1);
@@ -151,8 +180,10 @@ function Clientes() {
         setClienteAPagar(c);
         const deuda = parseFloat(c.saldo_actual || 0);
         const costoPlan = parseFloat(c.plan?.precio_mensual || 0);
+        
         setTipoPago(deuda > 0 ? "LIQUIDACION" : "ABONO");
         setMontoAbono(deuda > 0 ? deuda : costoPlan);
+        
         const meses = generarMeses();
         setMesPago(meses[1]);
         setMetodoPago("EFECTIVO");
@@ -176,10 +207,7 @@ function Clientes() {
             toast.error("Error al registrar pago"); 
         }
     };
-
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentClientes = clientes.slice(indexOfFirstItem, indexOfLastItem);
+    
     const listaMeses = generarMeses();
 
     return (
@@ -189,6 +217,57 @@ function Clientes() {
                 <button className={styles.addButton} onClick={() => openModal(null)}>
                     <Plus size={20} /> Nuevo Cliente
                 </button>
+            </div>
+
+            {/* --- FILTROS Y BÚSQUEDA --- */}
+            <div className={styles.filterBar}>
+                <div className={styles.tabs}>
+                    <button 
+                        className={`${styles.tab} ${tabActual === 'TODOS' ? styles.tabActive : ''}`}
+                        onClick={() => setTabActual("TODOS")}
+                    >
+                        <Users size={16}/> Todos
+                    </button>
+                    <button 
+                        className={`${styles.tab} ${tabActual === 'ACTIVO' ? styles.tabActive : ''}`}
+                        onClick={() => setTabActual("ACTIVO")}
+                        style={{color: tabActual==='ACTIVO' ? '#16a34a' : ''}}
+                    >
+                        <CheckCircle2 size={16}/> Activos
+                    </button>
+                    <button 
+                        className={`${styles.tab} ${tabActual === 'SUSPENDIDO' ? styles.tabActive : ''}`}
+                        onClick={() => setTabActual("SUSPENDIDO")}
+                        style={{color: tabActual==='SUSPENDIDO' ? '#f59e0b' : ''}}
+                    >
+                        <AlertTriangle size={16}/> Suspendidos
+                    </button>
+                    <button 
+                        className={`${styles.tab} ${tabActual === 'CORTADO' ? styles.tabActive : ''}`}
+                        onClick={() => setTabActual("CORTADO")}
+                        style={{color: tabActual==='CORTADO' ? '#ef4444' : ''}}
+                    >
+                        <Scissors size={16}/> Cortados
+                    </button>
+                    <button 
+                        className={`${styles.tab} ${tabActual === 'BAJA' ? styles.tabActive : ''}`}
+                        onClick={() => setTabActual("BAJA")}
+                        style={{color: tabActual==='BAJA' ? '#64748b' : ''}}
+                    >
+                        <Ban size={16}/> Bajas
+                    </button>
+                </div>
+
+                <div className={styles.searchBox}>
+                    <Search size={18} className={styles.searchIcon}/>
+                    <input 
+                        type="text" 
+                        placeholder="Buscar nombre, IP, tel..." 
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                        className={styles.searchInput}
+                    />
+                </div>
             </div>
 
             <div className={styles.tableWrapper}>
@@ -203,57 +282,62 @@ function Clientes() {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentClientes.map(c => (
-                            <tr key={c.id}>
-                                <td>
-                                    <div className={styles.bold}>{c.nombre_completo}</div>
-                                    <div className={styles.muted}>{c.telefono}</div>
-                                </td>
-                                <td>
-                                    {c.ip_asignada || "DHCP"} <br/>
-                                    <div className={styles.muted}>{c.direccion}</div>
-                                </td>
-                                <td>
-                                    <div className={styles.medium}>{c.plan?.nombre || "Sin Plan"}</div>
-                                    {c.caja ? (
-                                        <span className={`${styles.cajaBadge} ${styles.badgeFibra}`}>
-                                            <Cable size={12} /> NAP: {c.caja.nombre}
+                        {currentClientes.length === 0 ? (
+                            <tr><td colSpan="5" style={{textAlign:'center', padding:30, color:'var(--text-muted)'}}>No se encontraron clientes.</td></tr>
+                        ) : (
+                            currentClientes.map(c => (
+                                <tr key={c.id}>
+                                    <td>
+                                        <div className={styles.bold}>{c.nombre_completo}</div>
+                                        <div className={styles.muted}>{c.telefono}</div>
+                                    </td>
+                                    <td>
+                                        {c.ip_asignada || "DHCP"} <br/>
+                                        <div className={styles.muted}>{c.direccion}</div>
+                                    </td>
+                                    <td>
+                                        <div className={styles.medium}>{c.plan?.nombre || "Sin Plan"}</div>
+                                        {c.caja ? (
+                                            <span className={`${styles.cajaBadge} ${styles.badgeFibra}`}>
+                                                <Cable size={12} /> NAP: {c.caja.nombre}
+                                            </span>
+                                        ) : (
+                                            <span className={`${styles.cajaBadge} ${styles.badgeRadio}`}>
+                                                <Wifi size={12} /> Antena
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <span className={`${styles.statusBadge} ${c.estado === 'ACTIVO' ? styles.statusActive : styles.statusInactive}`}
+                                              style={c.estado === 'CORTADO' ? {backgroundColor: '#fee2e2', color:'#991b1b'} : 
+                                                     c.estado === 'SUSPENDIDO' ? {backgroundColor: '#fef3c7', color:'#b45309'} : 
+                                                     c.estado === 'BAJA' ? {backgroundColor: '#f1f5f9', color:'#64748b'} : {}}
+                                        >
+                                            {c.estado}
                                         </span>
-                                    ) : (
-                                        <span className={`${styles.cajaBadge} ${styles.badgeRadio}`}>
-                                            <Wifi size={12} /> Antena / Radio
-                                        </span>
-                                    )}
-                                </td>
-                                <td>
-                                    <span className={`${styles.statusBadge} ${c.estado === 'ACTIVO' ? styles.statusActive : styles.statusInactive}`}
-                                          style={c.estado === 'CORTADO' ? {backgroundColor: '#fee2e2', color:'#991b1b'} : 
-                                                 c.estado === 'SUSPENDIDO' ? {backgroundColor: '#fef3c7', color:'#b45309'} : {}}
-                                    >
-                                        {c.estado}
-                                    </span>
-                                    {c.saldo_actual > 0 && <div style={{color:'#ef4444', fontSize:'0.75rem', fontWeight:'bold', marginTop:4}}>Debe: ${c.saldo_actual}</div>}
-                                </td>
-                                <td>
-                                    <div className={styles.flexActions}>
-                                        <button className={`${styles.actionBtn} ${styles.btnPay}`} onClick={() => abrirModalPago(c)} title="Pagar">
-                                            <Wallet size={18} />
-                                        </button>
-                                        <Link to={`/pagos/cliente/${c.id}`}>
-                                            <button className={`${styles.actionBtn} ${styles.btnProfile}`} title="Historial">
-                                                <Eye size={18} />
+                                        {c.saldo_actual > 0 && <div style={{color:'#ef4444', fontSize:'0.75rem', fontWeight:'bold', marginTop:4}}>Debe: ${c.saldo_actual}</div>}
+                                    </td>
+                                    <td>
+                                        <div className={styles.flexActions}>
+                                            <button className={`${styles.actionBtn} ${styles.btnPay}`} onClick={() => abrirModalPago(c)} title="Pagar">
+                                                <Wallet size={18} />
                                             </button>
-                                        </Link>
-                                        <button className={`${styles.actionBtn} ${styles.btnEdit}`} onClick={() => openModal(c)} title="Editar">
-                                            <Pencil size={18} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                                            <Link to={`/pagos/cliente/${c.id}`}>
+                                                <button className={`${styles.actionBtn} ${styles.btnProfile}`} title="Historial">
+                                                    <Eye size={18} />
+                                                </button>
+                                            </Link>
+                                            <button className={`${styles.actionBtn} ${styles.btnEdit}`} onClick={() => openModal(c)} title="Editar">
+                                                <Pencil size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
-                <TablePagination totalItems={clientes.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+                <TablePagination totalItems={clientesFiltrados.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
             </div>
 
             {/* MODAL CLIENTE */}
@@ -278,17 +362,16 @@ function Clientes() {
                                 <div className={styles.formGroup}><label>Teléfono</label><input {...register("telefono")} className={styles.input}/></div>
                             </div>
                             
-                            {/* --- FILA NUEVA: PLAN Y ESTADO --- */}
+                            {/* --- PLAN Y ESTADO --- */}
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}><label>Plan</label><select {...register("planId")} className={styles.select}><option value="">-- Seleccionar --</option>{planes.map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}</select></div>
-                                
                                 <div className={styles.formGroup}>
-                                    <label>Estado del Servicio</label>
+                                    <label>Estado</label>
                                     <select {...register("estado")} className={styles.select} style={{fontWeight:'bold'}}>
-                                        <option value="ACTIVO" style={{color:'green'}}>ACTIVO</option>
-                                        <option value="SUSPENDIDO" style={{color:'orange'}}>SUSPENDIDO</option>
-                                        <option value="CORTADO" style={{color:'red'}}>CORTADO</option>
-                                        <option value="BAJA" style={{color:'gray'}}>BAJA DEFINITIVA</option>
+                                        <option value="ACTIVO">ACTIVO</option>
+                                        <option value="SUSPENDIDO">SUSPENDIDO</option>
+                                        <option value="CORTADO">CORTADO</option>
+                                        <option value="BAJA">BAJA DEFINITIVA</option>
                                     </select>
                                 </div>
                             </div>
@@ -299,7 +382,6 @@ function Clientes() {
                             </div>
                             <div className={styles.formGroup}><label>Dirección</label><input {...register("direccion")} className={styles.input}/></div>
 
-                            {/* SECCIÓN CONEXIÓN */}
                             <div className={styles.specificSection}>
                                 <h4 className={styles.sectionTitle}>{tipoInstalacion==='FIBRA'?'Conexión Fibra':'Conexión Radio'}</h4>
                                 {tipoInstalacion==='FIBRA' ? (
@@ -309,8 +391,8 @@ function Clientes() {
                                     </div>
                                 ) : (
                                     <div className={styles.formRow}>
-                                        <div className={styles.formGroup}><label>Antena *</label><select {...register("antenaId")} className={styles.select}><option value="">-- Seleccionar --</option>{antenasLibres.map(e=><option key={e.id} value={e.id}>{e.nombre ? e.nombre : `${e.modelo} (${e.mac_address})`}</option>)}</select></div>
-                                        <div className={styles.formGroup}><label>Router *</label><select {...register("routerId")} className={styles.select}><option value="">-- Seleccionar --</option>{routersLibres.map(e=><option key={e.id} value={e.id}>{e.nombre ? e.nombre : `${e.modelo} (${e.mac_address})`}</option>)}</select></div>
+                                        <div className={styles.formGroup}><label>Antena *</label><select {...register("antenaId")} className={styles.select}><option value="">-- Seleccionar --</option>{antenasLibres.map(e=><option key={e.id} value={e.id}>{e.modelo}</option>)}</select></div>
+                                        <div className={styles.formGroup}><label>Router *</label><select {...register("routerId")} className={styles.select}><option value="">-- Seleccionar --</option>{routersLibres.map(e=><option key={e.id} value={e.id}>{e.modelo}</option>)}</select></div>
                                     </div>
                                 )}
                                 <div className={styles.formGroup}><label>Fecha Instalación</label><input type="date" {...register("fecha_instalacion")} className={styles.input}/></div>
@@ -334,16 +416,14 @@ function Clientes() {
                 </div>
             )}
             
-            {/* Modal Pago (Mismo código que antes) */}
+            {/* MODAL PAGO */}
             {showPagoModal && clienteAPagar && (
                  <div className={styles.modalOverlay} onClick={() => setShowPagoModal(false)}>
                     <div className={styles.modal} style={{width: 500}} onClick={(e) => e.stopPropagation()}>
-                        {/* ... (Contenido del modal de pago igual al anterior) ... */}
                         <div className={styles.modalHeader}>
                             <h3>Registrar Pago</h3>
                             <button onClick={()=>setShowPagoModal(false)} className={styles.closeBtn}>&times;</button>
                         </div>
-                        {/* Resumen Cliente */}
                         <div style={{background: 'var(--body-bg)', padding: 15, borderRadius: 8, marginBottom: 20, border: '1px solid var(--border)'}}>
                             <div className={styles.bold}>{clienteAPagar.nombre_completo}</div>
                             <div style={{display:'flex', justifyContent:'space-between', marginTop:5}}>
@@ -353,7 +433,6 @@ function Clientes() {
                                 </span>
                             </div>
                         </div>
-                        {/* Selector Tipo Pago */}
                         <div className={styles.typeSelector} style={{marginBottom: 15}}>
                             <button type="button" onClick={()=>{setTipoPago("LIQUIDACION"); setMontoAbono(clienteAPagar.saldo_actual || 0)}} className={`${styles.typeButton} ${tipoPago==='LIQUIDACION' ? styles.typeActive : styles.typeInactive}`}>
                                 <CheckCircle2 size={16}/> Liquidar
@@ -365,12 +444,13 @@ function Clientes() {
                                 <Clock size={16}/> Aplazado
                             </button>
                         </div>
-                        {/* Formulario Pago */}
                         <form onSubmit={handleRegistrarPago}>
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label>Mes Correspondiente</label>
-                                    <select value={mesPago} onChange={e=>setMesPago(e.target.value)} className={styles.select}>{listaMeses.map(m => <option key={m} value={m}>{m}</option>)}</select>
+                                    <select value={mesPago} onChange={e=>setMesPago(e.target.value)} className={styles.select}>
+                                        {listaMeses.map(m => <option key={m} value={m}>{m}</option>)}
+                                    </select>
                                 </div>
                                 <div className={styles.formGroup}>
                                     <label>Método de Pago</label>
@@ -384,10 +464,16 @@ function Clientes() {
                             <div className={styles.formGroup}>
                                 <label>Monto a Pagar ($)</label>
                                 <div style={{position:'relative'}}>
-                                    <input type="number" step="0.01" value={montoAbono} onChange={e=>setMontoAbono(e.target.value)} className={styles.input} style={{fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary)', paddingLeft: 35}} disabled={tipoPago === 'APLAZADO'} autoFocus />
+                                    <input 
+                                        type="number" step="0.01" 
+                                        value={montoAbono} onChange={e=>setMontoAbono(e.target.value)} 
+                                        className={styles.input} 
+                                        style={{fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary)', paddingLeft: 35}} 
+                                        disabled={tipoPago === 'APLAZADO'} autoFocus 
+                                    />
                                     <span style={{position:'absolute', left:12, top:12, color:'var(--text-muted)', fontWeight:'bold'}}>$</span>
                                 </div>
-                                {tipoPago === 'APLAZADO' && <small style={{color:'orange'}}>* Se registrará solo como nota, sin ingreso de dinero.</small>}
+                                {tipoPago === 'APLAZADO' && <small style={{color:'orange'}}>* Solo se registrará la nota.</small>}
                             </div>
                             <div className={styles.modalActions}>
                                 <button type="button" onClick={()=>setShowPagoModal(false)} className={styles.btnCancel}>Cancelar</button>
