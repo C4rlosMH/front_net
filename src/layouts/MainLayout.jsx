@@ -107,6 +107,14 @@ const MainLayout = () => {
                         <span>Planes</span>
                     </Link>
 
+                    <Link 
+                        to="/logs" 
+                        className={`${styles.link} ${location.pathname === '/logs' ? styles.linkActive : ''}`}
+                    >
+                        <FileText size={20} />
+                        <span>Registros</span>
+                    </Link>
+
                 </nav>
 
                 <div className={styles.userArea}>

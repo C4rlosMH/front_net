@@ -15,6 +15,7 @@ import HistorialPagos from "./pages/HistorialPagos"
 import Estadisticas from "./pages/Estadisticas";
 import Cajas from "./pages/Cajas";
 import Cortes from "./pages/Cortes";
+import Logs from "./pages/Logs";
 
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
               <Route path="/estadisticas" element={<Estadisticas />} />
               <Route path="/cajas" element={<Cajas />} />
               <Route path="/cortes" element={<Cortes />} />
+              <Route path="/logs" element={<Logs />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/login" replace />} />

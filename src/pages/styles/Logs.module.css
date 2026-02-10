@@ -1,0 +1,98 @@
+/* src/pages/styles/Actividad.module.css */
+.container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.header {
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.tableContainer {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden; /* Para que el borde redondeado corte la tabla */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* Evita que se aplaste en móviles */
+}
+
+.table th {
+    background-color: var(--bg-secondary, #f8fafc); /* Fallback por si no existe la var */
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.table td {
+    padding: 16px 20px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+    vertical-align: top;
+}
+
+.table tbody tr:hover {
+    background-color: var(--hover-bg, rgba(0,0,0,0.02));
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Estilos para badges o etiquetas de acción */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+}
+
+.userText {
+    font-weight: 500;
+    color: var(--primary, #2563eb);
+}
+
+.dateText {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

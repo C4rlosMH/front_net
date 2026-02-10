@@ -100,49 +100,78 @@ function Cajas() {
                         <tr>
                             <th>Nombre / Zona</th>
                             <th>Ubicación</th>
-                            <th>Capacidad</th>
+                            {/* CAMBIO 1: Nueva columna de Disponibilidad */}
+                            <th style={{width: 200}}>Disponibilidad</th> 
+                            <th>Capacidad Total</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {cajas.map((c) => (
-                            <tr key={c.id}>
-                                <td>
-                                    <div style={{display:'flex', alignItems:'center', gap:8}}>
-                                        <Server size={18} color="var(--primary)"/>
-                                        <strong>{c.nombre}</strong>
-                                    </div>
-                                    <small style={{color:'var(--text-muted)'}}>{c.zona || "Sin zona"}</small>
-                                </td>
-                                <td>
-                                    {c.latitud && c.longitud ? (
-                                        <span style={{fontSize:'0.85rem'}}>
-                                            {c.latitud.toFixed(5)}, {c.longitud.toFixed(5)}
-                                        </span>
-                                    ) : (
-                                        <span style={{color:'gray', fontStyle:'italic'}}>No definida</span>
-                                    )}
-                                </td>
-                                <td>
-                                    <span style={{fontWeight:'bold'}}>{c.capacidad_total} Puertos</span>
-                                </td>
-                                <td>
-                                    <button className={`${styles.actionBtn} ${styles.btnEdit}`} onClick={() => openModal(c)}>
-                                        <Pencil size={18} />
-                                    </button>
-                                    <button className={`${styles.actionBtn} ${styles.btnDelete}`} onClick={() => handleDelete(c.id)}>
-                                        <Trash2 size={18} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        {cajas.length === 0 && (
-                            <tr>
-                                <td colSpan="4" style={{textAlign:'center', padding:20, color:'var(--text-muted)'}}>
-                                    No hay cajas registradas.
-                                </td>
-                            </tr>
-                        )}
+                        {cajas.map((c) => {
+                            // CAMBIO 2: Lógica de cálculo por cada fila
+                            const ocupados = c.clientes ? c.clientes.length : 0;
+                            const capacidad = c.capacidad_total || 8;
+                            const disponibles = capacidad - ocupados;
+                            const porcentaje = (ocupados / capacidad) * 100;
+                            
+                            // Definimos color según saturación
+                            let colorBarra = '#10b981'; // Verde (Libre)
+                            if(porcentaje >= 50) colorBarra = '#f59e0b'; // Naranja (Medio)
+                            if(porcentaje >= 90) colorBarra = '#ef4444'; // Rojo (Lleno)
+
+                            return (
+                                <tr key={c.id}>
+                                    <td>
+                                        <div style={{display:'flex', alignItems:'center', gap:8}}>
+                                            <Server size={18} color="var(--primary)"/>
+                                            <strong>{c.nombre}</strong>
+                                        </div>
+                                        <small style={{color:'var(--text-muted)'}}>{c.zona || "Sin zona"}</small>
+                                    </td>
+                                    <td>
+                                        {c.latitud && c.longitud ? (
+                                            <span style={{fontSize:'0.85rem'}}>
+                                                {c.latitud.toFixed(5)}, {c.longitud.toFixed(5)}
+                                            </span>
+                                        ) : (
+                                            <span style={{color:'gray', fontStyle:'italic'}}>No definida</span>
+                                        )}
+                                    </td>
+                                    
+                                    {/* CAMBIO 3: Celda visual de disponibilidad */}
+                                    <td>
+                                        <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.85rem', marginBottom: 4}}>
+                                            <span style={{fontWeight:600, color: disponibles === 0 ? '#ef4444' : 'var(--text-primary)'}}>
+                                                {disponibles} Disp.
+                                            </span>
+                                            <span style={{color:'var(--text-muted)'}}>{ocupados} Uso</span>
+                                        </div>
+                                        
+                                        {/* Barra de progreso */}
+                                        <div style={{width:'100%', height:6, background:'var(--border)', borderRadius:4, overflow:'hidden'}}>
+                                            <div style={{
+                                                width: `${porcentaje}%`, 
+                                                height:'100%', 
+                                                background: colorBarra,
+                                                transition: 'width 0.3s ease'
+                                            }}></div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span style={{fontWeight:'bold'}}>{c.capacidad_total} Puertos</span>
+                                    </td>
+                                    <td>
+                                        <button className={`${styles.actionBtn} ${styles.btnEdit}`} onClick={() => openModal(c)}>
+                                            <Pencil size={18} />
+                                        </button>
+                                        <button className={`${styles.actionBtn} ${styles.btnDelete}`} onClick={() => handleDelete(c.id)}>
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>

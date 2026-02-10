@@ -101,25 +101,6 @@ function Dashboard() {
                     <div><span className={styles.moneyLabel}>Banco</span><div className={styles.moneyValue} style={{color: '#4f46e5'}}>{formatoDinero(enBanco)}</div></div>
                 </div>
             </div>
-
-            {/* LOGS */}
-            <div style={{marginTop: 30}}>
-                <h3 className={styles.sectionTitle}>Actividad Reciente</h3>
-                <div style={{background: 'var(--card-bg)', borderRadius: 12, border: '1px solid var(--border)', padding: '15px 20px'}}>
-                    {logsRecientes.length === 0 ? (
-                        <div style={{textAlign:'center', color:'var(--text-muted)', padding: 10}}><Activity size={32} style={{opacity:0.2}} /><p>Sin actividad reciente.</p></div>
-                    ) : (
-                        <ul style={{listStyle:'none', padding:0, margin:0}}>
-                            {logsRecientes.map(log => (
-                                <li key={log.id} style={{borderBottom:'1px solid var(--border)', padding:'10px 0', display:'flex', justifyContent:'space-between'}}>
-                                    <div><div style={{fontWeight:600}}>{log.accion}</div><div style={{fontSize:'0.8rem', color:'var(--text-muted)'}}>{log.detalle}</div></div>
-                                    <div style={{fontSize:'0.75rem', color:'var(--text-muted)'}}>{new Date(log.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            </div>
         </div>
     );
 }
