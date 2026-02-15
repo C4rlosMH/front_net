@@ -1,25 +1,36 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Para leer el ID de la URL
+import { useParams, useNavigate } from "react-router-dom";
 import client from "../api/axios";
 import { toast } from "sonner";
-import { ArrowLeft, User, DollarSign, Calendar } from "lucide-react";
-import styles from "./styles/Pagos.module.css"; // Reutilizamos estilos
+import { 
+    ArrowLeft, User, DollarSign, Calendar, 
+    CreditCard, TrendingUp, History, CheckCircle2, AlertCircle,
+    MapPin, Phone, CalendarDays, Wifi, Cable
+} from "lucide-react";
+import styles from "./styles/HistorialPagos.module.css"; 
 
 function HistorialPagos() {
-    const { id } = useParams(); // Obtenemos el ID del cliente de la URL
+    const { id } = useParams(); 
     const navigate = useNavigate();
     
-    const [datos, setDatos] = useState(null);
+    const [datosHistorial, setDatosHistorial] = useState(null);
+    const [datosCliente, setDatosCliente] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                // Endpoint que creamos antes que devuelve { cliente, saldo_actual, historial }
-                const res = await client.get(`/pagos/historial/${id}`);
-                setDatos(res.data);
+                const [resHistorial, resClientes] = await Promise.all([
+                    client.get(`/pagos/historial/${id}`),
+                    client.get(`/clientes`) 
+                ]);
+                
+                setDatosHistorial(resHistorial.data);
+                const clienteInfo = resClientes.data.find(c => c.id === parseInt(id));
+                setDatosCliente(clienteInfo);
+
             } catch (error) {
-                toast.error("Error al cargar historial");
+                toast.error("Error al cargar la información del cliente");
             } finally {
                 setLoading(false);
             }
@@ -27,80 +38,259 @@ function HistorialPagos() {
         cargarDatos();
     }, [id]);
 
-    if (loading) return <div style={{padding:20}}>Cargando historial...</div>;
-    if (!datos) return <div style={{padding:20}}>No se encontró información</div>;
+    if (loading) return <div style={{padding: 20, color: 'var(--text-main)'}}>Cargando perfil del cliente...</div>;
+    if (!datosHistorial || !datosCliente) return <div style={{padding: 20, color: 'var(--text-main)'}}>No se encontró información del cliente.</div>;
 
-    // Calculamos si hay deuda
-    const historial = datos.historial || [];
+    const historial = datosHistorial.historial || [];
+    const deuda = parseFloat(datosHistorial.saldo_actual || 0);
+
+    // Cálculos Generales
+    const totalAbonado = historial
+        .filter(mov => mov.tipo === 'ABONO')
+        .reduce((sum, mov) => sum + parseFloat(mov.monto), 0);
+        
+    const totalCargado = historial
+        .filter(mov => mov.tipo === 'CARGO')
+        .reduce((sum, mov) => sum + parseFloat(mov.monto), 0);
+
+    const ultimoAbono = historial.find(mov => mov.tipo === 'ABONO');
+    const fechaUltimoPago = ultimoAbono 
+        ? new Date(ultimoAbono.fecha).toLocaleDateString() 
+        : "Sin pagos aún";
+
+    const esFibra = !!datosCliente.caja;
+
+    // --- LÓGICA DE SCORE Y MAPA DE CALOR ---
+    
+    // 1. Calcular Score (Porcentaje de pagos vs cargos)
+    let scoreColor = "#94a3b8"; // Gris neutro por defecto
+    let scoreText = "Sin historial";
+    let scoreDisplay = "--%";
+
+    // Solo calculamos el score si hay algún tipo de movimiento financiero
+    if (totalCargado > 0 || totalAbonado > 0) {
+        const score = totalCargado > 0 ? Math.min(100, Math.round((totalAbonado / totalCargado) * 100)) : 100;
+        scoreDisplay = `${score}%`;
+        
+        if (score >= 90) {
+            scoreColor = "#10b981"; // Verde
+            scoreText = "Excelente";
+        } else if (score >= 70) {
+            scoreColor = "#f59e0b"; // Naranja
+            scoreText = "Regular";
+        } else {
+            scoreColor = "#ef4444"; // Rojo
+            scoreText = "Riesgo";
+        }
+    }
+
+    // 2. Calcular Mapa de Calor (Últimos 6 meses)
+    const ultimos6Meses = [];
+    const hoy = new Date();
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+        ultimos6Meses.push({
+            month: d.getMonth(),
+            year: d.getFullYear(),
+            name: d.toLocaleString('es-ES', { month: 'short' })
+        });
+    }
+
+    const heatmapData = ultimos6Meses.map(mes => {
+        const abonosMes = historial.filter(m => m.tipo === 'ABONO' && new Date(m.fecha).getMonth() === mes.month && new Date(m.fecha).getFullYear() === mes.year);
+        const cargosMes = historial.filter(m => m.tipo === 'CARGO' && new Date(m.fecha).getMonth() === mes.month && new Date(m.fecha).getFullYear() === mes.year);
+
+        if (abonosMes.length > 0) return { ...mes, status: 'pagado' };
+        if (cargosMes.length > 0 && abonosMes.length === 0) return { ...mes, status: 'deuda' };
+        return { ...mes, status: 'inactivo' }; 
+    });
 
     return (
         <div className={styles.container}>
-            <button onClick={() => navigate(-1)} style={{display:'flex', alignItems:'center', gap:5, background:'none', border:'none', cursor:'pointer', marginBottom:20, color:'var(--text-muted)'}}>
-                <ArrowLeft size={18} /> Volver a lista
-            </button>
+            <div className={styles.topBar}>
+                <button onClick={() => navigate(-1)} className={styles.backButton}>
+                    <ArrowLeft size={18} /> Volver a Cartera de Clientes
+                </button>
+            </div>
 
-            {/* HEADER DEL CLIENTE */}
-            <div className={styles.clientCard} style={{flexDirection:'column', alignItems:'flex-start', gap:15}}>
-                <div style={{display:'flex', justifyContent:'space-between', width:'100%', alignItems:'center'}}>
-                    <div style={{display:'flex', gap:15, alignItems:'center'}}>
-                        <div style={{background:'#eff6ff', padding:15, borderRadius:'50%', color:'#2563eb'}}>
-                            <User size={32} />
+            {/* TARJETA DE PERFIL COMPLETO */}
+            <div className={styles.profileCard}>
+                <div className={styles.profileHeader}>
+                    <div className={styles.clientInfo}>
+                        <div className={styles.avatar}>
+                            <User size={36} />
                         </div>
                         <div>
-                            <h1 style={{margin:0, fontSize:'1.5rem'}}>{datos.cliente}</h1>
-                            <span style={{color:'gray'}}>Historial Financiero Completo</span>
+                            <h1 className={styles.clientName}>{datosCliente.nombre_completo}</h1>
+                            <div className={styles.clientSubtitle}>
+                                {deuda > 0 ? (
+                                    <><AlertCircle size={16} className={styles.textRed}/> Con saldo pendiente</>
+                                ) : (
+                                    <><CheckCircle2 size={16} className={styles.textGreen}/> Al corriente</>
+                                )}
+                                <span className={styles.separator}>•</span>
+                                <span className={`${styles.statusBadge} ${datosCliente.estado === 'ACTIVO' ? styles.statusActive : styles.statusInactive}`}>
+                                    {datosCliente.estado}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <div style={{textAlign:'right'}}>
-                        <span style={{display:'block', color:'gray'}}>Saldo Actual</span>
-                        <span style={{fontSize:'2rem', fontWeight:'bold', color: datos.saldo_actual > 0 ? '#ef4444' : '#10b981'}}>
-                            ${datos.saldo_actual}
+                    <div className={styles.balanceBox}>
+                        <span className={styles.balanceLabel}>Saldo Actual</span>
+                        <span className={`${styles.balanceAmount} ${deuda > 0 ? styles.textRed : styles.textGreen}`}>
+                            ${deuda.toFixed(2)}
                         </span>
+                    </div>
+                </div>
+
+                {/* PANEL DE DETALLES DEL CLIENTE */}
+                <div className={styles.clientDetailsPanel}>
+                    <div className={styles.detailItem}>
+                        <MapPin size={18} className={styles.detailIcon} />
+                        <div className={styles.detailContent}>
+                            <span className={styles.detailLabel}>Dirección e IP</span>
+                            <span className={styles.detailValue}>{datosCliente.direccion || 'Sin dirección registrada'}</span>
+                            <span className={styles.detailSubValue}>IP: {datosCliente.ip_asignada || '192.168.1.254'}</span>
+                        </div>
+                    </div>
+
+                    <div className={styles.detailItem}>
+                        <Phone size={18} className={styles.detailIcon} />
+                        <div className={styles.detailContent}>
+                            <span className={styles.detailLabel}>Contacto</span>
+                            <span className={styles.detailValue}>{datosCliente.telefono || 'Sin teléfono'}</span>
+                        </div>
+                    </div>
+
+                    <div className={styles.detailItem}>
+                        <CalendarDays size={18} className={styles.detailIcon} />
+                        <div className={styles.detailContent}>
+                            <span className={styles.detailLabel}>Plan y Facturación</span>
+                            <span className={styles.detailValue}>{datosCliente.plan?.nombre || 'Sin Plan Asignado'}</span>
+                            <span className={styles.detailSubValue}>Paga los días {datosCliente.dia_pago} de cada mes</span>
+                        </div>
+                    </div>
+
+                    <div className={styles.detailItem}>
+                        {esFibra ? <Cable size={18} className={styles.detailIcon} /> : <Wifi size={18} className={styles.detailIcon} />}
+                        <div className={styles.detailContent}>
+                            <span className={styles.detailLabel}>Infraestructura ({esFibra ? 'Fibra' : 'Radio'})</span>
+                            {esFibra ? (
+                                <span className={styles.detailValue}>NAP: {datosCliente.caja?.nombre}</span>
+                            ) : (
+                                <span className={styles.detailValue}>Conexión Inalámbrica</span>
+                            )}
+                            <span className={styles.detailSubValue}>
+                                Equipos: {datosCliente.equipos?.length > 0 
+                                    ? datosCliente.equipos.map(e => e.modelo || e.nombre).join(', ') 
+                                    : 'Ninguno registrado'}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* TIMELINE DE PAGOS */}
-            <div className={styles.historySection}>
-                <div className={styles.historyHeader}>
-                    <Calendar size={18} style={{verticalAlign:'middle', marginRight:8}} /> 
-                    Movimientos Registrados
+            {/* TARJETAS DE ESTADÍSTICAS */}
+            <div className={styles.statsGrid}>
+                <div className={styles.statCard}>
+                    <div className={`${styles.statIcon} ${styles.blue}`}>
+                        <TrendingUp size={24} />
+                    </div>
+                    <div className={styles.statDetails}>
+                        <span className={styles.statTitle}>Total Pagado (Histórico)</span>
+                        <span className={styles.statValue}>${totalAbonado.toFixed(2)}</span>
+                    </div>
                 </div>
-                <ul className={styles.historyList}>
-                    {historial.map(mov => (
-                        <li key={mov.id} className={styles.historyItem}>
-                            <div style={{display:'flex', gap:15}}>
-                                <div style={{
-                                    width: 40, height: 40, borderRadius: 8, 
-                                    background: mov.tipo === 'ABONO' ? '#dcfce7' : '#fee2e2',
-                                    color: mov.tipo === 'ABONO' ? '#166534' : '#991b1b',
-                                    display:'flex', alignItems:'center', justifyContent:'center'
-                                }}>
-                                    <DollarSign size={20} />
+                
+                <div className={styles.statCard}>
+                    <div className={`${styles.statIcon} ${styles.green}`}>
+                        <Calendar size={24} />
+                    </div>
+                    <div className={styles.statDetails}>
+                        <span className={styles.statTitle}>Último Pago</span>
+                        <span className={styles.statValue}>{fechaUltimoPago}</span>
+                    </div>
+                </div>
+
+                <div className={styles.statCard}>
+                    <div className={`${styles.statIcon} ${styles.purple}`}>
+                        <History size={24} />
+                    </div>
+                    <div className={styles.statDetails}>
+                        <span className={styles.statTitle}>Movimientos Registrados</span>
+                        <span className={styles.statValue}>{historial.length}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* NUEVA SECCIÓN: COMPORTAMIENTO (SCORE Y HEATMAP) */}
+            <div className={styles.behaviorSection}>
+                <div className={styles.scoreContainer}>
+                    <div className={styles.scoreCircle} style={{ borderColor: scoreColor }}>
+                        <span className={styles.scoreValue} style={{ color: scoreColor }}>{scoreDisplay}</span>
+                    </div>
+                    <div className={styles.scoreInfo}>
+                        <span className={styles.scoreLabel}>Confiabilidad</span>
+                        <span className={styles.scoreText} style={{ color: scoreColor }}>{scoreText}</span>
+                    </div>
+                </div>
+
+                <div className={styles.heatmapContainer}>
+                    <span className={styles.heatmapTitle}>Actividad de Pagos (Últimos 6 Meses)</span>
+                    <div className={styles.heatBlocks}>
+                        {heatmapData.map((data, index) => (
+                            <div key={index} className={styles.heatBlockWrapper}>
+                                <div 
+                                    className={`${styles.heatBlock} ${styles[data.status]}`} 
+                                    title={data.status === 'pagado' ? 'Abono realizado' : data.status === 'deuda' ? 'Cargo sin pagar' : 'Sin actividad'}
+                                ></div>
+                                <span className={styles.heatMonth}>{data.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* LÍNEA DE TIEMPO (TIMELINE) */}
+            <div className={styles.timelineSection}>
+                <div className={styles.timelineHeader}>
+                    <CreditCard size={22} /> Estado de Cuenta Detallado
+                </div>
+                
+                {historial.length === 0 ? (
+                    <div className={styles.emptyState}>
+                        Este cliente aún no tiene movimientos financieros registrados.
+                    </div>
+                ) : (
+                    <div className={styles.timeline}>
+                        {historial.map(mov => (
+                            <div key={mov.id} className={styles.timelineItem}>
+                                <div className={`${styles.timelineIcon} ${mov.tipo === 'ABONO' ? styles.iconAbono : styles.iconCargo}`}>
+                                    <DollarSign size={14} />
                                 </div>
-                                <div>
-                                    <span style={{fontWeight:'bold', display:'block'}}>
-                                        {mov.tipo === 'ABONO' ? 'Pago Recibido' : 'Cargo / Mensualidad'}
-                                    </span>
-                                    <span style={{fontSize:'0.85rem', color:'gray'}}>
-                                        {new Date(mov.fecha).toLocaleDateString()} • {new Date(mov.fecha).toLocaleTimeString()}
-                                    </span>
-                                    <div style={{fontSize:'0.85rem', color:'var(--text-muted)', marginTop:2}}>
-                                        {mov.descripcion}
+                                
+                                <div className={styles.timelineContent}>
+                                    <div className={styles.movementInfo}>
+                                        <span className={styles.movementTitle}>
+                                            {mov.tipo === 'ABONO' ? 'Pago Recibido' : 'Cargo Registrado'}
+                                        </span>
+                                        <span className={styles.movementDate}>
+                                            {new Date(mov.fecha).toLocaleDateString()} a las {new Date(mov.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                        </span>
+                                        <span className={styles.movementDesc}>
+                                            {mov.descripcion || (mov.tipo === 'ABONO' ? 'Abono a cuenta' : 'Generación de mensualidad')}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className={`${styles.movementAmount} ${mov.tipo === 'ABONO' ? styles.amountAbono : styles.amountCargo}`}>
+                                        {mov.tipo === 'ABONO' ? '+' : '-'}${parseFloat(mov.monto).toFixed(2)}
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div style={{fontSize:'1.2rem', fontWeight:'bold', color: mov.tipo === 'ABONO' ? '#166534' : '#991b1b'}}>
-                                {mov.tipo === 'ABONO' ? '+' : '-'}${mov.monto}
-                            </div>
-                        </li>
-                    ))}
-                    {historial.length === 0 && (
-                        <li style={{padding:30, textAlign:'center', color:'gray'}}>Este cliente no tiene movimientos aún.</li>
-                    )}
-                </ul>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

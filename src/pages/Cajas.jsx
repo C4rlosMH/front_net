@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import client from "../api/axios";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, MapPin, Server } from "lucide-react";
+import { Plus, Pencil, Trash2, MapPin, Server, Activity } from "lucide-react";
 import LocationPicker from "../components/LocationPicker";
 import styles from "./styles/Cajas.module.css";
 
 function Cajas() {
     const [cajas, setCajas] = useState([]);
-    const [clientes, setClientes] = useState([]); // <--- Estado nuevo para clientes
+    const [clientes, setClientes] = useState([]); 
     const [showModal, setShowModal] = useState(false);
     const [cajaEditar, setCajaEditar] = useState(null);
 
@@ -22,13 +22,12 @@ function Cajas() {
 
     const cargarDatos = async () => {
         try {
-            // Cargamos Cajas Y Clientes en paralelo
             const [resCajas, resClientes] = await Promise.all([
                 client.get("/cajas"),
                 client.get("/clientes").catch(() => ({ data: [] }))
             ]);
             setCajas(resCajas.data);
-            setClientes(resClientes.data); // <--- Guardamos clientes
+            setClientes(resClientes.data); 
         } catch (error) {
             console.error(error);
             toast.error("Error al cargar datos");
@@ -49,7 +48,6 @@ function Cajas() {
         setShowModal(true);
     };
 
-    // ... (onSubmit y handleDelete se mantienen igual) ...
     const onSubmit = async (data) => {
         try {
             const payload = {
@@ -88,97 +86,105 @@ function Cajas() {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1 className={styles.title}>Cajas de Distribución (NAP)</h1>
+                <div>
+                    <h1 className={styles.title}>Cajas de Distribución (NAP)</h1>
+                    <span className={styles.subtitle}>Gestiona la infraestructura de fibra óptica</span>
+                </div>
                 <button className={styles.addButton} onClick={() => openModal(null)}>
                     <Plus size={20} /> Nueva Caja
                 </button>
             </div>
 
-            <div className={styles.tableWrapper}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Nombre / Zona</th>
-                            <th>Ubicación</th>
-                            {/* CAMBIO 1: Nueva columna de Disponibilidad */}
-                            <th style={{width: 200}}>Disponibilidad</th> 
-                            <th>Capacidad Total</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {cajas.map((c) => {
-                            // CAMBIO 2: Lógica de cálculo por cada fila
-                            const ocupados = c.clientes ? c.clientes.length : 0;
-                            const capacidad = c.capacidad_total || 8;
-                            const disponibles = capacidad - ocupados;
-                            const porcentaje = (ocupados / capacidad) * 100;
-                            
-                            // Definimos color según saturación
-                            let colorBarra = '#10b981'; // Verde (Libre)
-                            if(porcentaje >= 50) colorBarra = '#f59e0b'; // Naranja (Medio)
-                            if(porcentaje >= 90) colorBarra = '#ef4444'; // Rojo (Lleno)
+            {/* NUEVO DISEÑO EN GRID DE TARJETAS */}
+            <div className={styles.cardsGrid}>
+                {cajas.length === 0 ? (
+                    <div className={styles.emptyState}>No hay cajas NAP registradas.</div>
+                ) : (
+                    cajas.map((c) => {
+                        const ocupados = c.clientes ? c.clientes.length : 0;
+                        const capacidad = c.capacidad_total || 8;
+                        const disponibles = capacidad - ocupados;
+                        const porcentaje = (ocupados / capacidad) * 100;
+                        
+                        let colorBarra = '#10b981'; // Verde
+                        let estadoTexto = 'Óptimo';
+                        if(porcentaje >= 50) { colorBarra = '#f59e0b'; estadoTexto = 'Medio'; } // Naranja
+                        if(porcentaje >= 90) { colorBarra = '#ef4444'; estadoTexto = 'Saturado'; } // Rojo
 
-                            return (
-                                <tr key={c.id}>
-                                    <td>
-                                        <div style={{display:'flex', alignItems:'center', gap:8}}>
-                                            <Server size={18} color="var(--primary)"/>
-                                            <strong>{c.nombre}</strong>
+                        return (
+                            <div key={c.id} className={styles.card}>
+                                <div className={styles.cardHeader}>
+                                    <div className={styles.cardTitleBox}>
+                                        <div className={styles.iconBox}>
+                                            <Server size={20} color="var(--primary)" />
                                         </div>
-                                        <small style={{color:'var(--text-muted)'}}>{c.zona || "Sin zona"}</small>
-                                    </td>
-                                    <td>
-                                        {c.latitud && c.longitud ? (
-                                            <span style={{fontSize:'0.85rem'}}>
-                                                {c.latitud.toFixed(5)}, {c.longitud.toFixed(5)}
-                                            </span>
-                                        ) : (
-                                            <span style={{color:'gray', fontStyle:'italic'}}>No definida</span>
-                                        )}
-                                    </td>
+                                        <div>
+                                            <h3 className={styles.cardTitle}>{c.nombre}</h3>
+                                            <span className={styles.cardZona}>{c.zona || "Zona no asignada"}</span>
+                                        </div>
+                                    </div>
+                                    <div className={styles.cardActions}>
+                                        <button className={`${styles.actionBtn} ${styles.btnEdit}`} onClick={() => openModal(c)} title="Editar">
+                                            <Pencil size={16} />
+                                        </button>
+                                        <button className={`${styles.actionBtn} ${styles.btnDelete}`} onClick={() => handleDelete(c.id)} title="Eliminar">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className={styles.cardBody}>
+                                    <div className={styles.infoRow}>
+                                        <MapPin size={16} className={styles.infoIcon} />
+                                        <span className={styles.infoText}>
+                                            {c.latitud && c.longitud 
+                                                ? `${c.latitud.toFixed(5)}, ${c.longitud.toFixed(5)}` 
+                                                : "Ubicación no definida"}
+                                        </span>
+                                    </div>
                                     
-                                    {/* CAMBIO 3: Celda visual de disponibilidad */}
-                                    <td>
-                                        <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.85rem', marginBottom: 4}}>
-                                            <span style={{fontWeight:600, color: disponibles === 0 ? '#ef4444' : 'var(--text-primary)'}}>
-                                                {disponibles} Disp.
+                                    <div className={styles.divider}></div>
+
+                                    <div className={styles.statsContainer}>
+                                        <div className={styles.statsHeader}>
+                                            <span className={styles.statsLabel}>
+                                                <Activity size={14} style={{display: 'inline', marginRight: 4, verticalAlign: 'middle'}}/>
+                                                Ocupación
                                             </span>
-                                            <span style={{color:'var(--text-muted)'}}>{ocupados} Uso</span>
+                                            <span className={styles.statsStatus} style={{color: colorBarra}}>
+                                                {estadoTexto}
+                                            </span>
                                         </div>
                                         
-                                        {/* Barra de progreso */}
-                                        <div style={{width:'100%', height:6, background:'var(--border)', borderRadius:4, overflow:'hidden'}}>
-                                            <div style={{
-                                                width: `${porcentaje}%`, 
-                                                height:'100%', 
-                                                background: colorBarra,
-                                                transition: 'width 0.3s ease'
-                                            }}></div>
+                                        <div className={styles.progressTrack}>
+                                            <div 
+                                                className={styles.progressFill} 
+                                                style={{ width: `${porcentaje}%`, backgroundColor: colorBarra }}
+                                            ></div>
                                         </div>
-                                    </td>
 
-                                    <td>
-                                        <span style={{fontWeight:'bold'}}>{c.capacidad_total} Puertos</span>
-                                    </td>
-                                    <td>
-                                        <button className={`${styles.actionBtn} ${styles.btnEdit}`} onClick={() => openModal(c)}>
-                                            <Pencil size={18} />
-                                        </button>
-                                        <button className={`${styles.actionBtn} ${styles.btnDelete}`} onClick={() => handleDelete(c.id)}>
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                                        <div className={styles.statsFooter}>
+                                            <span className={styles.statDetail}>
+                                                <strong>{ocupados}</strong> en uso
+                                            </span>
+                                            <span className={styles.statDetail}>
+                                                <strong>{disponibles}</strong> libres
+                                            </span>
+                                            <span className={styles.statDetail}>
+                                                <strong>{capacidad}</strong> total
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
             </div>
 
             {showModal && (
-                <div className={styles.modalOverlay}>
-                    <div className={styles.modal}>
+                <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
                             <h2>{cajaEditar ? "Editar Caja" : "Nueva Caja NAP"}</h2>
                             <button onClick={() => setShowModal(false)} className={styles.closeBtn}>&times;</button>
@@ -219,7 +225,6 @@ function Cajas() {
                                             setValue("latitud", loc.lat);
                                             setValue("longitud", loc.lng);
                                         }}
-                                        // --- PASAMOS TODOS LOS PUNTOS ---
                                         cajas={cajas}
                                         clients={clientes}
                                     />

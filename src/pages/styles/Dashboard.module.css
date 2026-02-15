@@ -2,6 +2,7 @@
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
+    animation: fadeIn 0.3s ease-in;
 }
 
 .header {
@@ -12,14 +13,99 @@
     font-size: 1.8rem;
     color: var(--text-main);
     margin: 0;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .subtitle {
     color: var(--text-muted);
     margin-top: 5px;
+    font-size: 0.95rem;
 }
 
+/* 1. ARQUEO DE CAJA */
+.cashRegisterBox {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.cashHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.cashHeader h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dateBadge {
+    background: var(--body-bg);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: capitalize;
+    border: 1px solid var(--border);
+}
+
+.gridMoney {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.moneyCard {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: var(--body-bg);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+.moneyIcon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.moneyInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.moneyLabel {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.moneyValue {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+/* 2. ALERTAS (Grid de Tarjetas) */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -32,8 +118,30 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px -3px rgba(0,0,0,0.05);
+}
+
+/* Clases de estado dinámicas compatibles con Dark Mode */
+.cardWarning { border-top: 4px solid #f59e0b; }
+.cardWarning .cardIconBox { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.cardWarning .cardValue { color: #f59e0b; }
+
+.cardDanger { border-top: 4px solid #ef4444; }
+.cardDanger .cardIconBox { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.cardDanger .cardValue { color: #ef4444; }
+
+.cardSuccess { border-top: 4px solid #10b981; }
+.cardSuccess .cardIconBox { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.cardSuccess .cardValue { color: #10b981; }
+
+.cardInfo { border-top: 4px solid #3b82f6; }
+.cardInfo .cardIconBox { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.cardInfo .cardValue { color: var(--text-main); }
 
 .cardHeader {
     display: flex;
@@ -44,95 +152,188 @@
 
 .cardTitle {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.05rem;
     color: var(--text-main);
     font-weight: 600;
 }
 
+.cardIconBox {
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .cardValue {
     font-size: 2.2rem;
-    font-weight: 700;
-    color: var(--text-main);
+    font-weight: 800;
     margin: 0 0 10px 0;
 }
 
 .details {
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     padding-top: 10px;
     border-top: 1px solid var(--border);
 }
 
+.fullWidthLink {
+    text-decoration: none;
+    width: 100%;
+    display: block;
+}
+
 .actionBtn {
     width: 100%;
-    padding: 8px;
-    margin-top: 5px;
+    padding: 10px;
     background: #ef4444;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 5px;
-    transition: filter 0.2s;
+    gap: 8px;
+    transition: background-color 0.2s;
 }
 
-.actionBtn:hover { filter: brightness(1.1); }
+.actionBtn:hover { background: #dc2626; }
 
-.sectionTitle {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-main);
-    margin-bottom: 15px;
-    margin-top: 10px;
-}
-
-.gridMoney {
+/* 3. PANELES INFERIORES (Listas) */
+.panelsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 20px;
 }
 
-.moneyCard {
+.panelCard {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px;
     display: flex;
-    align-items: center;
-    gap: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    flex-direction: column;
+    height: 350px;
 }
 
-.moneyIcon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
+.panelHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.panelHeader h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--text-main);
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
 }
 
-.moneyLabel {
-    display: block;
+.viewAllLink {
     font-size: 0.85rem;
-    color: var(--text-muted);
-    font-weight: 500;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
 }
 
-.moneyValue {
-    font-size: 1.4rem;
-    font-weight: 700;
+.viewAllLink:hover { text-decoration: underline; }
+
+.listContainer {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 5px;
 }
 
-.moneySub {
-    display: block;
+.listContainer::-webkit-scrollbar { width: 6px; }
+.listContainer::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+/* Items del Panel Izquierdo */
+.listItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: var(--body-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.itemInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.itemInfo strong { color: var(--text-main); font-size: 0.95rem; }
+.itemInfo span { color: var(--text-muted); font-size: 0.8rem; margin-top: 2px; }
+
+.itemAction {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    transition: background 0.2s;
+}
+
+.itemAction:hover { background: #10b981; color: white; }
+
+/* Items del Panel Derecho (Timeline) */
+.logItem {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+}
+
+.logItem:last-child { border-bottom: none; }
+
+.logBullet {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+.logContent { display: flex; flex-direction: column; }
+
+.logDesc {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    line-height: 1.4;
+}
+
+.logTime {
     font-size: 0.75rem;
     color: var(--text-muted);
-    margin-top: 2px;
+    margin-top: 4px;
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    text-align: center;
+    font-size: 0.95rem;
 }
 
 .loading {
@@ -142,4 +343,13 @@
     height: 300px;
     color: var(--text-muted);
     font-size: 1.1rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .panelsGrid { grid-template-columns: 1fr; }
 }

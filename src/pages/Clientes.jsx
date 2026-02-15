@@ -300,7 +300,7 @@ function Clientes() {
                                         <div className={styles.muted}>{c.telefono}</div>
                                     </td>
                                     <td>
-                                        {c.ip_asignada || "DHCP"} <br/>
+                                        {c.ip_asignada || "192.168.1.254"} <br/>
                                         <div className={styles.muted}>{c.direccion}</div>
                                     </td>
                                     <td>

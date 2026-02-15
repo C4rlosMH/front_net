@@ -1,4 +1,3 @@
-/* src/pages/styles/Actividad.module.css */
 .container {
     padding: 20px;
     max-width: 1200px;
@@ -9,33 +8,108 @@
 .header {
     margin-bottom: 25px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 12px;
 }
 
 .title {
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--text-main);
     margin: 0;
 }
 
+/* BARRA DE FILTROS */
+.filterBar {
+    display: flex;
+    flex-wrap: wrap; /* Agregamos wrap por si la pantalla es muy pequeña */
+    gap: 15px;
+    margin-bottom: 20px;
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.searchBox {
+    position: relative;
+    flex: 1; /* Toma el espacio disponible */
+}
+
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.searchInput {
+    width: 100%;
+    padding: 10px 10px 10px 38px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--body-bg);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.filterBox {
+    position: relative;
+    width: 220px; /* Reducimos de 250px a 220px para hacer espacio al nuevo filtro */
+}
+
+.filterIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.selectFilter {
+    width: 100%;
+    padding: 10px 10px 10px 38px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--body-bg);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    cursor: pointer;
+    appearance: none; /* Quita la flecha por defecto en algunos navegadores */
+}
+
+.selectFilter:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* CONTENEDOR DE TABLA */
 .tableContainer {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 12px;
-    overflow: hidden; /* Para que el borde redondeado corte la tabla */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 600px; /* Evita que se aplaste en móviles */
+    min-width: 600px;
 }
 
 .table th {
-    background-color: var(--bg-secondary, #f8fafc); /* Fallback por si no existe la var */
+    background-color: var(--body-bg);
     color: var(--text-muted);
     font-weight: 600;
     font-size: 0.85rem;
@@ -48,36 +122,41 @@
 
 .table td {
     padding: 16px 20px;
-    color: var(--text-primary);
+    color: var(--text-main);
     border-bottom: 1px solid var(--border);
     font-size: 0.95rem;
     vertical-align: top;
 }
 
 .table tbody tr:hover {
-    background-color: var(--hover-bg, rgba(0,0,0,0.02));
+    background-color: var(--body-bg);
 }
 
 .table tbody tr:last-child td {
     border-bottom: none;
 }
 
-/* Estilos para badges o etiquetas de acción */
+/* BADGES DE ACCIONES DINÁMICAS */
 .badge {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    background: var(--bg-secondary);
-    color: var(--text-muted);
-    border: 1px solid var(--border);
+    border: 1px solid;
 }
 
+.badgeGray { background: var(--body-bg); color: var(--text-muted); border-color: var(--border); }
+.badgeRed { background: rgba(239, 68, 68, 0.1); color: #dc2626; border-color: rgba(239, 68, 68, 0.2); }
+.badgeGreen { background: rgba(16, 185, 129, 0.1); color: #059669; border-color: rgba(16, 185, 129, 0.2); }
+.badgeBlue { background: rgba(59, 130, 246, 0.1); color: #2563eb; border-color: rgba(59, 130, 246, 0.2); }
+.badgeOrange { background: rgba(245, 158, 11, 0.1); color: #d97706; border-color: rgba(245, 158, 11, 0.2); }
+.badgePurple { background: rgba(168, 85, 247, 0.1); color: #9333ea; border-color: rgba(168, 85, 247, 0.2); }
+
 .userText {
-    font-weight: 500;
-    color: var(--primary, #2563eb);
+    font-weight: 600;
+    color: var(--text-main);
 }
 
 .dateText {
@@ -90,6 +169,12 @@
     text-align: center;
     color: var(--text-muted);
     font-style: italic;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
 }
 
 @keyframes fadeIn {

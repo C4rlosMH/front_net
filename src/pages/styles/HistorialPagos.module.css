@@ -1,0 +1,451 @@
+.container {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    color: var(--text-main);
+}
+
+.topBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.backButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.backButton:hover {
+    background: var(--card-bg);
+    color: var(--text-main);
+}
+
+/* Tarjeta de Perfil Completo */
+.profileCard {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+.profileHeader {
+    padding: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.clientInfo {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clientName {
+    margin: 0 0 5px 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.clientSubtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.separator {
+    color: var(--border);
+}
+
+.statusBadge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.statusActive { background: rgba(34, 197, 94, 0.1); color: #16a34a; }
+.statusInactive { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+
+.balanceBox {
+    text-align: right;
+    padding-left: 30px;
+    border-left: 2px dashed var(--border);
+}
+
+.balanceLabel {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.balanceAmount {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.textRed { color: #ef4444; }
+.textGreen { color: #10b981; }
+
+/* Panel de Detalles del Cliente */
+.clientDetailsPanel {
+    background: var(--body-bg);
+    border-top: 1px solid var(--border);
+    padding: 20px 25px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.detailItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.detailIcon {
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.detailContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.detailLabel {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.detailValue {
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.detailSubValue {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 2px;
+}
+
+/* Grid de Estadísticas */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.statCard {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.statIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statIcon.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.statIcon.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.statIcon.purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+
+.statDetails {
+    display: flex;
+    flex-direction: column;
+}
+
+.statTitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.statValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+/* Timeline (Línea de tiempo) */
+.timelineSection {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 25px;
+    border: 1px solid var(--border);
+}
+
+.timelineHeader {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-main);
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+}
+
+.timelineItem {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.timelineItem:last-child {
+    margin-bottom: 0;
+}
+
+.timelineIcon {
+    position: absolute;
+    left: -30px;
+    top: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid var(--card-bg);
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
+.iconAbono { background: #10b981; color: white; }
+.iconCargo { background: #ef4444; color: white; }
+
+.timelineContent {
+    background: var(--body-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.timelineContent:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.movementInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.movementTitle {
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.movementDate {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.movementDesc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.movementAmount {
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.amountAbono { color: #10b981; }
+.amountCargo { color: #ef4444; }
+
+.emptyState {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+}
+
+/* --- SECCIÓN DE COMPORTAMIENTO (SCORE Y HEATMAP) --- */
+.behaviorSection {
+    display: flex;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 30px;
+    padding: 20px 25px;
+    gap: 30px;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+/* Score de Confiabilidad */
+.scoreContainer {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-right: 30px;
+    border-right: 1px dashed var(--border);
+    min-width: 220px;
+}
+
+.scoreCircle {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: 4px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--body-bg);
+}
+
+.scoreValue {
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+.scoreInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.scoreLabel {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.scoreText {
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+}
+
+/* Mapa de Calor */
+.heatmapContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.heatmapTitle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.heatBlocks {
+    display: flex;
+    gap: 12px;
+}
+
+.heatBlockWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.heatBlock {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+}
+
+.heatBlock:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Colores de los bloques del mapa de calor */
+.pagado { 
+    background: rgba(16, 185, 129, 0.2); 
+    border-color: #10b981; 
+}
+
+.deuda { 
+    background: rgba(239, 68, 68, 0.2); 
+    border-color: #ef4444; 
+}
+
+.inactivo { 
+    background: var(--body-bg); 
+    border-color: var(--border); 
+}
+
+.heatMonth {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: capitalize;
+    font-weight: 500;
+}
