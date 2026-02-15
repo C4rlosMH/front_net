@@ -32,7 +32,7 @@
 .brandName {
     font-size: 1.1rem;
     font-weight: bold;
-    color: var(--dark-text); /* Se adapta al modo claro/oscuro si cambias la variable */
+    color: var(--dark-text);
     letter-spacing: 0.5px;
 }
 
@@ -41,12 +41,10 @@
     flex: 1;
 }
 
-/* --- ESTILOS DEL ENLACE (Actualizado para Iconos) --- */
 .link {
-    display: flex;             /* <--- IMPORTANTE: Alinea icono y texto horizontalmente */
-    align-items: center;       /* <--- Centra verticalmente */
-    gap: 12px;                 /* <--- Espacio entre el icono y el texto */
-    
+    display: flex;             
+    align-items: center;       
+    gap: 12px;                 
     padding: 12px 15px;
     margin-bottom: 5px;
     border-radius: 8px;
@@ -67,35 +65,6 @@
     font-weight: 600;
 }
 
-.userArea {
-    padding: 20px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    background-color: rgba(0,0,0,0.2);
-}
-
-.userName {
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    color: var(--dark-text);
-    font-weight: 500;
-}
-
-.logoutBtn {
-    width: 100%;
-    padding: 8px;
-    background: transparent;
-    border: 1px solid rgba(239, 68, 68, 0.4);
-    color: #f87171;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: background 0.2s;
-}
-
-.logoutBtn:hover {
-    background: rgba(239, 68, 68, 0.15);
-}
-
 .content {
     flex: 1;
     background-color: var(--body-bg);
@@ -112,14 +81,23 @@
     background-color: rgba(0,0,0,0.2);
 }
 
+/* Estilos actualizados para que el nombre actúe como un enlace */
 .userName {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     font-size: 0.9rem;
     color: var(--dark-text);
-    font-weight: 500;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: color 0.2s;
 }
 
-/* --- NUEVA CLASE PARA EL BOTÓN DE TEMA --- */
+.userName:hover {
+    color: white;
+}
+
 .themeBtn {
     width: 100%;
     margin-bottom: 10px;
@@ -152,10 +130,10 @@
     cursor: pointer;
     font-size: 0.85rem;
     transition: background 0.2s;
-    display: flex;             /* Agregado para alinear icono */
-    align-items: center;       /* Agregado */
-    justify-content: center;   /* Agregado */
-    gap: 8px;                  /* Agregado */
+    display: flex;             
+    align-items: center;       
+    justify-content: center;   
+    gap: 8px;                  
 }
 
 .logoutBtn:hover {

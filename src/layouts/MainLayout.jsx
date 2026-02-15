@@ -4,7 +4,6 @@ import { useTheme } from "../context/ThemeContext";
 import styles from "./MainLayout.module.css"; 
 import logo from "../assets/logo.png"; 
 
-// 1. IMPORTAMOS EL ÍCONO QUE FALTABA (BarChart2)
 import { 
     LayoutDashboard, 
     Users, 
@@ -16,8 +15,9 @@ import {
     User,
     Map,
     FileText,
-    BarChart2, // <--- AGREGADO AQUÍ
-    Server
+    BarChart2, 
+    Server,
+    ShieldCheck 
 } from "lucide-react";
 
 const MainLayout = () => {
@@ -36,7 +36,6 @@ const MainLayout = () => {
                 </div>
 
                 <nav className={styles.nav}>
-                    {/* ENLACE DASHBOARD */}
                     <Link 
                         to="/dashboard" 
                         className={`${styles.link} ${location.pathname === '/dashboard' || location.pathname === '/' ? styles.linkActive : ''}`}
@@ -45,7 +44,6 @@ const MainLayout = () => {
                         <span>Dashboard</span>
                     </Link>
 
-                    {/* 2. ENLACE ESTADÍSTICAS (NUEVO) */}
                     <Link 
                         to="/estadisticas" 
                         className={`${styles.link} ${location.pathname === '/estadisticas' ? styles.linkActive : ''}`}
@@ -54,7 +52,6 @@ const MainLayout = () => {
                         <span>Estadísticas</span>
                     </Link>
                     
-                    {/* ENLACE CLIENTES */}
                     <Link 
                         to="/clientes" 
                         className={`${styles.link} ${location.pathname === '/clientes' ? styles.linkActive : ''}`}
@@ -71,7 +68,6 @@ const MainLayout = () => {
                         <span>Cajas NAP</span>
                     </Link>
 
-                    {/* ENLACE MAPA */}
                     <Link 
                         to="/mapa" 
                         className={`${styles.link} ${location.pathname === '/mapa' ? styles.linkActive : ''}`}
@@ -80,7 +76,6 @@ const MainLayout = () => {
                         <span>Mapa de Red</span>
                     </Link>
                     
-                    {/* ENLACE INVENTARIO */}
                     <Link 
                         to="/equipos" 
                         className={`${styles.link} ${location.pathname === '/equipos' ? styles.linkActive : ''}`}
@@ -89,7 +84,6 @@ const MainLayout = () => {
                         <span>Inventario</span>
                     </Link>
                     
-                    {/* ENLACE FINANZAS */}
                     <Link 
                         to="/pagos" 
                         className={`${styles.link} ${location.pathname === '/pagos' ? styles.linkActive : ''}`}
@@ -98,7 +92,6 @@ const MainLayout = () => {
                         <span>Finanzas</span>
                     </Link>
 
-                    {/* ENLACE PLANES */}
                     <Link 
                         to="/planes" 
                         className={`${styles.link} ${location.pathname === '/planes' ? styles.linkActive : ''}`}
@@ -115,13 +108,26 @@ const MainLayout = () => {
                         <span>Registros</span>
                     </Link>
 
+                    {user?.rol === 'ADMIN' && (
+                        <Link 
+                            to="/usuarios" 
+                            className={`${styles.link} ${location.pathname === '/usuarios' ? styles.linkActive : ''}`}
+                        >
+                            <ShieldCheck size={20} />
+                            <span>Staff / Usuarios</span>
+                        </Link>
+                    )}
                 </nav>
 
                 <div className={styles.userArea}>
-                    <div className={styles.userName} style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                    <Link 
+                        to="/perfil" 
+                        className={styles.userName} 
+                        title="Ver mi perfil"
+                    >
                         <User size={18} /> 
                         {user?.nombre}
-                    </div>
+                    </Link>
                     
                     <button onClick={toggleTheme} className={styles.themeBtn}>
                         {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}

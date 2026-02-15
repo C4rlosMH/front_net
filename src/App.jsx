@@ -11,12 +11,15 @@ import Equipos from "./pages/Equipos";
 import Planes from "./pages/Planes";
 import Clientes from "./pages/Clientes";
 import Pagos from "./pages/Pagos";
-import HistorialPagos from "./pages/HistorialPagos"
+import HistorialPagos from "./pages/HistorialPagos";
 import Estadisticas from "./pages/Estadisticas";
 import Cajas from "./pages/Cajas";
 import Cortes from "./pages/Cortes";
 import Logs from "./pages/Logs";
 
+// --- IMPORTACIONES NUEVAS ---
+import Usuarios from "./pages/Usuarios";
+import Perfil from "./pages/Perfil";
 
 function App() {
   return (
@@ -29,7 +32,7 @@ function App() {
             {/* Ruta Pública */}
             <Route path="/login" element={<Login />} />
 
-            {/* Rutas Privadas */}
+            {/* Rutas Privadas (Todas van dentro del MainLayout) */}
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/equipos" element={<Equipos />} />
@@ -42,6 +45,10 @@ function App() {
               <Route path="/cajas" element={<Cajas />} />
               <Route path="/cortes" element={<Cortes />} />
               <Route path="/logs" element={<Logs />} />
+              
+              {/* --- RUTAS NUEVAS --- */}
+              <Route path="/usuarios" element={<Usuarios />} />
+              <Route path="/perfil" element={<Perfil />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/login" replace />} />

@@ -1,0 +1,195 @@
+/* =========================================
+   CONTENEDOR PRINCIPAL
+========================================= */
+.container {
+    padding: 30px;
+    max-width: 1000px; /* Ancho maximo para que no se estire demasiado */
+    margin: 0 auto;
+}
+
+.pageTitle {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 30px;
+    letter-spacing: -0.5px;
+}
+
+.profileGrid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr; /* Columna de info más pequeña, form más grande */
+    gap: 30px;
+    align-items: start;
+}
+
+/* =========================================
+   TARJETAS
+========================================= */
+.card {
+    background: var(--body-bg);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.cardHeader {
+    background: var(--bg-alt);
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.1rem;
+}
+
+.cardBody {
+    padding: 30px;
+}
+
+/* =========================================
+   AREA DE INFORMACION DEL USUARIO
+========================================= */
+.userInfoArea {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.avatar {
+    width: 90px;
+    height: 90px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.3);
+}
+
+.userName {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 5px 0;
+}
+
+.userUsername {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin: 0 0 15px 0;
+}
+
+/* Badges de Rol */
+.badgeAdmin, .badgeTecnico {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badgeAdmin { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.badgeTecnico { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+
+/* =========================================
+   FORMULARIO ESPACIOSO
+========================================= */
+.form {
+    display: flex;
+    flex-direction: column;
+}
+
+.formGroup {
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 0.95rem;
+}
+
+.input {
+    width: 100%;
+    box-sizing: border-box; /* CRUCIAL para evitar desbordamientos */
+    padding: 14px 18px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: var(--body-bg);
+    color: var(--text-main);
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--bg-alt);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+}
+
+.input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.inputError {
+    border-color: #ef4444 !important;
+    background-color: #fff5f5 !important;
+}
+
+.errorText {
+    color: #ef4444;
+    font-size: 0.85rem;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+}
+
+/* =========================================
+   BOTON
+========================================= */
+.btnSubmit {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s;
+    margin-top: 10px;
+    box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.2);
+}
+
+.btnSubmit:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px -1px rgba(var(--primary-rgb), 0.3);
+}
+
+.loading {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+    color: var(--text-muted);
+}
