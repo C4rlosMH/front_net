@@ -321,3 +321,40 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+
+/* --- NUEVAS CLASES PARA REEMPLAZAR ESTILOS EN LINEA --- */
+
+/* Textos y colores dinamicos */
+.textGreen { color: #16a34a; }
+.textOrange { color: #f59e0b; }
+.textRed { color: #ef4444; }
+.textSlate { color: #64748b; }
+.textRedBold { color: #ef4444; font-weight: bold; }
+.textGreenBold { color: #16a34a; font-weight: bold; }
+
+/* Estados de tabla */
+.emptyState { text-align: center; padding: 30px; color: var(--text-muted); }
+
+/* Badges de estado especificos */
+.badgeCortado { background-color: #fee2e2; color: #991b1b; }
+.badgeSuspendido { background-color: #fef3c7; color: #b45309; }
+.badgeBaja { background-color: #f1f5f9; color: #64748b; }
+
+/* Elementos del modal y formulario */
+.debtWarning { color: #ef4444; font-size: 0.75rem; font-weight: bold; margin-top: 4px; }
+.selectBold { font-weight: bold; }
+.mapWrapper { height: 250px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.modalWide { width: 500px; }
+
+/* Modal de Pago */
+.paymentHeader { background: var(--body-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border); }
+.paymentHeaderFlex { display: flex; justify-content: space-between; margin-top: 5px; }
+.typeSelectorWrapper { margin-bottom: 15px; }
+.relativeContainer { position: relative; }
+.currencyInput { font-size: 1.2rem; font-weight: bold; color: var(--primary); padding-left: 35px; }
+.currencySymbol { position: absolute; left: 12px; top: 12px; color: var(--text-muted); font-weight: bold; }
+.warningText { color: orange; display: block; margin-top: 4px; }
+
+/* Boton de eliminar */
+.btnDelete { color: #ef4444; }
+.btnDelete:hover { opacity: 0.8; }

@@ -222,3 +222,33 @@
 .btnSubmit:hover {
     background-color: var(--primary-hover);
 }
+
+/* --- NUEVAS CLASES PARA REEMPLAZAR ESTILOS EN LINEA --- */
+
+/* Textos y tipografias */
+.emptyState { text-align: center; }
+.textMainBold { font-weight: bold; color: var(--text-main); }
+.textMutedBold { font-weight: bold; color: var(--text-muted); }
+.textMutedSmall { color: var(--text-muted); display: block; }
+.textGraySmall { color: gray; display: block; }
+.fontMono { font-family: monospace; font-size: 0.85rem; }
+.fontMonoGray { font-family: monospace; font-size: 0.85rem; color: gray; }
+
+/* Badges de tipo */
+.badgeAntena { background: #dbeafe; color: #1e40af; }
+.badgeRouter { background: #fae8ff; color: #86198f; }
+.badgeModem { background: #ffedd5; color: #9a3412; }
+
+/* Badges de estado */
+.badgeAlmacen { background: #dcfce7; color: #166534; }
+.badgeDefault { background: #f3f4f6; color: #4b5563; }
+
+/* Botones y acciones */
+.flexActions { display: flex; gap: 8px; }
+.btnDelete { background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 4px; border-radius: 4px; }
+.btnDelete:hover { background: #fee2e2; }
+
+/* Formulario - Estado al editar */
+.estadoEditContainer { margin-top: 15px; padding: 10px; background: #fff7ed; border-radius: 8px; border: 1px solid #fed7aa; }
+.estadoEditLabel { color: #c2410c; font-weight: bold; display: block; margin-bottom: 5px; }
+.estadoEditSelect { border-color: #fb923c; }

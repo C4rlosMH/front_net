@@ -7,23 +7,20 @@ import TablePagination from "../components/TablePagination";
 import { toast } from "sonner";
 import { 
     Plus, Wallet, Eye, Pencil, Wifi, Cable, 
-    CheckCircle2, Clock, DollarSign, Search, Users, AlertTriangle, Ban, Scissors 
+    CheckCircle2, Clock, DollarSign, Search, Users, AlertTriangle, Ban, Scissors, Trash2 
 } from "lucide-react";
 import styles from "./styles/Clientes.module.css";
 
 function Clientes() {
-    // --- ESTADOS DE DATOS ---
     const [clientes, setClientes] = useState([]);
     const [planes, setPlanes] = useState([]);
     const [antenasLibres, setAntenasLibres] = useState([]);
     const [routersLibres, setRoutersLibres] = useState([]);
     const [cajasList, setCajasList] = useState([]);
     
-    // --- FILTROS Y BÚSQUEDA ---
     const [tabActual, setTabActual] = useState("TODOS"); 
     const [busqueda, setBusqueda] = useState("");
 
-    // --- ESTADOS UI ---
     const [tipoInstalacion, setTipoInstalacion] = useState("FIBRA");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -33,7 +30,6 @@ function Clientes() {
     const [showPagoModal, setShowPagoModal] = useState(false);
     const [clienteAPagar, setClienteAPagar] = useState(null);
 
-    // --- ESTADOS PAGO ---
     const [montoAbono, setMontoAbono] = useState("");
     const [tipoPago, setTipoPago] = useState("LIQUIDACION"); 
     const [metodoPago, setMetodoPago] = useState("EFECTIVO");
@@ -43,7 +39,6 @@ function Clientes() {
 
     useEffect(() => { cargarDatos(); }, []);
 
-    // Resetear página al filtrar
     useEffect(() => { setCurrentPage(1); }, [tabActual, busqueda]);
 
     const cargarDatos = async () => {
@@ -68,12 +63,9 @@ function Clientes() {
         }
     };
 
-    // --- LÓGICA DE FILTRADO ---
     const clientesFiltrados = clientes.filter(c => {
-        // 1. Filtro por Pestaña
         if (tabActual !== "TODOS" && c.estado !== tabActual) return false;
         
-        // 2. Filtro por Buscador
         if (busqueda) {
             const term = busqueda.toLowerCase();
             return (
@@ -90,7 +82,6 @@ function Clientes() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentClientes = clientesFiltrados.slice(indexOfFirstItem, indexOfLastItem);
 
-    // --- FUNCIONES DEL FORMULARIO ---
     const openModal = (cliente = null) => {
         setClienteEditar(cliente);
         if (cliente) {
@@ -128,7 +119,7 @@ function Clientes() {
 
     const onSubmit = async (data) => {
         try {
-            if (!data.latitud || !data.longitud) return toast.warning("Ubicación requerida");
+            if (!data.latitud || !data.longitud) return toast.warning("Ubicacion requerida");
 
             let equiposIds = [];
             if (tipoInstalacion === 'RADIO') {
@@ -163,11 +154,24 @@ function Clientes() {
         }
     };
 
-    // --- FUNCIONES DE PAGO ---
+    const eliminarCliente = async (id) => {
+        const confirmar = window.confirm("¿Estas seguro de que deseas ELIMINAR permanentemente este cliente de la base de datos? Esta accion no se puede deshacer y liberara sus equipos asociados.");
+        
+        if (confirmar) {
+            try {
+                await client.delete(`/clientes/${id}`);
+                toast.success("Cliente eliminado definitivamente");
+                cargarDatos();
+            } catch (error) {
+                console.error(error);
+                toast.error("Error al eliminar el cliente");
+            }
+        }
+    };
+
     const generarMeses = () => {
         const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const hoy = new Date();
-        // Generamos opciones: Mes Actual, Mes Anterior, Mes Siguiente
         const opciones = [];
         for (let i = -1; i <= 1; i++) {
             const d = new Date(hoy.getFullYear(), hoy.getMonth() + i, 1);
@@ -210,6 +214,15 @@ function Clientes() {
     
     const listaMeses = generarMeses();
 
+    const getEstadoBadgeClass = (estado) => {
+        switch (estado) {
+            case 'CORTADO': return styles.badgeCortado;
+            case 'SUSPENDIDO': return styles.badgeSuspendido;
+            case 'BAJA': return styles.badgeBaja;
+            default: return '';
+        }
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -219,7 +232,6 @@ function Clientes() {
                 </button>
             </div>
 
-            {/* --- FILTROS Y BÚSQUEDA --- */}
             <div className={styles.filterBar}>
                 <div className={styles.tabs}>
                     <button 
@@ -229,30 +241,26 @@ function Clientes() {
                         <Users size={16}/> Todos
                     </button>
                     <button 
-                        className={`${styles.tab} ${tabActual === 'ACTIVO' ? styles.tabActive : ''}`}
+                        className={`${styles.tab} ${tabActual === 'ACTIVO' ? `${styles.tabActive} ${styles.textGreen}` : ''}`}
                         onClick={() => setTabActual("ACTIVO")}
-                        style={{color: tabActual==='ACTIVO' ? '#16a34a' : ''}}
                     >
                         <CheckCircle2 size={16}/> Activos
                     </button>
                     <button 
-                        className={`${styles.tab} ${tabActual === 'SUSPENDIDO' ? styles.tabActive : ''}`}
+                        className={`${styles.tab} ${tabActual === 'SUSPENDIDO' ? `${styles.tabActive} ${styles.textOrange}` : ''}`}
                         onClick={() => setTabActual("SUSPENDIDO")}
-                        style={{color: tabActual==='SUSPENDIDO' ? '#f59e0b' : ''}}
                     >
                         <AlertTriangle size={16}/> Suspendidos
                     </button>
                     <button 
-                        className={`${styles.tab} ${tabActual === 'CORTADO' ? styles.tabActive : ''}`}
+                        className={`${styles.tab} ${tabActual === 'CORTADO' ? `${styles.tabActive} ${styles.textRed}` : ''}`}
                         onClick={() => setTabActual("CORTADO")}
-                        style={{color: tabActual==='CORTADO' ? '#ef4444' : ''}}
                     >
                         <Scissors size={16}/> Cortados
                     </button>
                     <button 
-                        className={`${styles.tab} ${tabActual === 'BAJA' ? styles.tabActive : ''}`}
+                        className={`${styles.tab} ${tabActual === 'BAJA' ? `${styles.tabActive} ${styles.textSlate}` : ''}`}
                         onClick={() => setTabActual("BAJA")}
-                        style={{color: tabActual==='BAJA' ? '#64748b' : ''}}
                     >
                         <Ban size={16}/> Bajas
                     </button>
@@ -275,15 +283,15 @@ function Clientes() {
                     <thead>
                         <tr>
                             <th>Nombre</th>
-                            <th>IP / Dirección</th>
-                            <th>Plan & Conexión</th>
+                            <th>IP / Direccion</th>
+                            <th>Plan & Conexion</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentClientes.length === 0 ? (
-                            <tr><td colSpan="5" style={{textAlign:'center', padding:30, color:'var(--text-muted)'}}>No se encontraron clientes.</td></tr>
+                            <tr><td colSpan="5" className={styles.emptyState}>No se encontraron clientes.</td></tr>
                         ) : (
                             currentClientes.map(c => (
                                 <tr key={c.id}>
@@ -308,14 +316,10 @@ function Clientes() {
                                         )}
                                     </td>
                                     <td>
-                                        <span className={`${styles.statusBadge} ${c.estado === 'ACTIVO' ? styles.statusActive : styles.statusInactive}`}
-                                              style={c.estado === 'CORTADO' ? {backgroundColor: '#fee2e2', color:'#991b1b'} : 
-                                                     c.estado === 'SUSPENDIDO' ? {backgroundColor: '#fef3c7', color:'#b45309'} : 
-                                                     c.estado === 'BAJA' ? {backgroundColor: '#f1f5f9', color:'#64748b'} : {}}
-                                        >
+                                        <span className={`${styles.statusBadge} ${c.estado === 'ACTIVO' ? styles.statusActive : styles.statusInactive} ${getEstadoBadgeClass(c.estado)}`}>
                                             {c.estado}
                                         </span>
-                                        {c.saldo_actual > 0 && <div style={{color:'#ef4444', fontSize:'0.75rem', fontWeight:'bold', marginTop:4}}>Debe: ${c.saldo_actual}</div>}
+                                        {c.saldo_actual > 0 && <div className={styles.debtWarning}>Debe: ${c.saldo_actual}</div>}
                                     </td>
                                     <td>
                                         <div className={styles.flexActions}>
@@ -330,6 +334,9 @@ function Clientes() {
                                             <button className={`${styles.actionBtn} ${styles.btnEdit}`} onClick={() => openModal(c)} title="Editar">
                                                 <Pencil size={18} />
                                             </button>
+                                            <button className={`${styles.actionBtn} ${styles.btnDelete}`} onClick={() => eliminarCliente(c.id)} title="Eliminar Definitivamente">
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -340,7 +347,6 @@ function Clientes() {
                 <TablePagination totalItems={clientesFiltrados.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
             </div>
 
-            {/* MODAL CLIENTE */}
             {showModal && (
                 <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
                     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -350,24 +356,23 @@ function Clientes() {
                         </div>
                         <form onSubmit={handleSubmit(onSubmit)}>
                              <div className={styles.formGroup}>
-                                <label>Tipo de Instalación</label>
+                                <label>Tipo de Instalacion</label>
                                 <div className={styles.typeSelector}>
-                                    <button type="button" onClick={() => setTipoInstalacion("FIBRA")} className={`${styles.typeButton} ${tipoInstalacion === 'FIBRA' ? styles.typeActive : styles.typeInactive}`}><Cable size={18}/> Fibra Óptica</button>
+                                    <button type="button" onClick={() => setTipoInstalacion("FIBRA")} className={`${styles.typeButton} ${tipoInstalacion === 'FIBRA' ? styles.typeActive : styles.typeInactive}`}><Cable size={18}/> Fibra Optica</button>
                                     <button type="button" onClick={() => setTipoInstalacion("RADIO")} className={`${styles.typeButton} ${tipoInstalacion === 'RADIO' ? styles.typeActive : styles.typeInactive}`}><Wifi size={18}/> Radio / Antena</button>
                                 </div>
                             </div>
 
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}><label>Nombre Completo</label><input {...register("nombre_completo", {required:true})} className={styles.input}/></div>
-                                <div className={styles.formGroup}><label>Teléfono</label><input {...register("telefono")} className={styles.input}/></div>
+                                <div className={styles.formGroup}><label>Telefono</label><input {...register("telefono")} className={styles.input}/></div>
                             </div>
                             
-                            {/* --- PLAN Y ESTADO --- */}
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}><label>Plan</label><select {...register("planId")} className={styles.select}><option value="">-- Seleccionar --</option>{planes.map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}</select></div>
                                 <div className={styles.formGroup}>
                                     <label>Estado</label>
-                                    <select {...register("estado")} className={styles.select} style={{fontWeight:'bold'}}>
+                                    <select {...register("estado")} className={`${styles.select} ${styles.selectBold}`}>
                                         <option value="ACTIVO">ACTIVO</option>
                                         <option value="SUSPENDIDO">SUSPENDIDO</option>
                                         <option value="CORTADO">CORTADO</option>
@@ -378,12 +383,12 @@ function Clientes() {
 
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}><label>IP Asignada</label><input {...register("ip_asignada")} className={styles.input}/></div>
-                                <div className={styles.formGroup}><label>Día Pago</label><select {...register("dia_pago")} className={styles.select}><option value="15">Día 15</option><option value="30">Día 30</option></select></div>
+                                <div className={styles.formGroup}><label>Dia Pago</label><select {...register("dia_pago")} className={styles.select}><option value="15">Dia 15</option><option value="30">Dia 30</option></select></div>
                             </div>
-                            <div className={styles.formGroup}><label>Dirección</label><input {...register("direccion")} className={styles.input}/></div>
+                            <div className={styles.formGroup}><label>Direccion</label><input {...register("direccion")} className={styles.input}/></div>
 
                             <div className={styles.specificSection}>
-                                <h4 className={styles.sectionTitle}>{tipoInstalacion==='FIBRA'?'Conexión Fibra':'Conexión Radio'}</h4>
+                                <h4 className={styles.sectionTitle}>{tipoInstalacion==='FIBRA'?'Conexion Fibra':'Conexion Radio'}</h4>
                                 {tipoInstalacion==='FIBRA' ? (
                                     <div className={styles.formRow}>
                                         <div className={styles.formGroup}><label>Caja NAP</label><select {...register("cajaId")} className={styles.select}><option value="">-- Seleccionar --</option>{cajasList.map(c=><option key={c.id} value={c.id}>{c.nombre}</option>)}</select></div>
@@ -395,12 +400,12 @@ function Clientes() {
                                         <div className={styles.formGroup}><label>Router *</label><select {...register("routerId")} className={styles.select}><option value="">-- Seleccionar --</option>{routersLibres.map(e=><option key={e.id} value={e.id}>{e.modelo}</option>)}</select></div>
                                     </div>
                                 )}
-                                <div className={styles.formGroup}><label>Fecha Instalación</label><input type="date" {...register("fecha_instalacion")} className={styles.input}/></div>
+                                <div className={styles.formGroup}><label>Fecha Instalacion</label><input type="date" {...register("fecha_instalacion")} className={styles.input}/></div>
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Ubicación</label>
-                                <div style={{height: 250, borderRadius: 8, overflow:'hidden', border:'1px solid var(--border)'}}>
+                                <label>Ubicacion</label>
+                                <div className={styles.mapWrapper}>
                                     <LocationPicker initialLat={clienteEditar?.latitud} initialLng={clienteEditar?.longitud} onLocationChange={(c)=>{setValue("latitud",c.lat);setValue("longitud",c.lng)}} clients={clientes} cajas={cajasList}/>
                                 </div>
                                 <input type="hidden" {...register("latitud")} />
@@ -416,24 +421,23 @@ function Clientes() {
                 </div>
             )}
             
-            {/* MODAL PAGO */}
             {showPagoModal && clienteAPagar && (
                  <div className={styles.modalOverlay} onClick={() => setShowPagoModal(false)}>
-                    <div className={styles.modal} style={{width: 500}} onClick={(e) => e.stopPropagation()}>
+                    <div className={`${styles.modal} ${styles.modalWide}`} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
                             <h3>Registrar Pago</h3>
                             <button onClick={()=>setShowPagoModal(false)} className={styles.closeBtn}>&times;</button>
                         </div>
-                        <div style={{background: 'var(--body-bg)', padding: 15, borderRadius: 8, marginBottom: 20, border: '1px solid var(--border)'}}>
+                        <div className={styles.paymentHeader}>
                             <div className={styles.bold}>{clienteAPagar.nombre_completo}</div>
-                            <div style={{display:'flex', justifyContent:'space-between', marginTop:5}}>
+                            <div className={styles.paymentHeaderFlex}>
                                 <span className={styles.muted}>Plan: {clienteAPagar.plan?.nombre}</span>
-                                <span style={{color: clienteAPagar.saldo_actual > 0 ? '#ef4444' : '#16a34a', fontWeight:'bold'}}>
+                                <span className={clienteAPagar.saldo_actual > 0 ? styles.textRedBold : styles.textGreenBold}>
                                     Deuda: ${clienteAPagar.saldo_actual}
                                 </span>
                             </div>
                         </div>
-                        <div className={styles.typeSelector} style={{marginBottom: 15}}>
+                        <div className={`${styles.typeSelector} ${styles.typeSelectorWrapper}`}>
                             <button type="button" onClick={()=>{setTipoPago("LIQUIDACION"); setMontoAbono(clienteAPagar.saldo_actual || 0)}} className={`${styles.typeButton} ${tipoPago==='LIQUIDACION' ? styles.typeActive : styles.typeInactive}`}>
                                 <CheckCircle2 size={16}/> Liquidar
                             </button>
@@ -453,27 +457,26 @@ function Clientes() {
                                     </select>
                                 </div>
                                 <div className={styles.formGroup}>
-                                    <label>Método de Pago</label>
+                                    <label>Metodo de Pago</label>
                                     <select value={metodoPago} onChange={e=>setMetodoPago(e.target.value)} className={styles.select} disabled={tipoPago === 'APLAZADO'}>
-                                        <option value="EFECTIVO">Efectivo 💵</option>
-                                        <option value="TRANSFERENCIA">Transferencia 🏦</option>
-                                        <option value="DEPOSITO">Depósito 🏪</option>
+                                        <option value="EFECTIVO">Efectivo</option>
+                                        <option value="TRANSFERENCIA">Transferencia</option>
+                                        <option value="DEPOSITO">Deposito</option>
                                     </select>
                                 </div>
                             </div>
                             <div className={styles.formGroup}>
                                 <label>Monto a Pagar ($)</label>
-                                <div style={{position:'relative'}}>
+                                <div className={styles.relativeContainer}>
                                     <input 
                                         type="number" step="0.01" 
                                         value={montoAbono} onChange={e=>setMontoAbono(e.target.value)} 
-                                        className={styles.input} 
-                                        style={{fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary)', paddingLeft: 35}} 
+                                        className={`${styles.input} ${styles.currencyInput}`}
                                         disabled={tipoPago === 'APLAZADO'} autoFocus 
                                     />
-                                    <span style={{position:'absolute', left:12, top:12, color:'var(--text-muted)', fontWeight:'bold'}}>$</span>
+                                    <span className={styles.currencySymbol}>$</span>
                                 </div>
-                                {tipoPago === 'APLAZADO' && <small style={{color:'orange'}}>* Solo se registrará la nota.</small>}
+                                {tipoPago === 'APLAZADO' && <small className={styles.warningText}>* Solo se registrara la nota.</small>}
                             </div>
                             <div className={styles.modalActions}>
                                 <button type="button" onClick={()=>setShowPagoModal(false)} className={styles.btnCancel}>Cancelar</button>

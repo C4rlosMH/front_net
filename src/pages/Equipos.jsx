@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import client from "../api/axios";
 import TablePagination from "../components/TablePagination"; 
 import { toast } from "sonner";
-import { Plus, Pencil } from "lucide-react"; 
+import { Plus, Pencil, Trash2 } from "lucide-react"; 
 import styles from "./styles/Equipos.module.css";
 
 function Equipos() {
@@ -12,7 +12,6 @@ function Equipos() {
     const [showModal, setShowModal] = useState(false);
     const [equipoEditar, setEquipoEditar] = useState(null);
 
-    // Paginación
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     
@@ -35,8 +34,7 @@ function Equipos() {
     const openModal = (equipo = null) => {
         setEquipoEditar(equipo);
         if (equipo) {
-            // Cargar datos existentes
-            setValue("nombre", equipo.nombre); // <--- NUEVO CAMPO
+            setValue("nombre", equipo.nombre);
             setValue("marca", equipo.marca);
             setValue("modelo", equipo.modelo);
             setValue("tipo", equipo.tipo);
@@ -59,7 +57,7 @@ function Equipos() {
     const onSubmit = async (data) => {
         try {
             const payload = {
-                nombre: data.nombre, // <--- NUEVO CAMPO
+                nombre: data.nombre, 
                 tipo: data.tipo,
                 marca: data.marca,
                 modelo: data.modelo,
@@ -67,7 +65,6 @@ function Equipos() {
                 serie: data.serie || null,
                 precio_compra: data.precio_compra ? parseFloat(data.precio_compra) : null,
                 fecha_compra: data.fecha_compra || null,
-                // Si editamos, usamos el estado que el usuario elija. Si es nuevo, forzamos ALMACEN.
                 estado: equipoEditar ? data.estado : "ALMACEN"
             };
 
@@ -89,7 +86,21 @@ function Equipos() {
         }
     };
 
-    // Filtros y Paginación
+    const eliminarEquipo = async (id) => {
+        const confirmar = window.confirm("¿Estas seguro de que deseas ELIMINAR permanentemente este equipo del inventario?");
+        
+        if (confirmar) {
+            try {
+                await client.delete(`/equipos/${id}`);
+                toast.success("Equipo eliminado del sistema");
+                cargarEquipos();
+            } catch (error) {
+                console.error(error);
+                toast.error(error.response?.data?.message || "Error al eliminar el equipo");
+            }
+        }
+    };
+
     const equiposFiltrados = filtro === "TODOS" 
         ? equipos 
         : equipos.filter(e => e.tipo === filtro);
@@ -114,9 +125,9 @@ function Equipos() {
 
             <div className={styles.tabs}>
                 <button className={`${styles.tab} ${filtro === 'TODOS' ? styles.tabActive : ''}`} onClick={() => handleFiltroChange("TODOS")}>Todos</button>
-                <button className={`${styles.tab} ${filtro === 'ANTENA' ? styles.tabActive : ''}`} onClick={() => handleFiltroChange("ANTENA")}>📡 Antenas</button>
-                <button className={`${styles.tab} ${filtro === 'ROUTER' ? styles.tabActive : ''}`} onClick={() => handleFiltroChange("ROUTER")}>📶 Routers</button>
-                <button className={`${styles.tab} ${filtro === 'MODEM' ? styles.tabActive : ''}`} onClick={() => handleFiltroChange("MODEM")}>🔌 Módems/ONUs</button>
+                <button className={`${styles.tab} ${filtro === 'ANTENA' ? styles.tabActive : ''}`} onClick={() => handleFiltroChange("ANTENA")}>Antenas</button>
+                <button className={`${styles.tab} ${filtro === 'ROUTER' ? styles.tabActive : ''}`} onClick={() => handleFiltroChange("ROUTER")}>Routers</button>
+                <button className={`${styles.tab} ${filtro === 'MODEM' ? styles.tabActive : ''}`} onClick={() => handleFiltroChange("MODEM")}>Modems/ONUs</button>
             </div>
 
             <div className={styles.tableWrapper}>
@@ -133,49 +144,54 @@ function Equipos() {
                     </thead>
                     <tbody>
                         {currentEquipos.length === 0 ? (
-                            <tr><td colSpan="6" style={{textAlign:'center'}}>No hay equipos en esta vista</td></tr>
+                            <tr><td colSpan="6" className={styles.emptyState}>No hay equipos en esta vista</td></tr>
                         ) : (
                             currentEquipos.map(e => (
                                 <tr key={e.id}>
                                     <td>
-                                        {/* MEJORA VISUAL: Nombre arriba, marca/modelo abajo */}
-                                        <div style={{fontWeight:'bold', color: e.nombre ? 'var(--text-main)' : 'var(--text-muted)'}}>
+                                        <div className={e.nombre ? styles.textMainBold : styles.textMutedBold}>
                                             {e.nombre || e.marca}
                                         </div>
-                                        <small style={{color:'var(--text-muted)'}}>
+                                        <small className={styles.textMutedSmall}>
                                             {e.nombre ? `${e.marca} ${e.modelo}` : e.modelo}
                                         </small>
                                     </td>
                                     <td>
-                                        {e.tipo === 'ANTENA' && <span className={styles.badge} style={{background:'#dbeafe', color:'#1e40af'}}>Antena</span>}
-                                        {e.tipo === 'ROUTER' && <span className={styles.badge} style={{background:'#fae8ff', color:'#86198f'}}>Router</span>}
-                                        {e.tipo === 'MODEM' && <span className={styles.badge} style={{background:'#ffedd5', color:'#9a3412'}}>Módem</span>}
+                                        {e.tipo === 'ANTENA' && <span className={`${styles.badge} ${styles.badgeAntena}`}>Antena</span>}
+                                        {e.tipo === 'ROUTER' && <span className={`${styles.badge} ${styles.badgeRouter}`}>Router</span>}
+                                        {e.tipo === 'MODEM' && <span className={`${styles.badge} ${styles.badgeModem}`}>Modem</span>}
                                     </td>
                                     <td>
-                                        <div style={{fontFamily:'monospace', fontSize:'0.85rem'}}>MAC: {e.mac_address}</div>
-                                        {e.serie && <div style={{fontFamily:'monospace', fontSize:'0.85rem', color:'gray'}}>SN: {e.serie}</div>}
+                                        <div className={styles.fontMono}>MAC: {e.mac_address}</div>
+                                        {e.serie && <div className={styles.fontMonoGray}>SN: {e.serie}</div>}
                                     </td>
                                     <td>
                                         {e.precio_compra ? `$${e.precio_compra}` : '-'}
                                         <br/>
-                                        <small style={{color:'gray'}}>{e.fecha_compra ? new Date(e.fecha_compra).toLocaleDateString() : ''}</small>
+                                        <small className={styles.textGraySmall}>{e.fecha_compra ? new Date(e.fecha_compra).toLocaleDateString() : ''}</small>
                                     </td>
                                     <td>
-                                        <span className={styles.badge} style={{
-                                            background: e.estado === 'ALMACEN' ? '#dcfce7' : '#f3f4f6',
-                                            color: e.estado === 'ALMACEN' ? '#166534' : '#4b5563'
-                                        }}>
+                                        <span className={`${styles.badge} ${e.estado === 'ALMACEN' ? styles.badgeAlmacen : styles.badgeDefault}`}>
                                             {e.estado}
                                         </span>
                                     </td>
                                     <td>
-                                        <button 
-                                            onClick={() => openModal(e)} 
-                                            className={styles.btnEdit}
-                                            title="Editar Equipo"
-                                        >
-                                            <Pencil size={18} />
-                                        </button>
+                                        <div className={styles.flexActions}>
+                                            <button 
+                                                onClick={() => openModal(e)} 
+                                                className={styles.btnEdit}
+                                                title="Editar Equipo"
+                                            >
+                                                <Pencil size={18} />
+                                            </button>
+                                            <button 
+                                                onClick={() => eliminarEquipo(e.id)} 
+                                                className={styles.btnDelete}
+                                                title="Eliminar Equipo"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -191,7 +207,6 @@ function Equipos() {
                 />
             </div>
 
-            {/* MODAL */}
             {showModal && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modal}>
@@ -201,7 +216,6 @@ function Equipos() {
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)}>
-                            {/* --- CAMPO NUEVO: NOMBRE IDENTIFICADOR --- */}
                             <div className={styles.formGroup}>
                                 <label>Nombre Identificador (Opcional)</label>
                                 <input 
@@ -228,17 +242,17 @@ function Equipos() {
                                 <select {...register("tipo")} className={styles.select}>
                                     <option value="ANTENA">Antena</option>
                                     <option value="ROUTER">Router</option>
-                                    <option value="MODEM">Módem / ONU</option>
+                                    <option value="MODEM">Modem / ONU</option>
                                 </select>
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Dirección MAC *</label>
+                                <label>Direccion MAC *</label>
                                 <input {...register("mac", { required: true })} className={styles.input} placeholder="AA:BB:CC:DD:EE:FF" />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Número de Serie (Opcional)</label>
+                                <label>Numero de Serie (Opcional)</label>
                                 <input {...register("serie")} className={styles.input} placeholder="SN123456789" />
                             </div>
 
@@ -253,15 +267,14 @@ function Equipos() {
                                 </div>
                             </div>
 
-                            {/* --- CAMPO ESTADO (Solo visible al Editar) --- */}
                             {equipoEditar && (
-                                <div className={styles.formGroup} style={{marginTop: '15px', padding: '10px', background: '#fff7ed', borderRadius: '8px', border: '1px solid #fed7aa'}}>
-                                    <label style={{color: '#c2410c', fontWeight: 'bold'}}>Estado del Equipo</label>
-                                    <select {...register("estado")} className={styles.select} style={{borderColor: '#fb923c'}}>
-                                        <option value="ALMACEN">🟢 En Almacén (Disponible)</option>
-                                        <option value="INSTALADO">🔵 Instalado (En cliente)</option>
-                                        <option value="RETIRADO">🟠 Retirado (Revisión)</option>
-                                        <option value="OBSOLETO">⚫ Obsoleto / Dañado</option>
+                                <div className={styles.estadoEditContainer}>
+                                    <label className={styles.estadoEditLabel}>Estado del Equipo</label>
+                                    <select {...register("estado")} className={`${styles.select} ${styles.estadoEditSelect}`}>
+                                        <option value="ALMACEN">En Almacen (Disponible)</option>
+                                        <option value="INSTALADO">Instalado (En cliente)</option>
+                                        <option value="RETIRADO">Retirado (Revision)</option>
+                                        <option value="OBSOLETO">Obsoleto / Danado</option>
                                     </select>
                                 </div>
                             )}
