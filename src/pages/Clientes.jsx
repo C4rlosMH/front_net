@@ -215,7 +215,7 @@ function Clientes() {
                                         <div className={styles.muted}>{c.telefono || "Sin teléfono"}</div>
                                     </td>
                                     <td>
-                                        <div className={styles.fontMono}>{c.ip_asignada || "No asignada"}</div>
+                                        <div className={styles.fontMono}>{c.ip_asignada}</div>
                                         <div className={styles.muted}>{c.direccion}</div>
                                     </td>
                                     <td>

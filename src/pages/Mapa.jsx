@@ -133,7 +133,7 @@ function Mapa() {
                     {cajas.map(caja => (
                         caja.latitud && caja.longitud ? (
                             <Marker key={`caja-${caja.id}`} position={[caja.latitud, caja.longitud]} icon={iconCaja}>
-                                <Popup><strong>NAP: {caja.nombre}</strong><br/><small>Capacidad: {caja.puertos_totales} puertos</small></Popup>
+                                <Popup><strong>NAP: {caja.nombre}</strong><br/><small>Capacidad: {caja.capacidad_total} puertos</small></Popup>
                             </Marker>
                         ) : null
                     ))}
