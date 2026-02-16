@@ -49,7 +49,7 @@ function Dashboard() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <div>
-                    <h1 className={styles.title}>Inicio</h1>
+                    <h1 className={styles.title}>Panel Principal</h1>
                     <p className={styles.subtitle}>Arqueo de caja, tareas pendientes y actividad reciente</p>
                 </div>
             </div>

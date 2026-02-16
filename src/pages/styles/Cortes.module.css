@@ -1,141 +1,326 @@
 .container {
-    padding: 20px;
-    max-width: 1000px;
-    margin: 0 auto;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .title {
-    font-size: 1.8rem;
-    color: var(--text-main);
-    margin: 0;
+  font-size: 1.8rem;
+  color: var(--text-main);
+  margin: 0;
+  font-weight: 800;
 }
 
 .subtitle {
-    color: var(--text-muted);
-    margin-top: 5px;
+  color: var(--text-muted);
+  margin-top: 5px;
+  font-size: 0.95rem;
 }
 
 .actions {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .btnPrint {
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s;
+}
+
+.btnPrint:hover {
+  transform: translateY(-2px);
 }
 
 .btnSecondary {
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    border: 1px solid var(--border);
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  background-color: var(--card-bg);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.btnSecondary:hover {
+  background-color: var(--body-bg);
+}
+
+/* --- KPIs SUPERIORES --- */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.kpiCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.kpiIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kpiInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpiInfo span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpiInfo strong {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+/* --- FILTROS --- */
+.filterBar {
+  margin-bottom: 20px;
+}
+
+.searchBox {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* --- TABLA --- */
+.tableWrapper {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
 
 .table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--card-bg);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .table th {
-    background: var(--body-bg);
-    padding: 12px 15px;
-    text-align: left;
-    font-weight: 600;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    text-transform: uppercase;
+  background: var(--body-bg);
+  padding: 15px 20px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
 }
 
 .table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-main);
-    vertical-align: middle;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+  vertical-align: middle;
 }
 
 .name {
-    display: block;
-    font-size: 1rem;
-    color: var(--text-main);
+  display: block;
+  font-size: 1rem;
+  color: var(--text-main);
 }
 
 .meta {
-    display: flex;
-    align-items: center;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-top: 2px;
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.planBadge {
+  background: var(--body-bg);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 .debt {
-    color: #ef4444;
-    font-weight: 700;
-    font-size: 1.1rem;
+  color: #ef4444;
+  font-weight: 800;
+  font-size: 1.15rem;
 }
 
+/* Badges de Estado */
 .statusBadge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-block;
 }
 
-.pending { background: #fee2e2; color: #b91c1c; }
-.cut { background: #1f2937; color: #f3f4f6; }
+.cut {
+  background: rgba(100, 116, 139, 0.1);
+  color: #475569;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+.pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* Acciones por fila */
+.flexActions {
+  display: flex;
+  gap: 8px;
+}
+
+.actionBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnWhatsApp {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.btnWhatsApp:hover {
+  background: #16a34a;
+  color: white;
+}
+
+.btnPay {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+.btnPay:hover {
+  background: #2563eb;
+  color: white;
+}
 
 .emptyState {
-    text-align: center;
-    padding: 50px;
-    color: var(--text-muted);
+  text-align: center;
+  padding: 60px;
+  color: var(--text-muted);
+  font-size: 1.05rem;
 }
 
-/* --- ESTILOS DE IMPRESIÓN --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- CONFIGURACIÓN DE IMPRESIÓN --- */
+/* Cuando el usuario presiona "Imprimir", el navegador solo lee estas reglas */
 @media print {
-    .actions, .btnSecondary, .btnPrint {
-        display: none !important;
-    }
-    .container {
-        padding: 0;
-        max-width: 100%;
-    }
-    .table {
-        box-shadow: none;
-        border: 1px solid #ddd;
-    }
-    body {
-        background: white;
-        color: black;
-    }
-}
+  /* Ocultamos todo lo que no queremos imprimir */
+  aside, /* Oculta el Sidebar Lateral */
+    .header, /* Oculta el titulo y los botones de Copiar/Imprimir */
+    .kpiGrid, /* Oculta las tarjetas de colores (Gastan mucha tinta) */
+    .filterBar, /* Oculta el buscador */
+    .noPrint {
+    /* Oculta las columnas de acciones y la paginación */
+    display: none !important;
+  }
 
-@media (max-width: 600px) {
-    .btnText { display: none; }
+  /* Reseteamos el contenedor para que ocupe todo el ancho del papel */
+  .container,
+  .layout {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    background: white !important;
+  }
+
+  .tableWrapper {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .table th {
+    background: #f1f5f9 !important;
+    color: black !important;
+  }
+  .table td,
+  .table th {
+    border-bottom: 1px solid #ccc !important;
+  }
 }

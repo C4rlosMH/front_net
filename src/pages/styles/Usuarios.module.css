@@ -1,396 +1,167 @@
-/* =========================================
-   CONTENEDOR PRINCIPAL Y CABECERA
-========================================= */
 .container {
-    padding: 30px; /* Más espacio alrededor de la página */
-    max-width: 1200px; /* Limitar el ancho en pantallas muy grandes */
-    margin: 0 auto;
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
-
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
 }
-
 .title {
-    font-size: 1.75rem; /* Título un poco más grande */
-    font-weight: 800;
-    color: var(--text-main);
-    letter-spacing: -0.5px;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
 }
-
 .addButton {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 12px 24px; /* Botón más grande */
-    border-radius: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    transition: all 0.2s ease-in-out;
-    box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.2);
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }
-
 .addButton:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px -1px rgba(var(--primary-rgb), 0.3);
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
 }
 
-/* =========================================
-   TABLA DE USUARIOS (Diseño más limpio)
-========================================= */
+/* TABLA */
 .tableWrapper {
-    background: var(--body-bg);
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    overflow: hidden;
-    border: 1px solid var(--border);
+  background: var(--body-bg);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
-
 .table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
-
 .table th {
-    background: var(--bg-alt);
-    padding: 16px 20px; /* Más padding en cabeceras */
-    text-align: left;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--border);
+  background: var(--bg-alt);
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border);
 }
-
 .table td {
-    padding: 20px; /* Mucho más espacio en las celdas */
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
 }
-
 .table tr:last-child td {
-    border-bottom: none;
+  border-bottom: none;
 }
-
 .emptyState {
-    text-align: center;
-    padding: 50px;
-    color: var(--text-muted);
-    font-size: 1.1rem;
+  text-align: center;
+  padding: 50px;
+  color: var(--text-muted);
+  font-size: 1.1rem;
 }
 
-/* =========================================
-   TEXTOS Y BADGES
-========================================= */
+/* TEXTOS Y BADGES */
 .textMainBold {
-    font-weight: 700;
-    color: var(--text-main);
-    font-size: 1.05rem;
-    margin-bottom: 4px;
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 1.05rem;
+  margin-bottom: 4px;
 }
-
 .textMuted {
-    color: var(--text-muted);
-    font-size: 0.9rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
-
-/* Badges más modernos */
-.badgeAdmin, .badgeTecnico {
-    padding: 6px 12px;
-    border-radius: 20px; /* Bordes completamente redondeados */
-    font-size: 0.75rem;
-    font-weight: 800;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    letter-spacing: 0.5px;
-}
-
-.badgeAdmin {
-    background: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fecaca;
-}
-
+.badgeAdmin,
 .badgeTecnico {
-    background: #e0e7ff;
-    color: #3730a3;
-    border: 1px solid #c7d2fe;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.5px;
 }
-
+.badgeAdmin {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+.badgeTecnico {
+  background: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
 .statusActive {
-    color: #16a34a;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #dcfce7;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
+  color: #16a34a;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #dcfce7;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
 }
-
 .statusInactive {
-    color: #ef4444;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #fee2e2;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
+  color: #ef4444;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fee2e2;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
 }
 
-/* =========================================
-   BOTONES DE ACCION
-========================================= */
+/* BOTONES DE ACCIÓN */
 .btnToggle {
-    background: var(--bg-alt);
-    border: 1px solid var(--border);
-    cursor: pointer;
-    padding: 10px;
-    border-radius: 10px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-.btnToggleActive { color: #ef4444; }
-.btnToggleActive:hover { background: #fee2e2; border-color: #fca5a5; }
-
-.btnToggleInactive { color: #16a34a; }
-.btnToggleInactive:hover { background: #dcfce7; border-color: #86efac; }
-
-/* =========================================
-   MODAL ESPACIOSO (REDITADO)
-========================================= */
-.modalOverlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.7); /* Fondo un poco más oscuro */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-    padding: 20px;
+.btnToggleActive {
+  color: #ef4444;
 }
-
-.modal {
-    background: var(--body-bg);
-    width: 100%;
-    max-width: 700px; /* MUCHO MÁS ANCHO */
-    border-radius: 16px; /* Bordes más redondeados */
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    animation: modalSlideIn 0.3s ease-out;
+.btnToggleActive:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
 }
-
-@keyframes modalSlideIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+.btnToggleInactive {
+  color: #16a34a;
 }
-
-.modalHeader {
-    background: var(--bg-alt);
-    padding: 25px 35px; /* Más espacio en el header */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
+.btnToggleInactive:hover {
+  background: #dcfce7;
+  border-color: #86efac;
 }
-
-.modalHeaderTitle {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 1.4rem;
-    color: var(--text-main);
-    font-weight: 800;
-}
-
-.closeBtn {
-    background: var(--body-bg);
-    border: 1px solid var(--border);
-    height: 36px; width: 36px;
-    border-radius: 50%;
-    font-size: 1.5rem;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    color: var(--text-muted);
-    transition: all 0.2s;
-}
-
-.closeBtn:hover {
-    background: #fee2e2;
-    color: #ef4444;
-    border-color: #fca5a5;
-}
-
-.modalBody {
-    padding: 40px; /* MUCHO MÁS ESPACIO INTERNO */
-}
-
-/* =========================================
-   FORMULARIO ESPACIOSO
-========================================= */
-
-/* Usamos GRID en lugar de Flex para garantizar la separacion exacta de las columnas */
-.formRow {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Dos columnas de igual tamano */
-    gap: 25px; /* Espacio estricto entre las columnas */
-    margin-bottom: 25px; /* Separacion con la siguiente fila */
-    width: 100%;
-}
-
-/* Quitamos el flex: 1 ya que Grid controla el ancho ahora */
-.formRow .formGroup {
-    margin-bottom: 0;
-}
-
-.formGroup {
-    margin-bottom: 25px;
-    width: 100%; /* Asegura que no sobrepase el ancho */
-}
-
-.formGroup label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: 700;
-    color: var(--text-main);
-    font-size: 0.95rem;
-}
-
-.input, 
-.select {
-    width: 100%; /* 100% del contenedor padre (.formGroup) */
-    box-sizing: border-box; /* CRUCIAL: El padding y el borde no aumentan el ancho final */
-    padding: 14px 18px; 
-    border: 2px solid var(--border); 
-    border-radius: 10px;
-    background: var(--body-bg);
-    color: var(--text-main);
-    font-size: 1rem; 
-    transition: all 0.2s;
-}
-
-.input:focus, 
-.select:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: var(--bg-alt);
-    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
-}
-
-.input::placeholder {
-    color: var(--text-muted);
-    opacity: 0.7;
-}
-
-.inputError {
-    border-color: #ef4444 !important;
-    background-color: #fff5f5 !important;
-}
-
-.errorText {
-    color: #ef4444;
-    font-size: 0.85rem;
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: 600;
-}
-
-/* Warning Box mas limpio */
-.roleWarning {
-    background: #fff7ed;
-    border: 1px solid #fed7aa;
-    padding: 16px 20px;
-    border-radius: 10px;
-    margin-top: 15px;
-    font-size: 0.9rem;
-    color: #9a3412;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    line-height: 1.5;
-    box-sizing: border-box; /* CRUCIAL para que no se pegue al borde derecho */
-    width: 100%;
-}   
-
-/* =========================================
-   ACCIONES DEL MODAL (BOTONES)
-========================================= */
-.modalActions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    margin-top: 40px; /* Más separación del formulario */
-    border-top: 1px solid var(--border);
-    padding-top: 30px;
-}
-
-.btnCancel {
-    background: transparent;
-    border: 2px solid var(--border);
-    padding: 12px 24px;
-    border-radius: 10px;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-weight: 700;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-}
-
-.btnCancel:hover {
-    background: var(--bg-alt);
-    color: var(--text-main);
-    border-color: var(--text-muted);
-}
-
-.btnSubmit {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 12px 30px; /* Botón de guardar más ancho */
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.2s;
-    box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.2);
-}
-
-.btnSubmit:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 10px -1px rgba(var(--primary-rgb), 0.3);
-}
-
 .btnKey {
-     color: #f59e0b; 
+  color: #f59e0b;
 }
-
-.btnKey:hover { 
-    background: #fffbeb; border-color: #fde68a; 
+.btnKey:hover {
+  background: #fffbeb;
+  border-color: #fde68a;
 }

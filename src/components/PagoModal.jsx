@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import client from "../api/axios";
 import { toast } from "sonner";
-import { DollarSign, CheckCircle2, Clock, User } from "lucide-react";
+import { DollarSign, CheckCircle2, Clock, User, FileText } from "lucide-react";
 import styles from "./styles/PagoModal.module.css";
 
 function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
@@ -11,16 +11,17 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
     const [tipoPago, setTipoPago] = useState("LIQUIDACION");
     const [metodoPago, setMetodoPago] = useState("EFECTIVO");
     const [mesPago, setMesPago] = useState("");
+    const [nota, setNota] = useState(""); // Nuevo estado para la nota
 
     useEffect(() => {
         if (isOpen) {
             cargarClientes();
         } else {
-            // Limpiar el estado al cerrar para que no se quede pegado el cliente anterior
             setClienteSeleccionadoId("");
             setMontoAbono("");
             setTipoPago("LIQUIDACION");
             setMetodoPago("EFECTIVO");
+            setNota(""); // Limpiar nota al cerrar
         }
     }, [isOpen, clienteIdPreseleccionado]);
 
@@ -42,9 +43,8 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
             setClientes(lista);
             
             const meses = generarMeses();
-            setMesPago(meses[1]); // Mes actual por defecto
+            setMesPago(meses[1]); 
 
-            // Si le pasamos un ID desde el Dashboard o Clientes, lo preseleccionamos
             if (clienteIdPreseleccionado) {
                 procesarSeleccionCliente(clienteIdPreseleccionado.toString(), lista);
             }
@@ -84,11 +84,12 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
                 tipo_pago: tipoPago,
                 metodo_pago: metodoPago,
                 mes_servicio: mesPago,
+                descripcion: nota.trim() !== "" ? nota : undefined // Enviamos la nota si no está vacía
             });
             toast.success("Pago registrado correctamente");
             
-            if (onSuccess) onSuccess(); // Disparamos la función para recargar la tabla que llamó al modal
-            onClose(); // Cerramos el modal
+            if (onSuccess) onSuccess(); 
+            onClose(); 
         } catch (error) { 
             toast.error("Error al registrar pago"); 
         }
@@ -108,7 +109,6 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
                 </div>
                 
                 <form onSubmit={handleRegistrarPago}>
-                    {/* SELECCIÓN DE CLIENTE */}
                     <div className={styles.formGroup}>
                         <label>Seleccionar Cliente</label>
                         <div style={{position:'relative'}}>
@@ -118,7 +118,7 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
                                 onChange={(e) => procesarSeleccionCliente(e.target.value, clientes)} 
                                 className={styles.select}
                                 style={{paddingLeft: 35}}
-                                autoFocus={!clienteIdPreseleccionado} // Solo hace focus si no hay cliente preseleccionado
+                                autoFocus={!clienteIdPreseleccionado} 
                             >
                                 <option value="">-- Buscar Cliente --</option>
                                 {clientes.map(c => (
@@ -129,18 +129,16 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
                             </select>
                         </div>
                         
-                        {/* Mostrar Deuda si hay cliente seleccionado */}
                         {clienteActivo && (
                             <div className={styles.deudaBox}>
                                 <span className={styles.muted}>Plan: {clienteActivo.plan?.nombre || 'Sin Plan'}</span>
                                 <span style={{fontWeight:'bold', color: clienteActivo.saldo_actual > 0 ? '#ef4444' : '#16a34a'}}>
-                                    {clienteActivo.saldo_actual > 0 ? `Debe: $${clienteActivo.saldo_actual}` : 'Al día'}
+                                    {clienteActivo.saldo_actual > 0 ? `Debe: $${clienteActivo.saldo_actual}` : 'Al corriente'}
                                 </span>
                             </div>
                         )}
                     </div>
 
-                    {/* TABS TIPO PAGO */}
                     <div className={styles.typeSelector}>
                         <button type="button" onClick={()=>{setTipoPago("LIQUIDACION"); if(clienteActivo) setMontoAbono(clienteActivo.saldo_actual)}} className={`${styles.typeButton} ${tipoPago==='LIQUIDACION' ? styles.typeActive : styles.typeInactive}`}>
                             <CheckCircle2 size={16}/> Liquidar
@@ -161,11 +159,11 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
                             </select>
                         </div>
                         <div className={styles.formGroup}>
-                            <label>Método de Pago</label>
+                            <label>Metodo de Pago</label>
                             <select value={metodoPago} onChange={e=>setMetodoPago(e.target.value)} className={styles.select} disabled={tipoPago === 'APLAZADO'}>
-                                <option value="EFECTIVO">Efectivo 💵</option>
-                                <option value="TRANSFERENCIA">Transferencia 🏦</option>
-                                <option value="DEPOSITO">Depósito 🏪</option>
+                                <option value="EFECTIVO">Efectivo</option>
+                                <option value="TRANSFERENCIA">Transferencia</option>
+                                <option value="DEPOSITO">Deposito</option>
                             </select>
                         </div>
                     </div>
@@ -183,6 +181,22 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
                                 disabled={tipoPago === 'APLAZADO'} 
                             />
                             <span style={{position:'absolute', left:12, top:12, color:'var(--text-muted)', fontWeight:'bold'}}>$</span>
+                        </div>
+                    </div>
+
+                    {/* NUEVO CAMPO DE NOTA/CONCEPTO */}
+                    <div className={styles.formGroup}>
+                        <label>Concepto o Nota (Opcional)</label>
+                        <div style={{position:'relative'}}>
+                            <FileText size={18} style={{position:'absolute', top:12, left:10, color:'var(--text-muted)'}}/>
+                            <textarea 
+                                value={nota}
+                                onChange={e=>setNota(e.target.value)}
+                                className={styles.textarea}
+                                placeholder="Ej: Intercambio por servicios, abono parcial..."
+                                rows="2"
+                                style={{paddingLeft: 35, resize: 'none'}}
+                            />
                         </div>
                     </div>
 

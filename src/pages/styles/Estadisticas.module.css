@@ -1,169 +1,382 @@
 .container {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 30px;
 }
 
 .title {
-    font-size: 1.8rem;
-    color: var(--text-main);
-    margin: 0;
-    font-weight: 700;
+  font-size: 1.8rem;
+  color: var(--text-main);
+  margin: 0;
+  font-weight: 800;
 }
 
 .subtitle {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-top: 5px;
-}
-
-.sectionTitle {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-main);
-    margin-bottom: 15px;
-    margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-top: 5px;
 }
 
 .exportButton {
-    background-color: var(--card-bg);
-    color: var(--text-main);
-    border: 1px solid var(--border);
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.2s;
+  background-color: var(--card-bg);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .exportButton:hover {
-    background-color: var(--body-bg);
+  background-color: var(--body-bg);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
 }
 
-.gridSplit {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 30px;
+/* --- 1. TARJETAS KPI --- */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
 }
 
-.splitCard {
-    background: var(--card-bg);
-    padding: 25px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
+.kpiCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.splitCard h3 {
-    margin: 0 0 20px 0;
-    font-size: 1rem;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.kpiCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 }
 
-.quincenaRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
+.kpiIconWrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.qItem { text-align: center; }
-
-.qItem span {
-    display: block;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-bottom: 5px;
+.kpiInfo {
+  display: flex;
+  flex-direction: column;
 }
 
-.qItem strong {
-    font-size: 1.4rem;
-    color: var(--text-main);
+.kpiLabel {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.qDivider {
-    width: 1px;
-    height: 40px;
-    background: var(--border);
+.kpiValue {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
 }
 
-.projValue {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #2563eb;
-    text-align: center;
-}
-
-.projDetails {
-    text-align: center;
-    margin-top: 5px;
-    font-size: 0.85rem;
-}
-
-.alertBanner {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    color: #b91c1c;
-    padding: 15px 20px;
-    border-radius: 10px;
-    margin-bottom: 30px;
-}
-
+/* --- 2. GRÁFICAS PRINCIPALES --- */
 .chartsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.span2 {
+  grid-column: span 2;
 }
 
 .chartCard {
-    background: var(--card-bg);
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    padding: 20px;
-    height: 350px;
-    display: flex;
-    flex-direction: column;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 25px;
+  height: 380px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
 .cardHeader {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
 }
 
 .cardHeader h3 {
-    margin: 0;
-    font-size: 1rem;
-    color: var(--text-main);
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-main);
+  font-weight: 700;
 }
 
-.icon { color: var(--text-muted); }
+.cardSubtitle {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
 
-.chartWrapper { flex: 1; min-height: 0; }
+.cardHeaderSmall {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 15px;
+}
+
+.cardHeaderSmall h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-main);
+}
+
+.chartWrapper {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+/* --- 3. DETALLES OPERATIVOS --- */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.bottomGrid .chartCard {
+  height: auto;
+  min-height: 300px;
+}
+
+/* Quincenas */
+.quincenaContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding-top: 10px;
+}
+
+.qBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.qTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.qTitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.qPercent {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.qAmount {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 5px 0 10px 0;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: var(--body-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease-in-out;
+}
+
+/* Morosidad */
+.morosidadContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.morosidadTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.morosidadTotal span {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.textRed {
+  font-size: 1.4rem;
+  color: #ef4444;
+}
+
+.morosidadDesc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 15px 0;
+}
+
+.deudoresList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.deudorItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: var(--body-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.deudorInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.deudorName {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.deudorAddress {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.deudorDeuda {
+  color: #ef4444;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.noDeudores {
+  text-align: center;
+  padding: 20px;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.viewAllBtn {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.viewAllBtn:hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.iconBlue {
+  color: #3b82f6;
+}
+.iconRed {
+  color: #ef4444;
+}
 
 .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 300px;
-    color: var(--text-muted);
-    font-size: 1.1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+  .span2 {
+    grid-column: span 1;
+  }
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
-    .gridSplit { grid-template-columns: 1fr; }
-    .chartCard { grid-column: span 1 !important; }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
 }

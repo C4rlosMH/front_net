@@ -1,151 +1,129 @@
-import { Outlet, Navigate, Link, useLocation } from "react-router-dom";
+import { Outlet, NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import styles from "./MainLayout.module.css"; 
-import logo from "../assets/logo.png"; 
-
 import { 
-    LayoutDashboard, 
-    Users, 
-    Router, 
-    Wallet, 
-    LogOut, 
-    Moon, 
-    Sun, 
-    User,
-    Map,
-    FileText,
-    BarChart2, 
-    Server,
-    ShieldCheck 
+    LayoutDashboard, Users, Server, Wifi, Map as MapIcon, 
+    LogOut, Activity, BarChart2, DollarSign, Package, 
+    Scissors, ShieldCheck, Sun, Moon, Hexagon
 } from "lucide-react";
+import styles from "./MainLayout.module.css";
+// Si tienes un logo en assets, puedes usarlo. Si no, usaremos el icono Hexagon
+// import logo from "../assets/logo.png"; 
 
-const MainLayout = () => {
-    const { isAuthenticated, loading, logout, user } = useAuth();
+function MainLayout() {
+    const { logout, user } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const location = useLocation();
+    const navigate = useNavigate();
 
-    if (loading) return <div>Cargando...</div>;
-    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
 
     return (
         <div className={styles.layout}>
+            {/* SIDEBAR LATERAL */}
             <aside className={styles.sidebar}>
-                <div className={styles.logoArea}>
-                    <img src={logo} alt="M" className={styles.logoImg} /> 
+                
+                {/* CABECERA (LOGO Y NOMBRE) */}
+                <div className={styles.sidebarHeader}>
+                    <div className={styles.logoBox}>
+                        <Hexagon size={24} color="white" fill="currentColor"/>
+                    </div>
+                    <h2 className={styles.brandName}>NetAdmin</h2>
                 </div>
 
-                <nav className={styles.nav}>
-                    <Link 
-                        to="/dashboard" 
-                        className={`${styles.link} ${location.pathname === '/dashboard' || location.pathname === '/' ? styles.linkActive : ''}`}
-                    >
-                        <LayoutDashboard size={20} /> 
-                        <span>Dashboard</span>
-                    </Link>
-
-                    <Link 
-                        to="/estadisticas" 
-                        className={`${styles.link} ${location.pathname === '/estadisticas' ? styles.linkActive : ''}`}
-                    >
-                        <BarChart2 size={20} />
-                        <span>Estadísticas</span>
-                    </Link>
+                {/* MENÚ DE NAVEGACIÓN DIVIDIDO POR SECCIONES */}
+                <div className={styles.navMenu}>
                     
-                    <Link 
-                        to="/clientes" 
-                        className={`${styles.link} ${location.pathname === '/clientes' ? styles.linkActive : ''}`}
-                    >
-                        <Users size={20} />
-                        <span>Clientes</span>
-                    </Link>
+                    {/* SECCIÓN 1: Principal */}
+                    <div className={styles.navSection}>
+                        <span className={styles.sectionTitle}>Principal</span>
+                        <NavLink to="/dashboard" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <LayoutDashboard size={20} /> <span>Inicio</span>
+                        </NavLink>
+                        <NavLink to="/estadisticas" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <BarChart2 size={20} /> <span>Estadísticas</span>
+                        </NavLink>
+                        <NavLink to="/mapa" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <MapIcon size={20} /> <span>Mapa de Red</span>
+                        </NavLink>
+                    </div>
 
-                    <Link 
-                        to="/cajas" 
-                        className={`${styles.link} ${location.pathname === '/cajas' ? styles.linkActive : ''}`}
-                    >
-                        <Server size={20} />
-                        <span>Cajas NAP</span>
-                    </Link>
+                    {/* SECCIÓN 2: Gestión Comercial */}
+                    <div className={styles.navSection}>
+                        <span className={styles.sectionTitle}>Comercial</span>
+                        <NavLink to="/clientes" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <Users size={20} /> <span>Cartera de Clientes</span>
+                        </NavLink>
+                        <NavLink to="/pagos" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <DollarSign size={20} /> <span>Finanzas y Pagos</span>
+                        </NavLink>
+                        <NavLink to="/cortes" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <Scissors size={20} /> <span>Cortes de Servicio</span>
+                        </NavLink>
+                    </div>
 
-                    <Link 
-                        to="/mapa" 
-                        className={`${styles.link} ${location.pathname === '/mapa' ? styles.linkActive : ''}`}
-                    >
-                        <Map size={20} />
-                        <span>Mapa de Red</span>
-                    </Link>
+                    {/* SECCIÓN 3: Infraestructura Técnica */}
+                    <div className={styles.navSection}>
+                        <span className={styles.sectionTitle}>Infraestructura</span>
+                        <NavLink to="/cajas" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <Server size={20} /> <span>Cajas NAP</span>
+                        </NavLink>
+                        <NavLink to="/equipos" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <Package size={20} /> <span>Inventario Equipos</span>
+                        </NavLink>
+                        <NavLink to="/planes" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <Wifi size={20} /> <span>Planes de Internet</span>
+                        </NavLink>
+                    </div>
+
+                    {/* SECCIÓN 4: Administración */}
+                    <div className={styles.navSection}>
+                        <span className={styles.sectionTitle}>Administración</span>
+                        <NavLink to="/usuarios" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <ShieldCheck size={20} /> <span>Usuarios del Sistema</span>
+                        </NavLink>
+                        <NavLink to="/logs" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <Activity size={20} /> <span>Registro de Actividad</span>
+                        </NavLink>
+                    </div>
+                </div>
+
+                {/* PIE DEL SIDEBAR (PERFIL, TEMA Y SALIR) */}
+                <div className={styles.sidebarFooter}>
                     
-                    <Link 
-                        to="/equipos" 
-                        className={`${styles.link} ${location.pathname === '/equipos' ? styles.linkActive : ''}`}
-                    >
-                        <Router size={20} />
-                        <span>Inventario</span>
-                    </Link>
-                    
-                    <Link 
-                        to="/pagos" 
-                        className={`${styles.link} ${location.pathname === '/pagos' ? styles.linkActive : ''}`}
-                    >
-                        <Wallet size={20} />
-                        <span>Finanzas</span>
+                    {/* Tarjeta de Perfil de Usuario */}
+                    <Link to="/perfil" className={styles.userInfo} title="Ir a mi perfil">
+                        <div className={styles.avatar}>
+                            {user?.username?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div className={styles.userDetails}>
+                            <span className={styles.userName}>{user?.nombre || 'Administrador'}</span>
+                            <span className={styles.userRole}>{user?.rol || 'Staff'}</span>
+                        </div>
                     </Link>
 
-                    <Link 
-                        to="/planes" 
-                        className={`${styles.link} ${location.pathname === '/planes' ? styles.linkActive : ''}`}
-                    >
-                        <FileText size={20} />
-                        <span>Planes</span>
-                    </Link>
+                    {/* Botones de acción */}
+                    <div className={styles.footerActions}>
+                        <button className={styles.themeToggle} onClick={toggleTheme} title="Cambiar tema">
+                            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                        </button>
+                        
+                        <button onClick={handleLogout} className={styles.logoutBtn} title="Cerrar Sesión">
+                            <LogOut size={18} /> <span>Salir</span>
+                        </button>
+                    </div>
 
-                    <Link 
-                        to="/logs" 
-                        className={`${styles.link} ${location.pathname === '/logs' ? styles.linkActive : ''}`}
-                    >
-                        <FileText size={20} />
-                        <span>Registros</span>
-                    </Link>
-
-                    {user?.rol === 'ADMIN' && (
-                        <Link 
-                            to="/usuarios" 
-                            className={`${styles.link} ${location.pathname === '/usuarios' ? styles.linkActive : ''}`}
-                        >
-                            <ShieldCheck size={20} />
-                            <span>Staff / Usuarios</span>
-                        </Link>
-                    )}
-                </nav>
-
-                <div className={styles.userArea}>
-                    <Link 
-                        to="/perfil" 
-                        className={styles.userName} 
-                        title="Ver mi perfil"
-                    >
-                        <User size={18} /> 
-                        {user?.nombre}
-                    </Link>
-                    
-                    <button onClick={toggleTheme} className={styles.themeBtn}>
-                        {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-                        {theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
-                    </button>
-
-                    <button onClick={logout} className={styles.logoutBtn}>
-                        <LogOut size={16} />
-                        Cerrar Sesión
-                    </button>
                 </div>
             </aside>
 
-            <main className={styles.content}>
+            {/* CONTENEDOR PRINCIPAL DONDE RENDERIZAN LAS VISTAS */}
+            <main className={styles.mainContent}>
                 <Outlet />
             </main>
         </div>
     );
-};
+}
 
 export default MainLayout;

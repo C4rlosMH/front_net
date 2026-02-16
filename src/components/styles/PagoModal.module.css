@@ -48,7 +48,7 @@
     font-weight: 600;
 }
 
-.input, .select {
+.input, .select, .textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid var(--border);
@@ -57,9 +57,10 @@
     color: var(--text-main);
     box-sizing: border-box;
     font-size: 0.95rem;
+    font-family: inherit; /* Para que el textarea mantenga la misma fuente */
 }
 
-.input:focus, .select:focus {
+.input:focus, .select:focus, .textarea:focus {
     outline: none;
     border-color: var(--primary);
 }

@@ -1,0 +1,93 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal {
+  background: var(--card-bg);
+  width: 450px;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+}
+.modal h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--text-main);
+  font-size: 1.4rem;
+}
+.formGroup {
+  margin-bottom: 15px;
+}
+.formGroup label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.input,
+.textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-sizing: border-box;
+  background: var(--body-bg);
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+.textarea {
+  resize: vertical;
+}
+.modalActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+}
+.btnCancel {
+  flex: 1;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-main);
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.btnCancel:hover {
+  background: var(--body-bg);
+}
+.btnSubmit {
+  flex: 1;
+  padding: 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: filter 0.2s;
+}
+.btnSubmit:hover {
+  filter: brightness(1.1);
+}

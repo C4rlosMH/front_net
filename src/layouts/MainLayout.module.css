@@ -1,141 +1,234 @@
+/* --- ESTRUCTURA GENERAL --- */
 .layout {
     display: flex;
     height: 100vh;
+    background-color: var(--body-bg);
     overflow: hidden;
 }
 
-/* Sidebar Oscuro */
+/* --- SIDEBAR LATERAL --- */
 .sidebar {
-    width: 260px;
-    background-color: var(--dark-bg);
-    color: var(--dark-text);
+    width: 270px;
+    background-color: var(--card-bg);
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
     flex-shrink: 0;
-    transition: background-color 0.3s;
+    z-index: 100;
+    transition: width 0.3s ease;
 }
 
-.logoArea {
-    padding: 20px;
+/* Cabecera del Sidebar */
+.sidebarHeader {
+    padding: 20px 24px;
     display: flex;
     align-items: center;
     gap: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid var(--border);
+    height: 75px; /* Altura fija para alinear bien */
+    box-sizing: border-box;
 }
 
-.logoImg {
-    height: 60px;
+.logoBox {
+    width: 36px;
+    height: 36px;
+    background-color: var(--primary);
+    border-radius: 10px;
+    display: flex;
     align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .brandName {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--dark-text);
-    letter-spacing: 0.5px;
-}
-
-.nav {
-    padding: 20px 10px;
-    flex: 1;
-}
-
-.link {
-    display: flex;             
-    align-items: center;       
-    gap: 12px;                 
-    padding: 12px 15px;
-    margin-bottom: 5px;
-    border-radius: 8px;
-    text-decoration: none;
-    color: var(--dark-text);
-    transition: all 0.2s;
-    font-weight: 400;
-}
-
-.link:hover {
-    background-color: rgba(255,255,255,0.08);
-    color: white;
-}
-
-.linkActive {
-    background-color: var(--primary);
-    color: white;
-    font-weight: 600;
-}
-
-.content {
-    flex: 1;
-    background-color: var(--body-bg);
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
     color: var(--text-main);
+    letter-spacing: -0.5px;
+}
+
+/* --- MENÚ DE NAVEGACIÓN --- */
+.navMenu {
+    flex: 1;
     overflow-y: auto;
-    position: relative;
-    padding: 0;
-    transition: background-color 0.3s;
+    padding: 25px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* Separación amplia entre secciones */
 }
 
-.userArea {
-    padding: 20px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    background-color: rgba(0,0,0,0.2);
+/* Personalizar barra de desplazamiento del menú */
+.navMenu::-webkit-scrollbar {
+    width: 4px;
+}
+.navMenu::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 4px;
 }
 
-/* Estilos actualizados para que el nombre actúe como un enlace */
-.userName {
-    margin-bottom: 15px;
-    font-size: 0.9rem;
-    color: var(--dark-text);
-    font-weight: 600;
+/* Secciones */
+.navSection {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sectionTitle {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+    padding-left: 12px;
+}
+
+/* Items individuales (Links) */
+.navItem {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
     text-decoration: none;
-    transition: color 0.2s;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
 }
 
-.userName:hover {
-    color: white;
+.navItem:hover {
+    background-color: var(--body-bg);
+    color: var(--text-main);
 }
 
-.themeBtn {
-    width: 100%;
-    margin-bottom: 10px;
+.active {
+    background-color: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+}
+
+.active:hover {
+    background-color: rgba(37, 99, 235, 0.15);
+}
+
+/* --- PIE DEL SIDEBAR (FOOTER) --- */
+.sidebarFooter {
+    padding: 20px 15px;
+    border-top: 1px solid var(--border);
+    background-color: var(--card-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Tarjeta de Usuario */
+.userInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     padding: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--dark-text);
-    border-radius: 6px;
+    background-color: var(--body-bg);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; /* Quita el subrayado del link */
+    cursor: pointer; /* Cambia el cursor a una mano */
+    transition: all 0.2s ease; /* Transición suave */
+}
+
+.userInfo:hover {
+    background-color: var(--card-bg);
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background-color: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.userDetails {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.userName {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.userRole {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Botones de acción inferiores */
+.footerActions {
+    display: flex;
+    gap: 10px;
+}
+
+.themeToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: transparent;
+    color: var(--text-muted);
     cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.themeToggle:hover {
+    background-color: var(--body-bg);
+    color: var(--text-main);
+    border-color: var(--primary);
+}
+
+.logoutBtn {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-size: 0.85rem;
-    transition: background 0.2s, border-color 0.2s;
-}
-
-.themeBtn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.logoutBtn {
-    width: 100%;
-    padding: 8px;
-    background: transparent;
-    border: 1px solid rgba(239, 68, 68, 0.4);
-    color: #f87171;
-    border-radius: 6px;
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background-color: rgba(239, 68, 68, 0.05);
+    color: #ef4444;
     cursor: pointer;
-    font-size: 0.85rem;
-    transition: background 0.2s;
-    display: flex;             
-    align-items: center;       
-    justify-content: center;   
-    gap: 8px;                  
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
 }
 
 .logoutBtn:hover {
-    background: rgba(239, 68, 68, 0.15);
+    background-color: #ef4444;
+    color: white;
+}
+
+/* --- ÁREA PRINCIPAL --- */
+.mainContent {
+    flex: 1;
+    overflow-y: auto;
+    background-color: var(--body-bg);
+    position: relative;
 }

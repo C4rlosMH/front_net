@@ -1,79 +1,351 @@
+/* Contenedor principal con fondo técnico y malla sutil */
 .container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: var(--body-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: var(--body-bg);
+  /* Un ligero patrón de puntos para que parezca una interfaz de software */
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 24px 24px;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-.card {
-    background-color: var(--card-bg);
-    padding: 3rem;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    border: 1px solid var(--border);
+/* La tarjeta ancha que contiene ambas mitades */
+.authWrapper {
+  display: flex;
+  width: 100%;
+  max-width: 950px;
+  min-height: 550px;
+  background-color: var(--card-bg);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.logoArea {
-    text-align: center;
-    margin-bottom: 2rem;
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.logo {
-    height: 100px;
-    object-fit: contain;
+/* --- PANEL IZQUIERDO (SISTEMA Y SEGURIDAD) --- */
+.systemPanel {
+  flex: 1;
+  background: linear-gradient(145deg, #0f172a 0%, #1e3a8a 100%);
+  color: white;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decoración abstracta en el panel oscuro */
+.systemPanel::after {
+  content: "";
+  position: absolute;
+  bottom: -100px;
+  right: -100px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.3) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.systemHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.logoBox {
+  width: 42px;
+  height: 42px;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brandText {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.systemStatus {
+  position: relative;
+  z-index: 2;
+  margin-top: 40px;
+}
+
+/* Indicador de sistema online con parpadeo */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+
+.pulseDot {
+  width: 8px;
+  height: 8px;
+  background-color: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(52, 211, 153, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+  }
+}
+
+.systemStatus h2 {
+  font-size: 2.2rem;
+  line-height: 1.2;
+  margin: 0 0 15px 0;
+  font-weight: 800;
+}
+
+.systemStatus p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.securityIndicators {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  position: relative;
+  z-index: 2;
+  margin-top: 60px;
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 15px;
+  border-radius: 8px;
+  border-left: 3px solid #3b82f6;
+}
+
+.indicatorIcon {
+  color: #60a5fa;
+}
+
+/* --- PANEL DERECHO (FORMULARIO) --- */
+.formPanel {
+  flex: 1;
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: var(--card-bg);
+}
+
+.formHeader {
+  margin-bottom: 35px;
+}
+
+.formHeader h2 {
+  font-size: 1.6rem;
+  margin: 0 0 8px 0;
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+.formHeader p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
 .inputGroup {
-    margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    font-weight: 500;
+.inputGroup label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.input {
-    width: 100%;
-    padding: 0.85rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 1rem;
-    box-sizing: border-box;
-    transition: border-color 0.2s;
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(47, 154, 255, 0.1);
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color 0.2s;
 }
 
-.button {
-    width: 100%;
-    padding: 0.85rem;
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    margin-top: 1.5rem;
-    transition: background-color 0.2s;
+.inputWrapper input {
+  width: 100%;
+  padding: 14px 14px 14px 44px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background-color: var(--body-bg);
+  color: var(--text-main);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
-.button:hover {
-    background-color: var(--primary-hover);
+.inputWrapper input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background-color: var(--card-bg);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
-.errorMsg {
-    color: var(--danger);
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
+.inputWrapper input:focus + .inputIcon {
+  color: var(--primary);
+}
+
+.submitBtn {
+  margin-top: 15px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+  background-color: var(--primary-hover);
+}
+
+.submitBtn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.formFooter {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+  .authWrapper {
+    flex-direction: column;
+    max-width: 500px;
+    min-height: auto;
+  }
+  .systemPanel {
+    padding: 30px;
+  }
+  .securityIndicators {
+    display: none; /* Ocultamos indicadores en móvil para ahorrar espacio */
+  }
+  .systemStatus {
+    margin-top: 20px;
+  }
+  .systemStatus h2 {
+    font-size: 1.8rem;
+  }
+  .formPanel {
+    padding: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+  .authWrapper {
+    border-radius: 16px;
+  }
+  .systemPanel,
+  .formPanel {
+    padding: 20px;
+  }
 }

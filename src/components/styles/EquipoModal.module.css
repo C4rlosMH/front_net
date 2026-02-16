@@ -1,0 +1,122 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal {
+  background: var(--card-bg);
+  width: 550px;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal::-webkit-scrollbar {
+  display: none;
+}
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  color: var(--text-main);
+}
+.modalHeader h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+.closeBtn {
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.closeBtn:hover {
+  color: #ef4444;
+}
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.formGroup {
+  margin-bottom: 15px;
+}
+.formGroup label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.input,
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--body-bg);
+  color: var(--text-main);
+  box-sizing: border-box;
+  font-size: 0.95rem;
+}
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
+}
+.btnCancel {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.btnCancel:hover {
+  background-color: var(--body-bg);
+}
+.btnSubmit {
+  padding: 10px 20px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btnSubmit:hover {
+  background-color: var(--primary-hover);
+}
+.estadoEditContainer {
+  margin-top: 15px;
+  padding: 10px;
+  background: #fff7ed;
+  border-radius: 8px;
+  border: 1px solid #fed7aa;
+}
+.estadoEditLabel {
+  color: #c2410c !important;
+  font-weight: bold !important;
+  display: block;
+  margin-bottom: 5px;
+}
+.estadoEditSelect {
+  border-color: #fb923c;
+}
