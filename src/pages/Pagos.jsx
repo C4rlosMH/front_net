@@ -11,34 +11,36 @@ import styles from "./styles/Pagos.module.css";
 
 function Pagos() {
     const [movimientos, setMovimientos] = useState([]);
+    const [totalItems, setTotalItems] = useState(0); 
     const [loading, setLoading] = useState(true);
     
-    // Filtros y Búsqueda
     const [busqueda, setBusqueda] = useState("");
     const [filtroTipo, setFiltroTipo] = useState("TODOS");
     const [filtroMetodo, setFiltroMetodo] = useState("TODOS");
 
-    // Modal Global
     const [modalPagoOpen, setModalPagoOpen] = useState(false);
 
-    // Paginación
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 15;
 
     useEffect(() => {
         cargarDatos();
-    }, []);
-
-    // Resetear a página 1 cuando se usan los filtros
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [busqueda, filtroTipo, filtroMetodo]);
+    }, [currentPage, busqueda, filtroTipo, filtroMetodo]);
 
     const cargarDatos = async () => {
         try {
             setLoading(true);
-            const res = await client.get("/pagos");
-            setMovimientos(res.data);
+            const res = await client.get("/pagos", {
+                params: {
+                    page: currentPage,
+                    limit: itemsPerPage,
+                    tipo: filtroTipo,
+                    metodo: filtroMetodo,
+                    search: busqueda
+                }
+            });
+            setMovimientos(res.data.movimientos || res.data || []);
+            setTotalItems(res.data.total || (res.data ? res.data.length : 0));
         } catch (error) {
             console.error(error);
             toast.error("Error al cargar el historial financiero");
@@ -47,47 +49,11 @@ function Pagos() {
         }
     };
 
-    // --- KPIs y Cálculos ---
     const hoy = new Date().toDateString();
-    const mesActual = new Date().getMonth();
-    const añoActual = new Date().getFullYear();
-
     const ingresosHoy = movimientos
         .filter(m => m.tipo === 'ABONO' && new Date(m.fecha).toDateString() === hoy)
         .reduce((acc, curr) => acc + parseFloat(curr.monto), 0);
 
-    const ingresosMes = movimientos
-        .filter(m => {
-            const fechaMov = new Date(m.fecha);
-            return m.tipo === 'ABONO' && fechaMov.getMonth() === mesActual && fechaMov.getFullYear() === añoActual;
-        })
-        .reduce((acc, curr) => acc + parseFloat(curr.monto), 0);
-
-    // --- Filtrado Dinámico ---
-    const movimientosFiltrados = movimientos.filter(m => {
-        // Filtro por Búsqueda (Nombre de cliente o Descripción/Nota)
-        let coincideBusqueda = true;
-        if (busqueda) {
-            const term = busqueda.toLowerCase();
-            const clienteStr = m.cliente?.nombre_completo?.toLowerCase() || "";
-            const descStr = m.descripcion?.toLowerCase() || "";
-            coincideBusqueda = clienteStr.includes(term) || descStr.includes(term);
-        }
-
-        // Filtro por Tipo de Movimiento
-        let coincideTipo = filtroTipo === "TODOS" || m.tipo === filtroTipo;
-
-        // Filtro por Método de Pago
-        let coincideMetodo = filtroMetodo === "TODOS" || m.metodo_pago === filtroMetodo;
-
-        return coincideBusqueda && coincideTipo && coincideMetodo;
-    });
-
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = movimientosFiltrados.slice(indexOfFirstItem, indexOfLastItem);
-
-    // Helpers Visuales
     const getMetodoIcon = (metodo) => {
         switch(metodo) {
             case 'EFECTIVO': return <Banknote size={14} />;
@@ -116,7 +82,6 @@ function Pagos() {
                 </div>
             </div>
 
-            {/* --- TARJETAS DE RESUMEN (KPIs) --- */}
             <div className={styles.statsRow}>
                 <div className={styles.statCard}>
                     <div className={styles.iconBoxIngreso}><ArrowUpRight size={24}/></div>
@@ -126,30 +91,22 @@ function Pagos() {
                     </div>
                 </div>
                 <div className={styles.statCard}>
-                    <div className={styles.iconBoxMes}><Calendar size={24}/></div>
-                    <div className={styles.statInfo}>
-                        <span className={styles.statLabel}>Ingresos del Mes</span>
-                        <h3 className={styles.statValue}>${ingresosMes.toLocaleString('en-US', {minimumFractionDigits: 2})}</h3>
-                    </div>
-                </div>
-                <div className={styles.statCard}>
                     <div className={styles.iconBoxTransacciones}><FileText size={24}/></div>
                     <div className={styles.statInfo}>
                         <span className={styles.statLabel}>Total Operaciones</span>
-                        <h3 className={styles.statValue}>{movimientosFiltrados.length} <small style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>filtradas</small></h3>
+                        <h3 className={styles.statValue}>{totalItems} <small className={styles.smallText}>históricas</small></h3>
                     </div>
                 </div>
             </div>
 
-            {/* --- BARRA DE FILTROS --- */}
             <div className={styles.filterBar}>
                 <div className={styles.searchBox}>
                     <Search size={18} className={styles.searchIcon}/>
                     <input 
                         type="text" 
-                        placeholder="Buscar por cliente o nota (Ej: abono parcial)..." 
+                        placeholder="Buscar por cliente o nota..." 
                         value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
+                        onChange={(e) => {setBusqueda(e.target.value); setCurrentPage(1);}}
                         className={styles.searchInput}
                     />
                 </div>
@@ -157,7 +114,7 @@ function Pagos() {
                 <div className={styles.filtersWrapper}>
                     <div className={styles.selectGroup}>
                         <Filter size={16} className={styles.selectIcon}/>
-                        <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)} className={styles.selectFilter}>
+                        <select value={filtroTipo} onChange={(e) => {setFiltroTipo(e.target.value); setCurrentPage(1);}} className={styles.selectFilter}>
                             <option value="TODOS">Todos los tipos</option>
                             <option value="ABONO">Abonos (Ingresos)</option>
                             <option value="CARGO_MENSUAL">Cargos Mensuales</option>
@@ -167,7 +124,7 @@ function Pagos() {
 
                     <div className={styles.selectGroup}>
                         <Wallet size={16} className={styles.selectIcon}/>
-                        <select value={filtroMetodo} onChange={(e) => setFiltroMetodo(e.target.value)} className={styles.selectFilter}>
+                        <select value={filtroMetodo} onChange={(e) => {setFiltroMetodo(e.target.value); setCurrentPage(1);}} className={styles.selectFilter}>
                             <option value="TODOS">Cualquier Método</option>
                             <option value="EFECTIVO">Efectivo</option>
                             <option value="TRANSFERENCIA">Transferencia</option>
@@ -178,7 +135,6 @@ function Pagos() {
                 </div>
             </div>
 
-            {/* --- TABLA --- */}
             <div className={styles.tableWrapper}>
                 {loading ? (
                     <div className={styles.emptyState}>Cargando registros financieros...</div>
@@ -187,20 +143,20 @@ function Pagos() {
                         <table className={styles.table}>
                             <thead>
                                 <tr>
-                                    <th>Fecha y Hora</th>
+                                    <th className={styles.colFecha}>Fecha y Hora</th>
                                     <th>Cliente</th>
-                                    <th>Concepto / Notas</th>
+                                    <th className={styles.colConcepto}>Concepto / Notas</th>
                                     <th>Método</th>
-                                    <th style={{textAlign: 'right'}}>Monto</th>
+                                    <th className={styles.colMontoRight}>Monto</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {currentItems.length === 0 ? (
+                                {movimientos.length === 0 ? (
                                     <tr><td colSpan="5" className={styles.emptyState}>No hay movimientos que coincidan con la búsqueda.</td></tr>
                                 ) : (
-                                    currentItems.map(m => (
+                                    movimientos.map(m => (
                                         <tr key={m.id}>
-                                            <td style={{width: '180px'}}>
+                                            <td className={styles.colFecha}>
                                                 <div className={styles.fechaHora}>
                                                     <span className={styles.dateText}>{new Date(m.fecha).toLocaleDateString()}</span>
                                                     <span className={styles.timeText}>{new Date(m.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
@@ -211,8 +167,7 @@ function Pagos() {
                                                     {m.cliente ? m.cliente.nombre_completo : "General"}
                                                 </div>
                                             </td>
-                                            <td style={{maxWidth: '300px'}}>
-                                                {/* Aquí se muestra la Descripción y la Nota personalizada */}
+                                            <td className={styles.colConcepto}>
                                                 <div className={styles.descText}>{m.descripcion}</div>
                                                 <div className={styles.responsableText}>Por: {m.usuario_responsable || 'Sistema'}</div>
                                             </td>
@@ -223,8 +178,8 @@ function Pagos() {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td style={{textAlign: 'right'}}>
-                                                <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+                                            <td className={styles.colMontoRight}>
+                                                <div className={styles.montoWrap}>
                                                     <span className={`${styles.amount} ${m.tipo === 'ABONO' || m.tipo === 'AJUSTE_FAVOR' ? styles.textGreen : styles.textRed}`}>
                                                         {m.tipo === 'ABONO' || m.tipo === 'AJUSTE_FAVOR' ? '+' : '-'}${parseFloat(m.monto).toFixed(2)}
                                                     </span>
@@ -239,7 +194,7 @@ function Pagos() {
                         
                         <div className={styles.noPrint}>
                             <TablePagination 
-                                totalItems={movimientosFiltrados.length} 
+                                totalItems={totalItems} 
                                 itemsPerPage={itemsPerPage} 
                                 currentPage={currentPage} 
                                 onPageChange={setCurrentPage} 

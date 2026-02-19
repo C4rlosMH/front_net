@@ -148,7 +148,7 @@ function HistorialPagos() {
                         <div className={styles.detailContent}>
                             <span className={styles.detailLabel}>Dirección e IP</span>
                             <span className={styles.detailValue}>{datosCliente.direccion || 'Sin dirección registrada'}</span>
-                            <span className={styles.detailSubValue}>IP: {datosCliente.ip_asignada || '192.168.1.254'}</span>
+                            <span className={styles.detailSubValue}>IP: {datosCliente.ip_asignada || 'No asignada'}</span>
                         </div>
                     </div>
 

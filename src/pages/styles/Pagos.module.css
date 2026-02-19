@@ -373,3 +373,23 @@
     border-bottom: 1px solid #ccc !important;
   }
 }
+
+/* --- ESTILOS EXTRAÍDOS DEL HTML DE PAGOS --- */
+.smallText {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.colFecha {
+  width: 180px;
+}
+.colConcepto {
+  max-width: 300px;
+}
+.colMontoRight {
+  text-align: right;
+}
+.montoWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}

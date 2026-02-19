@@ -409,3 +409,32 @@
     transform: translateY(0);
   }
 }
+
+/* --- ESTILOS EXTRAÍDOS DE LOS SKELETONS --- */
+.skMarca {
+  width: 80%;
+  height: 16px;
+}
+.skTipo {
+  width: 60px;
+  height: 24px;
+  border-radius: 12px;
+}
+.skMac {
+  width: 120px;
+  height: 16px;
+}
+.skPrecio {
+  width: 70px;
+  height: 16px;
+}
+.skEstado {
+  width: 90px;
+  height: 24px;
+  border-radius: 12px;
+}
+.skAcciones {
+  width: 80px;
+  height: 32px;
+  border-radius: 8px;
+}

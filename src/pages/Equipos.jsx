@@ -11,31 +11,36 @@ import styles from "./styles/Equipos.module.css";
 
 function Equipos() {
     const [equipos, setEquipos] = useState([]);
+    const [totalItems, setTotalItems] = useState(0); 
     const [loading, setLoading] = useState(true);
     
-    // Filtros y Búsqueda
     const [filtro, setFiltro] = useState("TODOS"); 
     const [busqueda, setBusqueda] = useState("");
     
-    // Ordenamiento
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-    // Paginación
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
 
-    // Estados del Modal
     const [modalOpen, setModalOpen] = useState(false);
     const [equipoEditar, setEquipoEditar] = useState(null);
 
-    useEffect(() => { cargarEquipos(); }, []);
-    useEffect(() => { setCurrentPage(1); }, [filtro, busqueda]);
+    // Se recarga cuando cambia la página, la búsqueda o el filtro
+    useEffect(() => { cargarEquipos(); }, [currentPage, filtro, busqueda]);
 
     const cargarEquipos = async () => {
         try {
             setLoading(true);
-            const res = await client.get("/equipos");
-            setEquipos(res.data);
+            const res = await client.get("/equipos", {
+                params: {
+                    page: currentPage,
+                    limit: itemsPerPage,
+                    estado: filtro,
+                    search: busqueda
+                }
+            });
+            setEquipos(res.data.equipos || res.data || []);
+            setTotalItems(res.data.total || (res.data ? res.data.length : 0));
         } catch (error) {
             toast.error("Error al cargar inventario");
         } finally {
@@ -67,28 +72,11 @@ function Equipos() {
         setSortConfig({ key, direction });
     };
 
-    // --- CÁLCULOS Y KPIs ---
-    const totalEquipos = equipos.length;
+    const totalEquipos = totalItems || equipos.length;
     const enAlmacen = equipos.filter(e => e.estado === 'ALMACEN').length;
-    const inversionTotal = equipos.reduce((acc, e) => acc + parseFloat(e.precio_compra || 0), 0);
     const inversionAlmacen = equipos.filter(e => e.estado === 'ALMACEN').reduce((acc, e) => acc + parseFloat(e.precio_compra || 0), 0);
 
-    // --- FILTRADO ---
-    const equiposFiltrados = equipos.filter(e => {
-        const matchTipo = filtro === "TODOS" || e.tipo === filtro;
-        const term = busqueda.toLowerCase();
-        const matchBusqueda = !term || 
-            (e.marca && e.marca.toLowerCase().includes(term)) ||
-            (e.modelo && e.modelo.toLowerCase().includes(term)) ||
-            (e.mac_address && e.mac_address.toLowerCase().includes(term)) ||
-            (e.serie && e.serie.toLowerCase().includes(term)) ||
-            (e.nombre && e.nombre.toLowerCase().includes(term));
-        
-        return matchTipo && matchBusqueda;
-    });
-
-    // --- ORDENAMIENTO ---
-    const equiposOrdenados = [...equiposFiltrados].sort((a, b) => {
+    const equiposOrdenados = [...equipos].sort((a, b) => {
         if (!sortConfig.key) return 0;
         let aVal = a[sortConfig.key] || '';
         let bVal = b[sortConfig.key] || '';
@@ -103,17 +91,11 @@ function Equipos() {
         return 0;
     });
 
-    // --- PAGINACIÓN ---
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentEquipos = equiposOrdenados.slice(indexOfFirstItem, indexOfLastItem);
-
-    // --- EXPORTAR CSV ---
     const exportarCSV = () => {
-        if (equiposFiltrados.length === 0) return toast.warning("No hay datos para exportar");
+        if (equiposOrdenados.length === 0) return toast.warning("No hay datos para exportar");
         
         let csv = "Identificador,Marca,Modelo,Tipo,MAC Address,Numero Serie,Estado,Precio Compra,Fecha Compra\n";
-        equiposFiltrados.forEach(e => {
+        equiposOrdenados.forEach(e => {
             const fechaStr = e.fecha_compra ? new Date(e.fecha_compra).toLocaleDateString() : "";
             csv += `"${e.nombre || ''}","${e.marca}","${e.modelo}","${e.tipo}","${e.mac_address}","${e.serie || ''}","${e.estado}","${e.precio_compra || 0}","${fechaStr}"\n`;
         });
@@ -148,7 +130,6 @@ function Equipos() {
                 </div>
             </div>
 
-            {/* --- KPIs --- */}
             <div className={styles.statsRow}>
                 <div className={styles.statCard}>
                     <div className={styles.iconBoxPrimary}><Server size={24}/></div>
@@ -173,13 +154,12 @@ function Equipos() {
                 </div>
             </div>
 
-            {/* --- FILTROS Y BUSCADOR --- */}
             <div className={styles.filterBar}>
                 <div className={styles.tabs}>
-                    <button className={`${styles.tab} ${filtro === 'TODOS' ? styles.tabActive : ''}`} onClick={() => setFiltro("TODOS")}>Todos</button>
-                    <button className={`${styles.tab} ${filtro === 'ANTENA' ? styles.tabActive : ''}`} onClick={() => setFiltro("ANTENA")}>Antenas</button>
-                    <button className={`${styles.tab} ${filtro === 'ROUTER' ? styles.tabActive : ''}`} onClick={() => setFiltro("ROUTER")}>Routers</button>
-                    <button className={`${styles.tab} ${filtro === 'MODEM' ? styles.tabActive : ''}`} onClick={() => setFiltro("MODEM")}>Modems/ONUs</button>
+                    <button className={`${styles.tab} ${filtro === 'TODOS' ? styles.tabActive : ''}`} onClick={() => {setFiltro("TODOS"); setCurrentPage(1);}}>Todos</button>
+                    <button className={`${styles.tab} ${filtro === 'ANTENA' ? styles.tabActive : ''}`} onClick={() => {setFiltro("ANTENA"); setCurrentPage(1);}}>Antenas</button>
+                    <button className={`${styles.tab} ${filtro === 'ROUTER' ? styles.tabActive : ''}`} onClick={() => {setFiltro("ROUTER"); setCurrentPage(1);}}>Routers</button>
+                    <button className={`${styles.tab} ${filtro === 'MODEM' ? styles.tabActive : ''}`} onClick={() => {setFiltro("MODEM"); setCurrentPage(1);}}>Modems/ONUs</button>
                 </div>
                 <div className={styles.searchBox}>
                     <Search size={18} className={styles.searchIcon}/>
@@ -187,13 +167,12 @@ function Equipos() {
                         type="text" 
                         placeholder="Buscar MAC, serie, modelo..." 
                         value={busqueda} 
-                        onChange={(e) => setBusqueda(e.target.value)} 
+                        onChange={(e) => {setBusqueda(e.target.value); setCurrentPage(1);}} 
                         className={styles.searchInput}
                     />
                 </div>
             </div>
 
-            {/* --- TABLA --- */}
             <div className={styles.tableWrapper}>
                 <table className={styles.table}>
                     <thead>
@@ -218,18 +197,18 @@ function Equipos() {
                         {loading ? (
                             Array(5).fill(0).map((_, i) => (
                                 <tr key={i} className={styles.skeletonRow}>
-                                    <td><div className={styles.skeletonBlock} style={{width: '80%', height: '16px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '60px', height: '24px', borderRadius: '12px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '120px', height: '16px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '70px', height: '16px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '90px', height: '24px', borderRadius: '12px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '80px', height: '32px', borderRadius: '8px'}}></div></td>
+                                    <td><div className={`${styles.skeletonBlock} ${styles.skMarca}`}></div></td>
+                                    <td><div className={`${styles.skeletonBlock} ${styles.skTipo}`}></div></td>
+                                    <td><div className={`${styles.skeletonBlock} ${styles.skMac}`}></div></td>
+                                    <td><div className={`${styles.skeletonBlock} ${styles.skPrecio}`}></div></td>
+                                    <td><div className={`${styles.skeletonBlock} ${styles.skEstado}`}></div></td>
+                                    <td><div className={`${styles.skeletonBlock} ${styles.skAcciones}`}></div></td>
                                 </tr>
                             ))
-                        ) : currentEquipos.length === 0 ? (
+                        ) : equiposOrdenados.length === 0 ? (
                             <tr><td colSpan="6" className={styles.emptyState}>No se encontraron equipos en el inventario.</td></tr>
                         ) : (
-                            currentEquipos.map(e => (
+                            equiposOrdenados.map(e => (
                                 <tr key={e.id}>
                                     <td>
                                         <div className={e.nombre ? styles.textMainBold : styles.textMutedBold}>{e.nombre || e.marca}</div>
@@ -264,7 +243,7 @@ function Equipos() {
                         )}
                     </tbody>
                 </table>
-                <TablePagination totalItems={equiposFiltrados.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+                <TablePagination totalItems={totalItems} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
             </div>
 
             <EquipoModal isOpen={modalOpen} onClose={() => setModalOpen(false)} equipoEditar={equipoEditar} onSuccess={cargarEquipos} />

@@ -181,3 +181,47 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* --- ESTILOS EXTRAÍDOS DEL HTML DE LOGS --- */
+.headerTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.headerIcon {
+  background: #dbeafe;
+  padding: 10px;
+  border-radius: 12px;
+  color: #2563eb;
+}
+.colFecha {
+  width: 180px;
+}
+.colAccion {
+  width: 200px;
+}
+.colUsuario {
+  width: 150px;
+}
+.dateTextWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.timeTextMargin {
+  margin-left: 20px;
+}
+.userWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.detailWrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.detailIcon {
+  margin-top: 3px;
+  color: var(--text-muted);
+}
