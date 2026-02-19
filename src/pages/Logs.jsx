@@ -32,8 +32,12 @@ function Logs() {
                     search: busqueda
                 }
             }); 
-            setLogs(res.data.logs || res.data || []);
-            setTotalItems(res.data.total || (res.data ? res.data.length : 0));
+            
+            // Extracción robusta de datos y prevención de NaN
+            const logsArray = Array.isArray(res.data.logs) ? res.data.logs : (Array.isArray(res.data) ? res.data : []);
+            setLogs(logsArray);
+            setTotalItems(res.data.total ?? logsArray.length);
+
         } catch (error) {
             console.error(error);
             toast.error("Error al cargar la actividad");

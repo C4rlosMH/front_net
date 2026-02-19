@@ -38,24 +38,20 @@ function Cortes() {
     const cargarMorosos = async () => {
         try {
             setLoading(true);
-            const res = await client.get("/clientes");
+            const res = await client.get("/clientes", { params: { limit: 1000 } });
             
-            const lista = res.data.filter(c => {
+            const clientesArray = Array.isArray(res.data.clientes) ? res.data.clientes : (Array.isArray(res.data) ? res.data : []);
+            
+            const lista = clientesArray.filter(c => {
                 const deudaCorriente = parseFloat(c.saldo_actual) || 0;
                 const deudaAplazada = parseFloat(c.saldo_aplazado) || 0;
                 
-                // Calculamos a cuántos meses equivale su deuda total
-                const precioMensual = parseFloat(c.plan?.precio_mensual) || Infinity; // Previene dividir entre 0
+                const precioMensual = parseFloat(c.plan?.precio_mensual) || Infinity;
                 const mesesDeuda = (deudaCorriente + deudaAplazada) / precioMensual;
                 
-                // MUESTRA AL CLIENTE EN LA LISTA SI:
-                // 1. Debe dinero del mes actual (y no ha pedido prórroga)
-                // 2. O si ya alcanzó el Límite Crítico de 5 meses arrastrados
-                // 3. O si ya está CORTADO actualmente
                 return (deudaCorriente > 0 || mesesDeuda >= 5 || c.estado === 'CORTADO') && c.estado !== 'BAJA';
             });
             
-            // Ordenar: Los que tienen límite de 5 meses primero, luego los de mayor deuda
             lista.sort((a, b) => {
                 const deudaA = (parseFloat(a.saldo_actual) || 0) + (parseFloat(a.saldo_aplazado) || 0);
                 const deudaB = (parseFloat(b.saldo_actual) || 0) + (parseFloat(b.saldo_aplazado) || 0);
@@ -96,17 +92,14 @@ function Cortes() {
 
         const diasRetraso = calcularDiasRetraso(cliente.dia_pago);
 
-        // NUEVA REGLA ESTRELLA: Si llega a 5 meses de arrastre, se corta sí o sí
         if (mesesDeuda >= 5) {
             return { texto: 'LÍMITE: 5 MESES (CORTAR)', clase: styles.immediate };
         }
 
-        // Si tiene deuda corriente (del mes actual) y superó los 5 días sin avisar
         if (deudaCorriente > 0 && diasRetraso > 5) {
             return { texto: 'CORTE INMEDIATO', clase: styles.immediate };
         }
 
-        // Si tiene deuda corriente pero está en sus 5 días para avisar/pagar
         if (deudaCorriente > 0 && diasRetraso > 0 && diasRetraso <= 5) {
             return { texto: `GRACIA (DÍA ${diasRetraso})`, clase: styles.grace };
         }
@@ -252,7 +245,6 @@ function Cortes() {
                                             <td>
                                                 <div style={{display: 'flex', flexDirection: 'column'}}>
                                                     <span className={styles.debt}>${deudaTotal.toFixed(2)}</span>
-                                                    {/* Mostrar los meses que arrastra */}
                                                     {(parseFloat(c.saldo_aplazado) || 0) > 0 && (
                                                         <span style={{fontSize: '0.75rem', color: '#f59e0b', fontWeight: 'bold'}}>
                                                             Arrastrando {Math.floor(((parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0)) / (parseFloat(c.plan?.precio_mensual) || 1))} meses
@@ -284,7 +276,8 @@ function Cortes() {
                                                 </div>
                                             </td>
                                         </tr>
-                                    )})
+                                        );
+                                    })
                                 )}
                             </tbody>
                         </table>

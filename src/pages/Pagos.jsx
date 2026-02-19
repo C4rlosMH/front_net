@@ -39,8 +39,12 @@ function Pagos() {
                     search: busqueda
                 }
             });
-            setMovimientos(res.data.movimientos || res.data || []);
-            setTotalItems(res.data.total || (res.data ? res.data.length : 0));
+
+            // Extracción robusta de datos y prevención de NaN
+            const movsArray = Array.isArray(res.data.movimientos) ? res.data.movimientos : (Array.isArray(res.data) ? res.data : []);
+            setMovimientos(movsArray);
+            setTotalItems(res.data.total ?? movsArray.length);
+
         } catch (error) {
             console.error(error);
             toast.error("Error al cargar el historial financiero");

@@ -20,15 +20,17 @@ function HistorialPagos() {
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                const [resHistorial, resClientes] = await Promise.all([
+                // Pedimos el historial y SOLAMENTE el cliente específico por su ID
+                const [resHistorial, resCliente] = await Promise.all([
                     client.get(`/pagos/historial/${id}`),
-                    client.get(`/clientes`) 
+                    client.get(`/clientes/${id}`) 
                 ]);
                 
-                setHistorial(Array.isArray(resHistorial.data) ? resHistorial.data : []);
+                // Aseguramos que el historial sea un arreglo
+                setHistorial(Array.isArray(resHistorial.data) ? resHistorial.data : (resHistorial.data.movimientos || []));
                 
-                const clienteInfo = resClientes.data.find(c => c.id === parseInt(id));
-                setDatosCliente(clienteInfo);
+                // Asignamos directamente la data del cliente
+                setDatosCliente(resCliente.data);
 
             } catch (error) {
                 toast.error("Error al cargar la información del cliente");

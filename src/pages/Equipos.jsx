@@ -25,7 +25,6 @@ function Equipos() {
     const [modalOpen, setModalOpen] = useState(false);
     const [equipoEditar, setEquipoEditar] = useState(null);
 
-    // Se recarga cuando cambia la página, la búsqueda o el filtro
     useEffect(() => { cargarEquipos(); }, [currentPage, filtro, busqueda]);
 
     const cargarEquipos = async () => {
@@ -39,8 +38,12 @@ function Equipos() {
                     search: busqueda
                 }
             });
-            setEquipos(res.data.equipos || res.data || []);
-            setTotalItems(res.data.total || (res.data ? res.data.length : 0));
+
+            // Extracción robusta de datos y prevención de NaN
+            const eqArray = Array.isArray(res.data.equipos) ? res.data.equipos : (Array.isArray(res.data) ? res.data : []);
+            setEquipos(eqArray);
+            setTotalItems(res.data.total ?? eqArray.length);
+
         } catch (error) {
             toast.error("Error al cargar inventario");
         } finally {
