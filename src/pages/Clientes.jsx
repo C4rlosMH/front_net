@@ -28,8 +28,10 @@ function Clientes() {
     // Modales
     const [modalClienteOpen, setModalClienteOpen] = useState(false);
     const [clienteEditar, setClienteEditar] = useState(null);
+    
+    // --- CORRECCIÓN AQUÍ: Usamos 'clienteCobrar' (Objeto) en lugar de ID ---
     const [modalPagoOpen, setModalPagoOpen] = useState(false);
-    const [clienteCobrarId, setClienteCobrarId] = useState(null);
+    const [clienteCobrar, setClienteCobrar] = useState(null); 
 
     useEffect(() => { cargarDatos(); }, []);
     useEffect(() => { setCurrentPage(1); }, [tabActual, busqueda]);
@@ -49,6 +51,12 @@ function Clientes() {
     const abrirModalCliente = (cliente = null) => {
         setClienteEditar(cliente);
         setModalClienteOpen(true);
+    };
+
+    // --- FUNCIÓN CORREGIDA ---
+    const abrirModalPago = (clienteObj) => {
+        setClienteCobrar(clienteObj); // Guardamos todo el objeto
+        setModalPagoOpen(true);
     };
 
     const eliminarCliente = async (id) => {
@@ -72,7 +80,7 @@ function Clientes() {
         setSortConfig({ key, direction });
     };
 
-    // 1. Filtrado
+    // Filtros
     const clientesFiltrados = clientes.filter(c => {
         if (tabActual !== "TODOS" && c.estado !== tabActual) return false;
         if (busqueda) {
@@ -87,25 +95,23 @@ function Clientes() {
         return true;
     });
 
-    // 2. Ordenamiento
+    // Ordenamiento
     const clientesOrdenados = [...clientesFiltrados].sort((a, b) => {
         if (!sortConfig.key) return 0;
         
         let aVal = a[sortConfig.key] || '';
         let bVal = b[sortConfig.key] || '';
 
+        // Lógica especial de ordenamiento
         if (sortConfig.key === 'saldo_actual') {
             aVal = (parseFloat(a.saldo_actual) || 0) + (parseFloat(a.saldo_aplazado) || 0);
             bVal = (parseFloat(b.saldo_actual) || 0) + (parseFloat(b.saldo_aplazado) || 0);
         }
-
         if (sortConfig.key === 'tipo_conexion') {
             aVal = (a.tipo_conexion?.toLowerCase() === 'radio' || !a.caja) ? 'radio' : 'fibra';
             bVal = (b.tipo_conexion?.toLowerCase() === 'radio' || !b.caja) ? 'radio' : 'fibra';
         }
-
         if (sortConfig.key === 'confiabilidad') {
-            // Si es null, le asignamos -1 para que se vaya al fondo de la lista al ordenar de mayor a menor
             aVal = a.confiabilidad ?? -1; 
             bVal = b.confiabilidad ?? -1;
         }
@@ -115,7 +121,6 @@ function Clientes() {
         return 0;
     });
 
-    // 3. Paginación
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentClientes = clientesOrdenados.slice(indexOfFirstItem, indexOfLastItem);
@@ -139,7 +144,6 @@ function Clientes() {
         link.href = URL.createObjectURL(blob);
         link.download = `Clientes_NetAdmin_${tabActual}.csv`;
         link.click();
-        toast.success("Archivo descargado");
     };
 
     const getEstadoBadgeClass = (estado) => {
@@ -164,7 +168,7 @@ function Clientes() {
                     <span className={styles.subtitle}>Gestión y control de suscriptores</span>
                 </div>
                 <div className={styles.headerActions}>
-                    <button className={styles.btnExport} onClick={exportarCSV} title="Exportar lista actual">
+                    <button className={styles.btnExport} onClick={exportarCSV}>
                         <Download size={18} /> Exportar CSV
                     </button>
                     <button className={styles.addButton} onClick={() => abrirModalCliente(null)}>
@@ -191,117 +195,74 @@ function Clientes() {
                 <table className={styles.table}>
                     <thead>
                         <tr>
-                            <th onClick={() => handleSort('nombre_completo')} className={styles.sortableHeader}>
-                                Cliente {renderSortIcon('nombre_completo')}
-                            </th>
-                            <th onClick={() => handleSort('tipo_conexion')} className={styles.sortableHeader}>
-                                Conexión {renderSortIcon('tipo_conexion')}
-                            </th>
-                            <th onClick={() => handleSort('ip_asignada')} className={styles.sortableHeader}>
-                                Red / Ubicación {renderSortIcon('ip_asignada')}
-                            </th>
+                            <th onClick={() => handleSort('nombre_completo')} className={styles.sortableHeader}>Cliente {renderSortIcon('nombre_completo')}</th>
+                            <th onClick={() => handleSort('tipo_conexion')} className={styles.sortableHeader}>Conexión {renderSortIcon('tipo_conexion')}</th>
+                            <th onClick={() => handleSort('ip_asignada')} className={styles.sortableHeader}>Red / Ubicación {renderSortIcon('ip_asignada')}</th>
                             <th>Plan & Equipo</th>
-                            <th onClick={() => handleSort('estado')} className={styles.sortableHeader}>
-                                Estado {renderSortIcon('estado')}
-                            </th>
-                            <th onClick={() => handleSort('confiabilidad')} className={styles.sortableHeader}>
-                                Confiabilidad {renderSortIcon('confiabilidad')}
-                            </th>
-                            <th onClick={() => handleSort('saldo_actual')} className={styles.sortableHeader}>
-                                Deuda {renderSortIcon('saldo_actual')}
-                            </th>
+                            <th onClick={() => handleSort('estado')} className={styles.sortableHeader}>Estado {renderSortIcon('estado')}</th>
+                            <th onClick={() => handleSort('confiabilidad')} className={styles.sortableHeader}>Confiabilidad {renderSortIcon('confiabilidad')}</th>
+                            <th onClick={() => handleSort('saldo_actual')} className={styles.sortableHeader}>Deuda {renderSortIcon('saldo_actual')}</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            Array(6).fill(0).map((_, i) => (
+                            Array(5).fill(0).map((_, i) => (
                                 <tr key={i} className={styles.skeletonRow}>
-                                    <td><div className={styles.skeletonBlock} style={{width: '70%', height: '16px'}}></div><div className={styles.skeletonBlock} style={{width: '40%', height: '12px', marginTop: '6px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '70px', height: '24px', borderRadius: '6px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '60%', height: '16px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '50%', height: '16px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '80px', height: '24px', borderRadius: '20px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '50px', height: '20px', borderRadius: '4px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '40px', height: '16px'}}></div></td>
-                                    <td><div className={styles.skeletonBlock} style={{width: '120px', height: '32px', borderRadius: '8px'}}></div></td>
+                                    <td colSpan="8"><div className={styles.skeletonBlock} style={{height: '40px', width: '100%'}}></div></td>
                                 </tr>
                             ))
                         ) : currentClientes.length === 0 ? (
-                            <tr><td colSpan="8" className={styles.emptyState}>No se encontraron clientes con esos filtros.</td></tr>
+                            <tr><td colSpan="8" className={styles.emptyState}>No se encontraron clientes.</td></tr>
                         ) : (
                             currentClientes.map(c => {
-                                const conf = c.confiabilidad;
-                                const tieneConf = conf !== null && conf !== undefined;
                                 const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
                                 const esRadio = c.tipo_conexion?.toLowerCase() === 'radio' || !c.caja;
                                 
                                 return (
                                 <tr key={c.id}>
-                                    {/* COLUMNA 1: CLIENTE */}
                                     <td>
                                         <div className={styles.bold}>{c.nombre_completo}</div>
                                         <div className={styles.muted}>{c.telefono || "Sin teléfono"}</div>
                                     </td>
-                                    
-                                    {/* COLUMNA 2: TIPO CONEXIÓN */}
                                     <td>
-                                        {esRadio ? (
-                                            <span className={`${styles.tipoBadge} ${styles.badgeRadio}`} title="Conexión Inalámbrica">
-                                                <Wifi size={14} /> Radio
-                                            </span>
-                                        ) : (
-                                            <span className={`${styles.tipoBadge} ${styles.badgeFibra}`} title="Conexión Fibra Óptica">
-                                                <Cable size={14} /> Fibra
-                                            </span>
-                                        )}
+                                        {esRadio ? 
+                                            <span className={`${styles.tipoBadge} ${styles.badgeRadio}`}><Wifi size={14} /> Radio</span> : 
+                                            <span className={`${styles.tipoBadge} ${styles.badgeFibra}`}><Cable size={14} /> Fibra</span>
+                                        }
                                     </td>
-
-                                    {/* COLUMNA 3: RED / UBICACIÓN */}
                                     <td>
                                         <div className={styles.fontMono}>{c.ip_asignada}</div>
                                         <div className={styles.muted}>{c.direccion}</div>
                                     </td>
-
-                                    {/* COLUMNA 4: PLAN & EQUIPO */}
                                     <td>
                                         <div className={styles.medium}>{c.plan?.nombre || "Sin Plan"}</div>
                                         {c.caja && <div className={styles.muted}>NAP: {c.caja.nombre}</div>}
                                     </td>
-
-                                    {/* COLUMNA 5: ESTADO */}
                                     <td>
                                         <span className={`${styles.statusBadge} ${c.estado === 'ACTIVO' ? styles.statusActive : styles.statusInactive} ${getEstadoBadgeClass(c.estado)}`}>
                                             {c.estado}
                                         </span>
                                     </td>
-
-                                    {/* COLUMNA 6: CONFIABILIDAD */}
                                     <td>
-                                        <span className={`${styles.confiabilidadText} ${!tieneConf ? styles.textSlate : conf < 70 ? styles.textRed : conf < 90 ? styles.textOrange : styles.textGreen}`} title="Calificación de pagos">
-                                            {tieneConf ? `${conf}%` : 'Sin historial'}
+                                        <span className={styles.confiabilidadText}>
+                                            {c.confiabilidad != null ? `${c.confiabilidad}%` : '-'}
                                         </span>
                                     </td>
-
-                                    {/* COLUMNA 7: DEUDA */}
                                     <td>
                                         {deudaTotal > 0 ? (
                                             <div style={{display: 'flex', flexDirection: 'column'}}>
                                                 <span className={styles.debtWarning}>${deudaTotal.toFixed(2)}</span>
-                                                {parseFloat(c.saldo_aplazado) > 0 && <span className={styles.textOrange} style={{fontSize: '0.75rem', fontWeight: 'bold'}}>Adeudo atrasado</span>}
+                                                {parseFloat(c.saldo_aplazado) > 0 && <span className={styles.textOrange} style={{fontSize: '0.7rem'}}>Atrasado</span>}
                                             </div>
-                                        ) : (
-                                            <span className={styles.debtOk}>$0.00</span>
-                                        )}
+                                        ) : <span className={styles.debtOk}>$0.00</span>}
                                     </td>
-
-                                    {/* COLUMNA 8: ACCIONES */}
                                     <td>
                                         <div className={styles.flexActions}>
                                             <button 
                                                 className={`${styles.actionBtn} ${styles.btnPay}`} 
-                                                onClick={() => { setClienteCobrarId(c.id); setModalPagoOpen(true); }} 
-                                                title="Cobrar / Abonar"
+                                                onClick={() => abrirModalPago(c)} // <--- ENVÍO OBJETO COMPLETO
+                                                title="Cobrar"
                                             >
                                                 <Wallet size={18} />
                                             </button>
@@ -328,10 +289,12 @@ function Clientes() {
                 clientesContext={clientes}
                 onSuccess={cargarDatos}
             />
+            
+            {/* COMPONENTE MODAL DE PAGO */}
             <PagoModal 
                 isOpen={modalPagoOpen}
                 onClose={() => setModalPagoOpen(false)}
-                clienteIdPreseleccionado={clienteCobrarId}
+                cliente={clienteCobrar} // <--- Prop "cliente" correcta
                 onSuccess={cargarDatos}
             />
         </div>

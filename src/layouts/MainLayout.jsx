@@ -1,19 +1,23 @@
+import { useState } from "react"; // <--- 1. Importar useState
 import { Outlet, NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { 
     LayoutDashboard, Users, Server, Wifi, Map as MapIcon, 
     LogOut, Activity, BarChart2, DollarSign, Package, 
-    Scissors, ShieldCheck, Sun, Moon, Hexagon
+    Scissors, ShieldCheck, Sun, Moon, Hexagon,
+    MessageCircle // <--- 2. Importar ícono
 } from "lucide-react";
+import WhatsAppStatus from "../components/WhatsAppStatus"; // <--- 3. Importar Modal
 import styles from "./MainLayout.module.css";
-// Si tienes un logo en assets, puedes usarlo. Si no, usaremos el icono Hexagon
-// import logo from "../assets/logo.png"; 
 
 function MainLayout() {
     const { logout, user } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
+
+    // <--- 4. Estado para el modal
+    const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -33,7 +37,7 @@ function MainLayout() {
                     <h2 className={styles.brandName}>NetAdmin</h2>
                 </div>
 
-                {/* MENÚ DE NAVEGACIÓN DIVIDIDO POR SECCIONES */}
+                {/* MENÚ DE NAVEGACIÓN */}
                 <div className={styles.navMenu}>
                     
                     {/* SECCIÓN 1: Principal */}
@@ -87,13 +91,20 @@ function MainLayout() {
                         <NavLink to="/logs" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
                             <Activity size={20} /> <span>Registro de Actividad</span>
                         </NavLink>
+                        
+                        {/* <--- 5. NUEVO BOTÓN WHATSAPP (Integrado visualmente) */}
+                        <button 
+                            onClick={() => setIsWhatsAppOpen(true)}
+                            className={styles.navButton} 
+                        >
+                            <MessageCircle size={20} /> 
+                            <span>Conexión WhatsApp</span>
+                        </button>
                     </div>
                 </div>
 
-                {/* PIE DEL SIDEBAR (PERFIL, TEMA Y SALIR) */}
+                {/* PIE DEL SIDEBAR */}
                 <div className={styles.sidebarFooter}>
-                    
-                    {/* Tarjeta de Perfil de Usuario */}
                     <Link to="/perfil" className={styles.userInfo} title="Ir a mi perfil">
                         <div className={styles.avatar}>
                             {user?.username?.charAt(0).toUpperCase() || 'U'}
@@ -104,7 +115,6 @@ function MainLayout() {
                         </div>
                     </Link>
 
-                    {/* Botones de acción */}
                     <div className={styles.footerActions}>
                         <button className={styles.themeToggle} onClick={toggleTheme} title="Cambiar tema">
                             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -114,14 +124,19 @@ function MainLayout() {
                             <LogOut size={18} /> <span>Salir</span>
                         </button>
                     </div>
-
                 </div>
             </aside>
 
-            {/* CONTENEDOR PRINCIPAL DONDE RENDERIZAN LAS VISTAS */}
+            {/* CONTENEDOR PRINCIPAL */}
             <main className={styles.mainContent}>
                 <Outlet />
             </main>
+
+            {/* <--- 6. MODAL RENDERIZADO FUERA DEL FLUJO */}
+            <WhatsAppStatus 
+                isOpen={isWhatsAppOpen} 
+                onClose={() => setIsWhatsAppOpen(false)} 
+            />
         </div>
     );
 }

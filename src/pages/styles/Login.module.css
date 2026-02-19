@@ -105,41 +105,63 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
+  /* Valores por defecto (checking) */
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #94a3b8;
   padding: 6px 14px;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 1px;
   margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.online {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.offline {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.checking {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
 }
 
 .pulseDot {
   width: 8px;
   height: 8px;
-  background-color: #34d399;
+  background-color: currentColor; /* Toma el color del texto del padre */
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  box-shadow: 0 0 0 0 currentColor;
   animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+    opacity: 1;
+    box-shadow: 0 0 0 0 currentColor;
   }
   70% {
     transform: scale(1);
-    box-shadow: 0 0 0 8px rgba(52, 211, 153, 0);
+    opacity: 0.7;
+    box-shadow: 0 0 0 6px rgba(0, 0, 0, 0); /* Fade out */
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
   }
 }
-
 .systemStatus h2 {
   font-size: 2.2rem;
   line-height: 1.2;

@@ -25,7 +25,7 @@
     align-items: center;
     gap: 12px;
     border-bottom: 1px solid var(--border);
-    height: 75px; /* Altura fija para alinear bien */
+    height: 75px; 
     box-sizing: border-box;
 }
 
@@ -55,10 +55,9 @@
     padding: 25px 15px;
     display: flex;
     flex-direction: column;
-    gap: 30px; /* Separación amplia entre secciones */
+    gap: 30px; 
 }
 
-/* Personalizar barra de desplazamiento del menú */
 .navMenu::-webkit-scrollbar {
     width: 4px;
 }
@@ -112,6 +111,33 @@
     background-color: rgba(37, 99, 235, 0.15);
 }
 
+/* --- NUEVA CLASE PARA EL BOTÓN (Estilo idéntico a navItem) --- */
+.navButton {
+    /* Copia de propiedades base de navItem */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    
+    /* Resets específicos de botón */
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.navButton:hover {
+    background-color: var(--body-bg);
+    color: var(--text-main);
+}
+
 /* --- PIE DEL SIDEBAR (FOOTER) --- */
 .sidebarFooter {
     padding: 20px 15px;
@@ -131,9 +157,9 @@
     background-color: var(--body-bg);
     border-radius: 10px;
     border: 1px solid var(--border);
-    text-decoration: none; /* Quita el subrayado del link */
-    cursor: pointer; /* Cambia el cursor a una mano */
-    transition: all 0.2s ease; /* Transición suave */
+    text-decoration: none; 
+    cursor: pointer; 
+    transition: all 0.2s ease; 
 }
 
 .userInfo:hover {

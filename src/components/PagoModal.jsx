@@ -1,270 +1,258 @@
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { X, DollarSign, Calendar, CreditCard, User, AlertTriangle, Search } from "lucide-react";
 import client from "../api/axios";
 import { toast } from "sonner";
-import { DollarSign, CheckCircle2, Clock, User, FileText, AlertTriangle } from "lucide-react";
 import styles from "./styles/PagoModal.module.css";
 
-function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
-    const [clientes, setClientes] = useState([]);
-    const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState("");
-    const [montoAbono, setMontoAbono] = useState("");
-    const [tipoPago, setTipoPago] = useState("LIQUIDACION");
-    const [metodoPago, setMetodoPago] = useState("EFECTIVO");
-    const [mesPago, setMesPago] = useState("");
-    const [nota, setNota] = useState(""); 
+function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
+    const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
+    const [loading, setLoading] = useState(false);
     
-    // Nuevo estado para la justificación del retraso
-    const [motivoRetraso, setMotivoRetraso] = useState("cliente");
+    // Estados para modo "Buscar Cliente"
+    const [modoBusqueda, setModoBusqueda] = useState(false);
+    const [listaClientes, setListaClientes] = useState([]);
+    const [clienteActivo, setClienteActivo] = useState(null);
+
+    const tipoPago = watch("tipo_pago");
+    const metodoPago = watch("metodo_pago"); 
+    const motivoRetraso = watch("motivo_retraso");
+
+    // Lógica de Deuda y Retraso
+    const [esPagoTardio, setEsPagoTardio] = useState(false);
+    const [deudaTotal, setDeudaTotal] = useState(0);
 
     useEffect(() => {
         if (isOpen) {
-            cargarClientes();
+            if (cliente) {
+                setModoBusqueda(false);
+                seleccionarCliente(cliente);
+            } else {
+                setModoBusqueda(true);
+                setClienteActivo(null);
+                cargarListaClientes();
+            }
         } else {
-            setClienteSeleccionadoId("");
-            setMontoAbono("");
-            setTipoPago("LIQUIDACION");
-            setMetodoPago("EFECTIVO");
-            setNota(""); 
-            setMotivoRetraso("cliente");
+            reset();
+            setEsPagoTardio(false);
+            setDeudaTotal(0);
+            setClienteActivo(null);
         }
-    }, [isOpen, clienteIdPreseleccionado]);
+    }, [isOpen, cliente]);
 
-    const generarMeses = () => {
-        const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        const hoy = new Date();
-        const opciones = [];
-        for (let i = -1; i <= 1; i++) {
-            const d = new Date(hoy.getFullYear(), hoy.getMonth() + i, 1);
-            opciones.push(`${meses[d.getMonth()]} ${d.getFullYear()}`);
-        }
-        return opciones;
-    };
-
-    const cargarClientes = async () => {
+    const cargarListaClientes = async () => {
         try {
             const res = await client.get("/clientes");
-            const lista = res.data.sort((a, b) => a.nombre_completo.localeCompare(b.nombre_completo));
-            setClientes(lista);
-            
-            const meses = generarMeses();
-            setMesPago(meses[1]); 
-
-            if (clienteIdPreseleccionado) {
-                procesarSeleccionCliente(clienteIdPreseleccionado.toString(), lista);
-            }
+            const ordenados = res.data.sort((a,b) => a.nombre_completo.localeCompare(b.nombre_completo));
+            setListaClientes(ordenados);
         } catch (error) {
             toast.error("Error al cargar lista de clientes");
         }
     };
 
-    const procesarSeleccionCliente = (id, listaClientes) => {
-        setClienteSeleccionadoId(id);
-        setMotivoRetraso("cliente"); // Reseteamos el motivo al cambiar de cliente
+    const seleccionarCliente = (c) => {
+        setClienteActivo(c);
         
-        const cliente = listaClientes.find(c => c.id === parseInt(id));
-        
-        if (cliente) {
-            // Calculamos la deuda real (actual + aplazado)
-            const deudaCorriente = parseFloat(cliente.saldo_actual || 0);
-            const deudaAplazada = parseFloat(cliente.saldo_aplazado || 0);
-            const deudaTotal = deudaCorriente + deudaAplazada;
-            
-            const plan = parseFloat(cliente.plan?.precio_mensual || 0);
-            
-            if (deudaTotal > 0) {
-                setTipoPago("LIQUIDACION");
-                setMontoAbono(deudaTotal);
-            } else {
-                setTipoPago("ABONO");
-                setMontoAbono(plan);
-            }
-        } else {
-            setMontoAbono("");
-        }
+        const total = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+        setDeudaTotal(total);
+
+        const diasRetraso = calcularDiasRetraso(c.dia_pago);
+        const tieneDeudaAplazada = Number(c.saldo_aplazado) > 0;
+        const tardio = diasRetraso > 5 || tieneDeudaAplazada;
+        setEsPagoTardio(tardio);
+
+        // Prellenado
+        setValue("monto", total > 0 ? total : (c.plan?.precio_mensual || ""));
+        setValue("tipo_pago", total > 0 ? "LIQUIDACION" : "ABONO");
+        setValue("metodo_pago", "EFECTIVO"); // Default
+        setValue("mes_correspondiente", new Date().toISOString().slice(0, 7));
+        setValue("referencia", "");
+        setValue("notas", "");
+        setValue("motivo_retraso", "cliente");
     };
 
-    // Calculadora para saber si el pago es tardío
     const calcularDiasRetraso = (diaPago) => {
         if (!diaPago) return 0;
         const hoy = new Date();
         const diaActual = hoy.getDate();
         let dias = diaActual - diaPago;
-        
-        if (dias < 0 && diaActual <= 7) {
+        if (dias < 0 && diaActual <= 7) { 
             const ultimoDiaMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0).getDate();
             dias = diaActual + (ultimoDiaMesAnterior - diaPago);
         }
         return dias;
     };
 
-    const handleRegistrarPago = async (e) => {
-        e.preventDefault();
-        if (!clienteSeleccionadoId) return toast.warning("Selecciona un cliente");
-
+    const onSubmit = async (data) => {
+        if (!clienteActivo) return;
+        setLoading(true);
         try {
-            await client.post("/pagos/abono", {
-                clienteId: parseInt(clienteSeleccionadoId),
-                monto: parseFloat(montoAbono),
-                tipo_pago: tipoPago,
-                metodo_pago: metodoPago,
-                mes_servicio: mesPago,
-                motivo_retraso: motivoRetraso, // Se envía al backend para la regla de confiabilidad
-                descripcion: nota.trim() !== "" ? nota : undefined 
-            });
+            // Construimos el payload limpio
+            const payload = {
+                clienteId: clienteActivo.id,
+                monto: parseFloat(data.monto),
+                tipo_pago: data.tipo_pago,
+                metodo_pago: data.metodo_pago,
+                // Si es efectivo, enviamos null en referencia
+                referencia: (data.metodo_pago !== 'EFECTIVO' && data.referencia) ? data.referencia : null,
+                descripcion: data.notas || undefined,
+                motivo_retraso: esPagoTardio ? data.motivo_retraso : undefined,
+                mes_servicio: data.mes_correspondiente
+            };
+
+            // Debug para ver qué estamos enviando
+            console.log("Enviando pago:", payload);
+
+            await client.post("/pagos/abono", payload);
             toast.success("Pago registrado correctamente");
-            
-            if (onSuccess) onSuccess(); 
-            onClose(); 
-        } catch (error) { 
-            toast.error("Error al registrar pago"); 
+            if (onSuccess) onSuccess();
+            onClose();
+        } catch (error) {
+            console.error("Error en pago:", error);
+            // Mostramos el mensaje exacto que devuelve el backend si existe
+            const msg = error.response?.data?.message || "Error al registrar el pago (400)";
+            toast.error(msg);
+        } finally {
+            setLoading(false);
         }
     };
 
     if (!isOpen) return null;
 
-    const listaMeses = generarMeses();
-    const clienteActivo = clientes.find(c => c.id === parseInt(clienteSeleccionadoId));
-    
-    // Evaluaciones para UI condicional
-    const diasRetraso = clienteActivo ? calcularDiasRetraso(clienteActivo.dia_pago) : 0;
-    const tieneDeudaAplazada = clienteActivo ? Number(clienteActivo.saldo_aplazado) > 0 : false;
-    const esPagoTardio = diasRetraso > 5 || tieneDeudaAplazada;
-    
-    const deudaCorriente = clienteActivo ? parseFloat(clienteActivo.saldo_actual || 0) : 0;
-    const deudaTotal = clienteActivo ? deudaCorriente + (parseFloat(clienteActivo.saldo_aplazado || 0)) : 0;
-
     return (
-        <div className={styles.modalOverlay} onClick={onClose}>
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
                 <div className={styles.modalHeader}>
-                    <h3>Registrar Ingreso</h3>
-                    <button onClick={onClose} className={styles.closeBtn}>&times;</button>
+                    <h3>Registrar Pago</h3>
+                    <button onClick={onClose} className={styles.closeBtn} type="button"><X size={24} /></button>
                 </div>
-                
-                <form onSubmit={handleRegistrarPago}>
-                    <div className={styles.formGroup}>
-                        <label>Seleccionar Cliente</label>
-                        <div style={{position:'relative'}}>
-                            <User size={18} style={{position:'absolute', top:12, left:10, color:'var(--text-muted)'}}/>
-                            <select 
-                                value={clienteSeleccionadoId} 
-                                onChange={(e) => procesarSeleccionCliente(e.target.value, clientes)} 
-                                className={styles.select}
-                                style={{paddingLeft: 35}}
-                                autoFocus={!clienteIdPreseleccionado} 
-                            >
-                                <option value="">-- Buscar Cliente --</option>
-                                {clientes.map(c => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.nombre_completo}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        
-                        {clienteActivo && (
-                            <div className={styles.deudaBox}>
-                                <div style={{display: 'flex', flexDirection: 'column'}}>
-                                    <span className={styles.muted}>Plan: {clienteActivo.plan?.nombre || 'Sin Plan'}</span>
-                                    {tieneDeudaAplazada && (
-                                        <span style={{fontSize: '0.8rem', color: '#f59e0b', fontWeight: 'bold', marginTop: '2px'}}>
-                                            Adeudo Atrasado: ${clienteActivo.saldo_aplazado}
-                                        </span>
-                                    )}
-                                </div>
-                                <span style={{fontWeight:'bold', color: deudaTotal > 0 ? '#ef4444' : '#16a34a', textAlign: 'right'}}>
-                                    {deudaTotal > 0 ? `Debe: $${deudaTotal}` : 'Al corriente'}
-                                </span>
-                            </div>
-                        )}
-                    </div>
 
-                    {/* ALERTA Y SELECTOR DE PAGO TARDÍO (Solo aparece si el cliente se atrasó) */}
-                    {clienteActivo && esPagoTardio && (
-                        <div className={styles.warningBox}>
-                            <p className={styles.warningText}>
-                                <AlertTriangle size={16} /> Pago detectado fuera de tiempo
-                            </p>
-                            <label style={{display: 'block', fontSize: '0.8rem', marginBottom: '6px', color: 'var(--text-main)'}}>
-                                Justificación del retraso:
-                            </label>
-                            <select 
-                                value={motivoRetraso} 
-                                onChange={(e) => setMotivoRetraso(e.target.value)}
-                                className={styles.warningSelect}
-                            >
-                                <option value="cliente">Responsabilidad del cliente (Aplicar penalización a confiabilidad)</option>
-                                <option value="acuerdo">Acuerdo previo (No penalizar)</option>
-                                <option value="logistica">Retraso de mi logística / No pasé a cobrar (No penalizar)</option>
-                            </select>
+                <div className={styles.formContent}>
+                    
+                    {modoBusqueda && (
+                        <div className={styles.formGroup} style={{marginBottom: '20px'}}>
+                            <label>Buscar Cliente:</label>
+                            <div className={styles.inputIconWrap}>
+                                <Search size={18} />
+                                <select 
+                                    className={styles.select}
+                                    onChange={(e) => {
+                                        const id = parseInt(e.target.value);
+                                        const found = listaClientes.find(c => c.id === id);
+                                        if (found) seleccionarCliente(found);
+                                        else setClienteActivo(null);
+                                    }}
+                                    defaultValue=""
+                                >
+                                    <option value="" disabled>-- Selecciona un cliente --</option>
+                                    {listaClientes.map(c => (
+                                        <option key={c.id} value={c.id}>{c.nombre_completo}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     )}
 
-                    <div className={styles.typeSelector}>
-                        <button type="button" onClick={()=>{setTipoPago("LIQUIDACION"); if(clienteActivo) setMontoAbono(deudaTotal)}} className={`${styles.typeButton} ${tipoPago==='LIQUIDACION' ? styles.typeActive : styles.typeInactive}`}>
-                            <CheckCircle2 size={16}/> Liquidar
-                        </button>
-                        <button type="button" onClick={()=>setTipoPago("ABONO")} className={`${styles.typeButton} ${tipoPago==='ABONO' ? styles.typeActive : styles.typeInactive}`}>
-                            <DollarSign size={16}/> Abono
-                        </button>
-                        <button type="button" onClick={()=>{setTipoPago("APLAZADO"); setMontoAbono(0)}} className={`${styles.typeButton} ${tipoPago==='APLAZADO' ? styles.typeActive : styles.typeInactive}`}>
-                            <Clock size={16}/> Aplazar
-                        </button>
-                    </div>
+                    {clienteActivo && (
+                        <form onSubmit={handleSubmit(onSubmit)}>
+                            
+                            <div className={styles.clientBadge}>
+                                <User size={16}/> 
+                                <span style={{ fontWeight: 600 }}>{clienteActivo.nombre_completo}</span>
+                                <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+                                    <div className={styles.planTag}>{clienteActivo.plan?.nombre || "Sin Plan"}</div>
+                                    <div style={{ fontSize: '0.75rem', color: deudaTotal > 0 ? '#ef4444' : '#16a34a', fontWeight: 'bold' }}>
+                                        {deudaTotal > 0 ? `Debe: $${deudaTotal.toFixed(2)}` : 'Al corriente'}
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                            <label>Mes Correspondiente</label>
-                            <select value={mesPago} onChange={e=>setMesPago(e.target.value)} className={styles.select}>
-                                {listaMeses.map(m => <option key={m} value={m}>{m}</option>)}
-                            </select>
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label>Metodo de Pago</label>
-                            <select value={metodoPago} onChange={e=>setMetodoPago(e.target.value)} className={styles.select} disabled={tipoPago === 'APLAZADO'}>
-                                <option value="EFECTIVO">Efectivo</option>
-                                <option value="TRANSFERENCIA">Transferencia</option>
-                                <option value="DEPOSITO">Deposito</option>
-                            </select>
-                        </div>
-                    </div>
+                            {esPagoTardio && (
+                                <div className={styles.warningBox}>
+                                    <div className={styles.warningTitle}>
+                                        <AlertTriangle size={16} /> Pago fuera de tiempo
+                                    </div>
+                                    <label style={{ fontSize: '0.8rem' }}>Justificación:</label>
+                                    <select {...register("motivo_retraso")} className={styles.warningSelect}>
+                                        <option value="cliente">Responsabilidad cliente (Penalizar)</option>
+                                        <option value="acuerdo">Acuerdo previo (No penalizar)</option>
+                                        <option value="logistica">Logística interna (No penalizar)</option>
+                                    </select>
+                                </div>
+                            )}
 
-                    <div className={styles.formGroup}>
-                        <label>Monto a Pagar ($)</label>
-                        <div style={{position:'relative'}}>
-                            <input 
-                                type="number" 
-                                step="0.01"
-                                value={montoAbono} 
-                                onChange={e=>setMontoAbono(e.target.value)} 
-                                className={styles.input} 
-                                style={{fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary)', paddingLeft: 35}}
-                                disabled={tipoPago === 'APLAZADO'} 
-                            />
-                            <span style={{position:'absolute', left:12, top:12, color:'var(--text-muted)', fontWeight:'bold'}}>$</span>
-                        </div>
-                    </div>
+                            <div className={styles.gridRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Monto ($)</label>
+                                    <div className={styles.inputIconWrap}>
+                                        <DollarSign size={18} />
+                                        <input 
+                                            type="number" step="0.01" 
+                                            {...register("monto", { required: "Requerido", min: 1 })} 
+                                            className={styles.input} 
+                                            style={{ fontWeight: 'bold', color: 'var(--primary)' }}
+                                        />
+                                    </div>
+                                </div>
 
-                    <div className={styles.formGroup}>
-                        <label>Concepto o Nota (Opcional)</label>
-                        <div style={{position:'relative'}}>
-                            <FileText size={18} style={{position:'absolute', top:12, left:10, color:'var(--text-muted)'}}/>
-                            <textarea 
-                                value={nota}
-                                onChange={e=>setNota(e.target.value)}
-                                className={styles.textarea}
-                                placeholder="Ej: Intercambio por servicios, abono parcial..."
-                                rows="2"
-                                style={{paddingLeft: 35, resize: 'none'}}
-                            />
-                        </div>
-                    </div>
+                                <div className={styles.formGroup}>
+                                    <label>Tipo Movimiento</label>
+                                    <select {...register("tipo_pago")} className={styles.select}>
+                                        <option value="LIQUIDACION">Liquidación</option>
+                                        <option value="ABONO">Abono</option>
+                                        <option value="APLAZADO">Aplazar (Mover deuda)</option>
+                                    </select>
+                                </div>
+                            </div>
 
-                    <div className={styles.modalActions}>
-                        <button type="button" onClick={onClose} className={styles.btnCancel}>Cancelar</button>
-                        <button type="submit" className={styles.btnSubmit}>Procesar Pago</button>
-                    </div>
-                </form>
+                            <div className={styles.gridRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Método</label>
+                                    <div className={styles.inputIconWrap}>
+                                        <CreditCard size={18} />
+                                        <select {...register("metodo_pago")} className={styles.select}>
+                                            <option value="EFECTIVO">Efectivo</option>
+                                            <option value="TRANSFERENCIA">Transferencia</option>
+                                            <option value="DEPOSITO">Depósito</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className={styles.formGroup}>
+                                    <label>Mes Correspondiente</label>
+                                    <div className={styles.inputIconWrap}>
+                                        <Calendar size={18} />
+                                        <input type="month" {...register("mes_correspondiente")} className={styles.input} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {metodoPago !== 'EFECTIVO' && (
+                                <div className={styles.formGroup} style={{marginBottom: '15px'}}>
+                                    <label>Referencia / Folio / Autorización</label>
+                                    <input 
+                                        {...register("referencia", { required: "Este campo es requerido" })} 
+                                        className={styles.input} 
+                                        placeholder="Ej: 123456" 
+                                    />
+                                    {errors.referencia && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.referencia.message}</span>}
+                                </div>
+                            )}
+
+                            <div className={styles.formGroup}>
+                                <label>Notas</label>
+                                <textarea {...register("notas")} className={styles.textarea} rows="2" placeholder="Detalles opcionales..."></textarea>
+                            </div>
+
+                            <div className={styles.modalActions}>
+                                <button type="button" onClick={onClose} className={styles.btnCancel}>Cancelar</button>
+                                <button type="submit" className={styles.btnSubmit} disabled={loading}>
+                                    {loading ? 'Procesando...' : 'Confirmar Pago'}
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                </div>
             </div>
         </div>
     );

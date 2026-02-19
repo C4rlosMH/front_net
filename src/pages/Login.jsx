@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import client from "../api/axios"; // <--- IMPORTANTE: Importar axios
 import { toast } from "sonner";
-import { Hexagon, User, Lock, ArrowRight, Loader2, ShieldCheck, Cpu, Activity } from "lucide-react";
+import { Hexagon, User, Lock, ArrowRight, Loader2, ShieldCheck, Cpu, Activity, AlertCircle } from "lucide-react";
 import styles from "./styles/Login.module.css";
 
 function Login() {
@@ -10,10 +11,25 @@ function Login() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     
+    // Estado del servidor: 'checking' | 'online' | 'offline'
+    const [serverStatus, setServerStatus] = useState("checking");
+
     const { signin, errors } = useAuth();
     const navigate = useNavigate();
 
+    // Verificamos el estado del servidor al cargar
     useEffect(() => {
+        const checkHealth = async () => {
+            try {
+                await client.get('/health'); // Asegúrate que esta ruta exista en backend
+                setServerStatus("online");
+            } catch (error) {
+                console.error("Servidor desconectado");
+                setServerStatus("offline");
+            }
+        };
+        checkHealth();
+
         if (errors) {
             errors.forEach(err => toast.error(err));
         }
@@ -21,6 +37,11 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (serverStatus === 'offline') {
+            return toast.error("No hay conexión con el servidor. Intenta más tarde.");
+        }
+
         if(!username || !password) return toast.warning("Requisitos de acceso incompletos");
         
         setIsLoading(true);
@@ -48,10 +69,14 @@ function Login() {
                     </div>
 
                     <div className={styles.systemStatus}>
-                        <div className={styles.statusBadge}>
+                        {/* BADGE DINÁMICO SEGÚN ESTADO */}
+                        <div className={`${styles.statusBadge} ${styles[serverStatus]}`}>
                             <div className={styles.pulseDot}></div>
-                            SISTEMA EN LÍNEA
+                            {serverStatus === 'online' && "SISTEMA EN LÍNEA"}
+                            {serverStatus === 'offline' && "SISTEMA OFFLINE"}
+                            {serverStatus === 'checking' && "CONECTANDO..."}
                         </div>
+                        
                         <h2>Plataforma de<br/>Administración ISP</h2>
                         <p>Terminal de acceso seguro para gestión de infraestructura y enrutamiento de clientes.</p>
                     </div>
@@ -80,6 +105,14 @@ function Login() {
                     </div>
 
                     <form onSubmit={handleSubmit} className={styles.form}>
+                        
+                        {/* AVISO VISUAL SI ESTÁ OFFLINE EN EL FORMULARIO */}
+                        {serverStatus === 'offline' && (
+                            <div style={{color: '#ef4444', fontSize: '0.9rem', display: 'flex', gap: '8px', alignItems:'center', background:'#fee2e2', padding:'10px', borderRadius:'8px'}}>
+                                <AlertCircle size={18}/> Error de conexión con el Backend
+                            </div>
+                        )}
+
                         <div className={styles.inputGroup}>
                             <label>Identificador de Usuario</label>
                             <div className={styles.inputWrapper}>
@@ -110,7 +143,11 @@ function Login() {
                             </div>
                         </div>
 
-                        <button type="submit" className={styles.submitBtn} disabled={isLoading}>
+                        <button 
+                            type="submit" 
+                            className={styles.submitBtn} 
+                            disabled={isLoading || serverStatus === 'offline'} // Bloqueado si offline
+                        >
                             {isLoading ? (
                                 <> <Loader2 size={18} className={styles.spinner} /> Autenticando... </>
                             ) : (

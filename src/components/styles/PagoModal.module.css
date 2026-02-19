@@ -4,72 +4,181 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(3px);
 }
 
 .modal {
-  background: var(--card-bg);
-  width: 450px;
-  padding: 25px;
+  background: var(--card-bg); /* Se adapta a tu tema claro/oscuro */
+  width: 90%;
+  max-width: 500px;
+  padding: 0; /* Quitamos padding global para manejarlo por secciones */
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
   border: 1px solid var(--border);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
+/* Cabecera */
 .modalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  color: var(--text-main);
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--body-bg);
 }
 
 .modalHeader h3 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
+  color: var(--text-main);
+  font-weight: 700;
 }
 
 .closeBtn {
   background: transparent;
   border: none;
-  font-size: 1.8rem;
   cursor: pointer;
   color: var(--text-muted);
   transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 5px;
 }
-
 .closeBtn:hover {
-  color: #ef4444;
+  color: var(--text-main);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
-.formGroup {
+/* Contenido del Formulario */
+.formContent {
+  padding: 25px;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+/* --- Badge de Cliente (Tarjeta superior) --- */
+.clientBadge {
+  background-color: var(--body-bg);
+  padding: 12px 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.planTag {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Alerta de Pago Tardío --- */
+.warningBox {
+  background-color: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  color: #c2410c;
+}
+
+.warningTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  color: #ea580c;
+}
+
+.warningSelect {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #fed7aa;
+  border-radius: 6px;
+  background-color: white;
+  color: #9a3412;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+/* --- Estructura del Formulario --- */
+.gridRow {
+  display: flex;
+  gap: 15px;
   margin-bottom: 15px;
 }
 
+.formGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .formGroup label {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--text-muted);
   font-size: 0.85rem;
   font-weight: 600;
+  color: var(--text-muted);
+}
+
+.inputIconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIconWrap svg {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
 }
 
 .input,
-.select,
-.textarea {
+.select {
   width: 100%;
-  padding: 10px;
+  padding: 10px 10px 10px 40px; /* Espacio para el icono a la izquierda */
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--body-bg);
+  background-color: var(--body-bg);
   color: var(--text-main);
-  box-sizing: border-box;
   font-size: 0.95rem;
-  font-family: inherit; /* Para que el textarea mantenga la misma fuente */
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  box-sizing: border-box; /* Importante para que no se salga del contenedor */
+}
+
+/* El select a veces necesita ajuste si no tiene icono, pero aquí todos tienen */
+.select {
+  appearance: none; /* Elimina estilo por defecto del navegador */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px top 50%;
+  background-size: 10px auto;
+  padding-right: 30px;
 }
 
 .input:focus,
@@ -77,130 +186,84 @@
 .textarea:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.formRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
-
-.deudaBox {
-  background: var(--body-bg);
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-top: 8px;
+.textarea {
+  width: 100%;
+  padding: 12px;
   border: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-}
-
-.muted {
-  color: var(--text-muted);
-}
-
-/* Tabs Selector Tipo */
-.typeSelector {
-  display: flex;
-  background: var(--body-bg);
-  padding: 4px;
   border-radius: 8px;
-  margin-bottom: 15px;
-  border: 1px solid var(--border);
-}
-
-.typeButton {
-  flex: 1;
-  padding: 8px;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-
-.typeActive {
-  background: var(--card-bg);
-  color: var(--primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.typeInactive {
-  color: var(--text-muted);
-}
-.typeInactive:hover {
+  background-color: var(--body-bg);
   color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 80px;
+  box-sizing: border-box;
 }
 
+/* --- Botones de Acción --- */
 .modalActions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
   margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
 }
 
 .btnCancel {
   padding: 10px 20px;
   background: transparent;
   border: 1px solid var(--border);
-  color: var(--text-main);
+  color: var(--text-muted);
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
+  transition: all 0.2s;
+}
+.btnCancel:hover {
+  background-color: var(--body-bg);
+  color: var(--text-main);
 }
 
 .btnSubmit {
-  padding: 10px 20px;
+  padding: 10px 24px;
   background: var(--primary);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+  transition: all 0.2s;
+}
+.btnSubmit:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+.btnSubmit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-.btnSubmit:hover {
-  background: #1d4ed8;
+/* Animación de entrada */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* --- ESTILOS PARA ALERTAS DE RETRASO --- */
-.warningBox {
-  background-color: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-}
-
-.warningText {
-  color: #d97706;
-  font-size: 0.85rem;
-  margin: 0 0 10px 0;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.warningSelect {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid rgba(245, 158, 11, 0.5);
-  border-radius: 6px;
-  background: var(--body-bg);
-  color: var(--text-main);
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.warningSelect:focus {
-  outline: none;
-  border-color: #f59e0b;
+/* Responsive para móviles */
+@media (max-width: 600px) {
+  .gridRow {
+    flex-direction: column;
+    gap: 15px;
+  }
 }
