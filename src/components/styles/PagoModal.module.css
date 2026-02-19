@@ -1,149 +1,206 @@
 .modalOverlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 .modal {
-    background: var(--card-bg);
-    width: 450px;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    border: 1px solid var(--border);
+  background: var(--card-bg);
+  width: 450px;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border);
 }
 
 .modalHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    color: var(--text-main);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  color: var(--text-main);
 }
 
-.modalHeader h3 { margin: 0; font-size: 1.25rem; }
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
 
 .closeBtn {
-    background: transparent;
-    border: none;
-    font-size: 1.8rem;
-    cursor: pointer;
-    color: var(--text-muted);
-    transition: color 0.2s;
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.2s;
 }
 
-.closeBtn:hover { color: #ef4444; }
+.closeBtn:hover {
+  color: #ef4444;
+}
 
-.formGroup { margin-bottom: 15px; }
+.formGroup {
+  margin-bottom: 15px;
+}
 
 .formGroup label {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
-.input, .select, .textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--body-bg);
-    color: var(--text-main);
-    box-sizing: border-box;
-    font-size: 0.95rem;
-    font-family: inherit; /* Para que el textarea mantenga la misma fuente */
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--body-bg);
+  color: var(--text-main);
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  font-family: inherit; /* Para que el textarea mantenga la misma fuente */
 }
 
-.input:focus, .select:focus, .textarea:focus {
-    outline: none;
-    border-color: var(--primary);
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary);
 }
 
 .formRow {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
 }
 
 .deudaBox {
-    background: var(--body-bg);
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin-top: 8px;
-    border: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
+  background: var(--body-bg);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
 }
 
-.muted { color: var(--text-muted); }
+.muted {
+  color: var(--text-muted);
+}
 
 /* Tabs Selector Tipo */
 .typeSelector {
-    display: flex;
-    background: var(--body-bg);
-    padding: 4px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    border: 1px solid var(--border);
+  display: flex;
+  background: var(--body-bg);
+  padding: 4px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border);
 }
 
 .typeButton {
-    flex: 1;
-    padding: 8px;
-    border: none;
-    background: transparent;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
+  flex: 1;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
 }
 
 .typeActive {
-    background: var(--card-bg);
-    color: var(--primary);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background: var(--card-bg);
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.typeInactive { color: var(--text-muted); }
-.typeInactive:hover { color: var(--text-main); }
+.typeInactive {
+  color: var(--text-muted);
+}
+.typeInactive:hover {
+  color: var(--text-main);
+}
 
 .modalActions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 25px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
 }
 
 .btnCancel {
-    padding: 10px 20px;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-main);
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 .btnSubmit {
-    padding: 10px 20px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
+  padding: 10px 20px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-.btnSubmit:hover { background: #1d4ed8; }
+.btnSubmit:hover {
+  background: #1d4ed8;
+}
+
+/* --- ESTILOS PARA ALERTAS DE RETRASO --- */
+.warningBox {
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.warningText {
+  color: #d97706;
+  font-size: 0.85rem;
+  margin: 0 0 10px 0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.warningSelect {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  border-radius: 6px;
+  background: var(--body-bg);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.warningSelect:focus {
+  outline: none;
+  border-color: #f59e0b;
+}

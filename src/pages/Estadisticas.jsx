@@ -6,7 +6,7 @@ import {
     PieChart, Pie, Cell, Legend, AreaChart, Area
 } from 'recharts';
 import { 
-    TrendingUp, AlertCircle, Wallet, Download, Calendar, Users, DollarSign, ArrowRight
+    TrendingUp, AlertCircle, Wallet, Download, Calendar, Users, ArrowRight
 } from "lucide-react";
 import styles from "./styles/Estadisticas.module.css";
 import { useTheme } from "../context/ThemeContext";
@@ -37,10 +37,11 @@ function Estadisticas() {
         
         const lista = data.pendientes_pago.lista;
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Nombre,Telefono,Direccion,Deuda\n";
+        csvContent += "Nombre,Telefono,Direccion,Deuda,Confiabilidad\n";
         
         lista.forEach(c => {
-            const row = `"${c.nombre_completo}","${c.telefono || ''}","${c.direccion || ''}","${c.saldo_actual}"`;
+            const deudaTotal = Number(c.saldo_actual || 0) + Number(c.saldo_aplazado || 0);
+            const row = `"${c.nombre_completo}","${c.telefono || ''}","${c.direccion || ''}","${deudaTotal}","${c.confiabilidad || 100}%"`;
             csvContent += row + "\n";
         });
 
@@ -56,17 +57,30 @@ function Estadisticas() {
     if (loading) return <div className={styles.loading}>Cargando análisis financiero...</div>;
     if (!data) return <div className={styles.loading}>Sin datos para mostrar</div>;
 
-    // --- CÁLCULOS RÁPIDOS ---
-    const q1 = data.financiero?.recaudado_q1 || 0;
-    const q2 = data.financiero?.recaudado_q2 || 0;
-    const ingresosTotalesMes = q1 + q2;
-    const porcentajeQ1 = ingresosTotalesMes > 0 ? ((q1 / ingresosTotalesMes) * 100).toFixed(0) : 0;
-    const porcentajeQ2 = ingresosTotalesMes > 0 ? ((q2 / ingresosTotalesMes) * 100).toFixed(0) : 0;
+    // --- CÁLCULOS RÁPIDOS (ACTUALIZADOS PARA METAS) ---
+    const metas = data.financiero?.metas || {
+        q1: { estimada: 0, a_tiempo: 0, recuperado: 0 },
+        q2: { estimada: 0, a_tiempo: 0, recuperado: 0 }
+    };
+
+    const ingresosTotalesMes = data.financiero?.recaudado_total || 0;
+
+    // Cálculos Quincena 1
+    const totalQ1 = metas.q1.a_tiempo + metas.q1.recuperado;
+    const metaQ1 = metas.q1.estimada > 0 ? metas.q1.estimada : 1; 
+    const pctTiempoQ1 = Math.min(100, (metas.q1.a_tiempo / metaQ1) * 100);
+    const pctRecupQ1 = Math.min(100 - pctTiempoQ1, (metas.q1.recuperado / metaQ1) * 100);
+
+    // Cálculos Quincena 2
+    const totalQ2 = metas.q2.a_tiempo + metas.q2.recuperado;
+    const metaQ2 = metas.q2.estimada > 0 ? metas.q2.estimada : 1;
+    const pctTiempoQ2 = Math.min(100, (metas.q2.a_tiempo / metaQ2) * 100);
+    const pctRecupQ2 = Math.min(100 - pctTiempoQ2, (metas.q2.recuperado / metaQ2) * 100);
 
     const totalDeuda = data.pendientes_pago?.total_deuda || 0;
     const proyeccion = data.financiero?.proyeccion_proximo_mes || 0;
     const clientesActivos = data.clientes?.resumen?.activos || 0;
-    const topDeudores = data.pendientes_pago?.lista?.slice(0, 5) || []; // Solo los primeros 5
+    const topDeudores = data.pendientes_pago?.lista?.slice(0, 5) || [];
 
     // --- CONFIGURACIÓN GRÁFICAS ---
     const COLORS_CLIENTES = ['#10b981', '#f59e0b', '#ef4444'];
@@ -96,7 +110,7 @@ function Estadisticas() {
                 </button>
             </div>
 
-            {/* --- 1. TARJETAS DE KPI (Métricas Principales) --- */}
+            {/* --- 1. TARJETAS DE KPI --- */}
             <div className={styles.kpiGrid}>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiIconWrapper} style={{background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6'}}>
@@ -182,7 +196,7 @@ function Estadisticas() {
                                 <Pie
                                     data={clientesData}
                                     cx="50%" cy="50%"
-                                    innerRadius={70} outerRadius={90} /* Diseño tipo Donut Moderno */
+                                    innerRadius={70} outerRadius={90}
                                     paddingAngle={5}
                                     dataKey="value"
                                     stroke={isDark ? '#1e293b' : '#fff'}
@@ -209,25 +223,39 @@ function Estadisticas() {
                         <h3>Desglose Quincenal</h3>
                     </div>
                     <div className={styles.quincenaContainer}>
+                        {/* QUINCENA 1 */}
                         <div className={styles.qBlock}>
                             <div className={styles.qTitleRow}>
-                                <span className={styles.qTitle}>1ª Quincena (Días 1-15)</span>
-                                <span className={styles.qPercent}>{porcentajeQ1}%</span>
+                                <span className={styles.qTitle}>1ª Quincena (Meta: ${metas.q1.estimada.toFixed(2)})</span>
+                                <span className={styles.qPercent}>{((totalQ1 / metaQ1) * 100).toFixed(0)}%</span>
                             </div>
-                            <span className={styles.qAmount}>${q1.toFixed(2)}</span>
-                            <div className={styles.progressBar}>
-                                <div className={styles.progressFill} style={{width: `${porcentajeQ1}%`, background: '#3b82f6'}}></div>
+                            
+                            <div className={styles.progressWrapper} title="Progreso de la quincena">
+                                <div className={styles.progressOntimeQ1} style={{ width: `${pctTiempoQ1}%` }} title={`A tiempo: $${metas.q1.a_tiempo}`} />
+                                <div className={styles.progressLate} style={{ width: `${pctRecupQ1}%` }} title={`Recuperado: $${metas.q1.recuperado}`} />
+                            </div>
+
+                            <div className={styles.progressDetails}>
+                                <span><span className={styles.textBlue}>${metas.q1.a_tiempo.toFixed(2)}</span> a tiempo</span>
+                                <span><span className={styles.textOrange}>${metas.q1.recuperado.toFixed(2)}</span> atrasado</span>
                             </div>
                         </div>
                         
-                        <div className={styles.qBlock}>
+                        {/* QUINCENA 2 */}
+                        <div className={`${styles.qBlock} ${styles.qBlockMargin}`}>
                             <div className={styles.qTitleRow}>
-                                <span className={styles.qTitle}>2ª Quincena (Días 16-30)</span>
-                                <span className={styles.qPercent}>{porcentajeQ2}%</span>
+                                <span className={styles.qTitle}>2ª Quincena (Meta: ${metas.q2.estimada.toFixed(2)})</span>
+                                <span className={styles.qPercent}>{((totalQ2 / metaQ2) * 100).toFixed(0)}%</span>
                             </div>
-                            <span className={styles.qAmount}>${q2.toFixed(2)}</span>
-                            <div className={styles.progressBar}>
-                                <div className={styles.progressFill} style={{width: `${porcentajeQ2}%`, background: '#8b5cf6'}}></div>
+                            
+                            <div className={styles.progressWrapper} title="Progreso de la quincena">
+                                <div className={styles.progressOntimeQ2} style={{ width: `${pctTiempoQ2}%` }} title={`A tiempo: $${metas.q2.a_tiempo}`} />
+                                <div className={styles.progressLate} style={{ width: `${pctRecupQ2}%` }} title={`Recuperado: $${metas.q2.recuperado}`} />
+                            </div>
+
+                            <div className={styles.progressDetails}>
+                                <span><span className={styles.textPurple}>${metas.q2.a_tiempo.toFixed(2)}</span> a tiempo</span>
+                                <span><span className={styles.textOrange}>${metas.q2.recuperado.toFixed(2)}</span> atrasado</span>
                             </div>
                         </div>
                     </div>
@@ -256,11 +284,13 @@ function Estadisticas() {
                                             <span className={styles.deudorName}>{deudor.nombre_completo}</span>
                                             <span className={styles.deudorAddress}>{deudor.direccion || 'Sin dirección'}</span>
                                         </div>
-                                        <span className={styles.deudorDeuda}>${deudor.saldo_actual}</span>
+                                        <span className={styles.deudorDeuda}>
+                                            ${Number(deudor.saldo_actual || 0) + Number(deudor.saldo_aplazado || 0)}
+                                        </span>
                                     </div>
                                 ))
                             ) : (
-                                <div className={styles.noDeudores}>¡Excelente! Todos los clientes están al corriente.</div>
+                                <div className={styles.noDeudores}>Todos los clientes están al corriente.</div>
                             )}
                         </div>
                         

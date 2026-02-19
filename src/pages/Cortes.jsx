@@ -34,10 +34,23 @@ function Cortes() {
         try {
             setLoading(true);
             const res = await client.get("/clientes");
-            // Filtrar clientes con deuda activa y que no estén dados de baja
-            const lista = res.data.filter(c => c.saldo_actual > 0 && c.estado !== 'BAJA');
+            
+            // FILTRO A PRUEBA DE FALLOS:
+            const lista = res.data.filter(c => {
+                const deudaCorriente = parseFloat(c.saldo_actual) || 0;
+                const deudaAplazada = parseFloat(c.saldo_aplazado) || 0;
+                const deudaTotal = deudaCorriente + deudaAplazada;
+                
+                // Mostrar si debe dinero, O si ya está cortado (Ignorando a los dados de baja)
+                return (deudaTotal > 0 || c.estado === 'CORTADO') && c.estado !== 'BAJA';
+            });
+            
             // Ordenar: Los que deben más dinero primero
-            lista.sort((a, b) => parseFloat(b.saldo_actual) - parseFloat(a.saldo_actual));
+            lista.sort((a, b) => {
+                const deudaA = (parseFloat(a.saldo_actual) || 0) + (parseFloat(a.saldo_aplazado) || 0);
+                const deudaB = (parseFloat(b.saldo_actual) || 0) + (parseFloat(b.saldo_aplazado) || 0);
+                return deudaB - deudaA;
+            });
             
             setMorosos(lista);
         } catch (error) {
@@ -46,6 +59,40 @@ function Cortes() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Calculadora de Días de Gracia
+    const calcularDiasRetraso = (diaPago) => {
+        if (!diaPago) return 0;
+        const hoy = new Date();
+        const diaActual = hoy.getDate();
+        let dias = diaActual - parseInt(diaPago);
+        
+        if (dias < 0 && diaActual <= 7) {
+            const ultimoDiaMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0).getDate();
+            dias = diaActual + (ultimoDiaMesAnterior - parseInt(diaPago));
+        }
+        return dias;
+    };
+
+    // Evaluador de Estado de Corte
+    const getEstadoCorte = (cliente) => {
+        if (cliente.estado === 'CORTADO') {
+            return { texto: 'YA CORTADO', clase: styles.cut };
+        }
+        
+        const tieneDeudaAplazada = (parseFloat(cliente.saldo_aplazado) || 0) > 0;
+        const diasRetraso = calcularDiasRetraso(cliente.dia_pago);
+
+        if (tieneDeudaAplazada || diasRetraso > 5) {
+            return { texto: 'CORTE INMEDIATO', clase: styles.immediate };
+        }
+
+        if (diasRetraso > 0 && diasRetraso <= 5) {
+            return { texto: `GRACIA (DÍA ${diasRetraso})`, clase: styles.grace };
+        }
+
+        return { texto: 'PENDIENTE', clase: styles.pending };
     };
 
     // Filtro por búsqueda
@@ -63,7 +110,10 @@ function Cortes() {
     const handlePrint = () => window.print();
 
     const handleCopy = () => {
-        const texto = morosos.map(c => `• ${c.nombre_completo} | Debe: $${c.saldo_actual} | Dir: ${c.direccion || 'N/A'}`).join("\n");
+        const texto = morosos.map(c => {
+            const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+            return `• ${c.nombre_completo} | Debe: $${deudaTotal.toFixed(2)} | Dir: ${c.direccion || 'N/A'}`;
+        }).join("\n");
         navigator.clipboard.writeText(`🚨 LISTA DE CORTES/MOROSOS:\n\n${texto}`);
         toast.success("Lista copiada al portapapeles (Lista para WhatsApp)");
     };
@@ -71,16 +121,30 @@ function Cortes() {
     // Mensaje rápido de WhatsApp
     const handleWhatsApp = (cliente) => {
         if (!cliente.telefono) return toast.warning("El cliente no tiene teléfono registrado");
-        const mensaje = `Hola ${cliente.nombre_completo}. Te recordamos que tienes un saldo pendiente de *$${cliente.saldo_actual}* en tu servicio de internet. Te invitamos a regularizar tu pago para evitar la suspensión del servicio. ¡Excelente día!`;
-        // Limpiar el número para que sea solo dígitos. Asumiendo lada de México (52), puedes cambiarlo si usas otra.
+        const deudaTotal = (parseFloat(cliente.saldo_actual) || 0) + (parseFloat(cliente.saldo_aplazado) || 0);
+        const estadoCorte = getEstadoCorte(cliente);
+        
+        let mensaje = `Hola ${cliente.nombre_completo}. Te recordamos que tienes un saldo pendiente de *$${deudaTotal.toFixed(2)}* en tu servicio de internet. `;
+        
+        if (estadoCorte.clase === styles.grace) {
+            mensaje += `Te invitamos a regularizar tu pago para evitar la suspensión del servicio. ¡Excelente día!`;
+        } else if (estadoCorte.clase === styles.immediate) {
+            mensaje += `Tu periodo de gracia ha expirado. Por favor, regulariza tu pago inmediatamente para evitar la suspensión del servicio.`;
+        } else {
+            mensaje += `Te invitamos a regularizar tu pago a la brevedad.`;
+        }
+
         const numLimpio = cliente.telefono.replace(/\D/g, '');
         const url = `https://wa.me/52${numLimpio}?text=${encodeURIComponent(mensaje)}`;
         window.open(url, '_blank');
     };
 
     // KPIs Calculados
-    const totalDeuda = morosos.reduce((acc, c) => acc + parseFloat(c.saldo_actual || 0), 0);
-    const porCortar = morosos.filter(c => c.estado !== 'CORTADO').length;
+    const totalDeuda = morosos.reduce((acc, c) => acc + (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0), 0);
+    const porCortar = morosos.filter(c => {
+        const estado = getEstadoCorte(c);
+        return estado.clase === styles.immediate;
+    }).length;
     const yaCortados = morosos.filter(c => c.estado === 'CORTADO').length;
 
     return (
@@ -116,7 +180,7 @@ function Cortes() {
                         <AlertOctagon size={24} />
                     </div>
                     <div className={styles.kpiInfo}>
-                        <span>Requieren Corte</span>
+                        <span>Cortes Inmediatos</span>
                         <strong>{porCortar} <small style={{fontSize:'0.8rem', fontWeight:'normal', color:'var(--text-muted)'}}>Clientes</small></strong>
                     </div>
                 </div>
@@ -158,15 +222,19 @@ function Cortes() {
                                     <th>Ubicación</th>
                                     <th>Plan</th>
                                     <th>Deuda Total</th>
-                                    <th>Estado</th>
+                                    <th>Estado / Acción</th>
                                     <th className={styles.noPrint}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {currentMorosos.length === 0 ? (
-                                    <tr><td colSpan="6" className={styles.emptyState}>No se encontraron morosos.</td></tr>
+                                    <tr><td colSpan="6" className={styles.emptyState}>No se encontraron clientes morosos en el sistema.</td></tr>
                                 ) : (
-                                    currentMorosos.map(c => (
+                                    currentMorosos.map(c => {
+                                        const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+                                        const estadoCorte = getEstadoCorte(c);
+
+                                        return (
                                         <tr key={c.id}>
                                             <td>
                                                 <strong className={styles.name}>{c.nombre_completo}</strong>
@@ -185,11 +253,14 @@ function Cortes() {
                                                 <span className={styles.planBadge}>{c.plan?.nombre || "Sin Plan"}</span>
                                             </td>
                                             <td>
-                                                <span className={styles.debt}>${c.saldo_actual}</span>
+                                                <div style={{display: 'flex', flexDirection: 'column'}}>
+                                                    <span className={styles.debt}>${deudaTotal.toFixed(2)}</span>
+                                                    {(parseFloat(c.saldo_aplazado) || 0) > 0 && <span style={{fontSize: '0.75rem', color: '#f59e0b', fontWeight: 'bold'}}>Adeudo Atrasado</span>}
+                                                </div>
                                             </td>
                                             <td>
-                                                <span className={`${styles.statusBadge} ${c.estado === 'CORTADO' ? styles.cut : styles.pending}`}>
-                                                    {c.estado === 'CORTADO' ? 'YA CORTADO' : 'PENDIENTE'}
+                                                <span className={`${styles.statusBadge} ${estadoCorte.clase}`}>
+                                                    {estadoCorte.texto}
                                                 </span>
                                             </td>
                                             <td className={styles.noPrint}>
@@ -211,7 +282,7 @@ function Cortes() {
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))
+                                    )})
                                 )}
                             </tbody>
                         </table>
@@ -233,7 +304,7 @@ function Cortes() {
                 isOpen={modalPagoOpen}
                 onClose={() => setModalPagoOpen(false)}
                 clienteIdPreseleccionado={clienteCobrarId}
-                onSuccess={cargarMorosos} // Recarga la lista, si el cliente pagó todo, desaparecerá mágicamente de la vista
+                onSuccess={cargarMorosos} 
             />
         </div>
     );

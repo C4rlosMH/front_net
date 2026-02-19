@@ -31,23 +31,29 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                 setValue("latitud", clienteEditar.latitud);
                 setValue("longitud", clienteEditar.longitud);
                 
-                if (clienteEditar.caja) {
-                    setTipoInstalacion("FIBRA");
-                    setValue("cajaId", clienteEditar.caja.id);
+                // Cargamos el valor o lo dejamos vacío si es nulo
+                setValue("confiabilidad", clienteEditar.confiabilidad ?? "");
+                
+                const tipoReal = clienteEditar.tipo_conexion ? clienteEditar.tipo_conexion.toUpperCase() : (clienteEditar.caja ? "FIBRA" : "RADIO");
+                setTipoInstalacion(tipoReal);
+
+                if (tipoReal === "FIBRA") {
+                    if (clienteEditar.caja) setValue("cajaId", clienteEditar.caja.id);
                     const routerAsignado = clienteEditar.equipos?.find(e => e.tipo === 'ROUTER' || e.tipo === 'MODEM');
                     setValue("routerId", routerAsignado?.id || "");
                 } else {
-                    setTipoInstalacion("RADIO");
                     setValue("cajaId", "");
                     const antenaAsignada = clienteEditar.equipos?.find(e => e.tipo === 'ANTENA');
                     const routerAsignado = clienteEditar.equipos?.find(e => e.tipo === 'ROUTER' || e.tipo === 'MODEM');
-                    setValue("antenaId", antenaAsignada?.id || "");
-                    setValue("routerId", routerAsignado?.id || "");
+                    if (antenaAsignada) setValue("antenaId", antenaAsignada.id);
+                    if (routerAsignado) setValue("routerId", routerAsignado.id);
                 }
             } else {
                 reset();
                 setTipoInstalacion("FIBRA");
                 setValue("estado", "ACTIVO");
+                // Los clientes nuevos nacen con el campo vacío (null)
+                setValue("confiabilidad", ""); 
             }
         }
     }, [isOpen, clienteEditar]);
@@ -67,8 +73,6 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
             let libresAntenas = libres.filter(e => e.tipo === 'ANTENA');
             let libresRouters = libres.filter(e => e.tipo === 'ROUTER' || e.tipo === 'MODEM');
 
-            // Si estamos editando, debemos agregar a la lista los equipos que ya tiene asignados
-            // para que aparezcan en el select y no se pierdan al guardar.
             if (clienteEditar && clienteEditar.equipos) {
                 const antenaActual = clienteEditar.equipos.find(e => e.tipo === 'ANTENA');
                 const routerActual = clienteEditar.equipos.find(e => e.tipo === 'ROUTER' || e.tipo === 'MODEM');
@@ -96,6 +100,13 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                 if (data.routerId) equiposIds.push(parseInt(data.routerId));
             }
 
+            // Procesamos la confiabilidad para forzar null si está vacío
+            let confFinal = null;
+            if (data.confiabilidad !== "" && data.confiabilidad !== null && data.confiabilidad !== undefined) {
+                confFinal = parseInt(data.confiabilidad);
+                if (isNaN(confFinal)) confFinal = null;
+            }
+
             const payload = {
                 ...data,
                 latitud: parseFloat(data.latitud),
@@ -103,7 +114,9 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                 planId: data.planId ? parseInt(data.planId) : null,
                 dia_pago: parseInt(data.dia_pago),
                 cajaId: tipoInstalacion === 'FIBRA' && data.cajaId ? parseInt(data.cajaId) : null,
-                equiposIds
+                equiposIds,
+                tipo_conexion: tipoInstalacion.toLowerCase(),
+                confiabilidad: confFinal
             };
 
             if (clienteEditar) {
@@ -157,9 +170,22 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                         </div>
                     </div>
 
-                    <div className={styles.formRow}>
-                        <div className={styles.formGroup}><label>IP Asignada</label><input {...register("ip_asignada")} className={styles.input} placeholder="Ej: 192.168.1.100"/></div>
-                        <div className={styles.formGroup}><label>Día de Pago</label><select {...register("dia_pago")} className={styles.select}><option value="15">Día 15</option><option value="30">Día 30</option></select></div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                        <div className={styles.formGroup} style={{marginBottom: 0}}>
+                            <label>IP Asignada</label>
+                            <input {...register("ip_asignada")} className={styles.input} placeholder="Ej: 192.168..."/>
+                        </div>
+                        <div className={styles.formGroup} style={{marginBottom: 0}}>
+                            <label>Día de Pago</label>
+                            <select {...register("dia_pago")} className={styles.select}>
+                                <option value="15">Día 15</option>
+                                <option value="30">Día 30</option>
+                            </select>
+                        </div>
+                        <div className={styles.formGroup} style={{marginBottom: 0}}>
+                            <label>Confiabilidad (%)</label>
+                            <input type="number" min="0" max="100" placeholder="Automático" {...register("confiabilidad")} className={styles.input}/>
+                        </div>
                     </div>
                     
                     <div className={styles.formGroup}><label>Dirección Física</label><input {...register("direccion")} className={styles.input}/></div>

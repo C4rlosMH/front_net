@@ -60,22 +60,22 @@ function HistorialPagos() {
 
     const esFibra = !!datosCliente.caja;
 
-    // --- LÓGICA DE SCORE Y MAPA DE CALOR ---
-    
-    // 1. Calcular Score (Porcentaje de pagos vs cargos)
-    let scoreColor = "#94a3b8"; // Gris neutro por defecto
+    // --- LÓGICA DE SCORE UNIFICADA (Fuente de la verdad: Base de datos) ---
+    let scoreColor = "#94a3b8"; // Gris neutro para "Sin historial"
     let scoreText = "Sin historial";
-    let scoreDisplay = "--%";
+    let scoreDisplay = "--";
 
-    // Solo calculamos el score si hay algún tipo de movimiento financiero
-    if (totalCargado > 0 || totalAbonado > 0) {
-        const score = totalCargado > 0 ? Math.min(100, Math.round((totalAbonado / totalCargado) * 100)) : 100;
-        scoreDisplay = `${score}%`;
+    const confiabilidadBD = datosCliente.confiabilidad;
+    // Consideramos que tiene historial si el valor no es nulo y tiene al menos un movimiento
+    const tieneHistorial = confiabilidadBD !== null && confiabilidadBD !== undefined && historial.length > 0;
+
+    if (tieneHistorial) {
+        scoreDisplay = `${confiabilidadBD}%`;
         
-        if (score >= 90) {
+        if (confiabilidadBD >= 90) {
             scoreColor = "#10b981"; // Verde
             scoreText = "Excelente";
-        } else if (score >= 70) {
+        } else if (confiabilidadBD >= 70) {
             scoreColor = "#f59e0b"; // Naranja
             scoreText = "Regular";
         } else {
@@ -84,19 +84,20 @@ function HistorialPagos() {
         }
     }
 
-    // 2. Calcular Mapa de Calor (Últimos 6 meses)
-    const ultimos6Meses = [];
+    // --- MAPA DE CALOR: AHORA A 10 MESES ---
+    const ultimos10Meses = [];
     const hoy = new Date();
-    for (let i = 5; i >= 0; i--) {
+    // Bucle de 9 a 0 genera exactamente 10 meses
+    for (let i = 9; i >= 0; i--) {
         const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-        ultimos6Meses.push({
+        ultimos10Meses.push({
             month: d.getMonth(),
             year: d.getFullYear(),
             name: d.toLocaleString('es-ES', { month: 'short' })
         });
     }
 
-    const heatmapData = ultimos6Meses.map(mes => {
+    const heatmapData = ultimos10Meses.map(mes => {
         const abonosMes = historial.filter(m => m.tipo === 'ABONO' && new Date(m.fecha).getMonth() === mes.month && new Date(m.fecha).getFullYear() === mes.year);
         const cargosMes = historial.filter(m => m.tipo === 'CARGO' && new Date(m.fecha).getMonth() === mes.month && new Date(m.fecha).getFullYear() === mes.year);
 
@@ -224,7 +225,7 @@ function HistorialPagos() {
                 </div>
             </div>
 
-            {/* NUEVA SECCIÓN: COMPORTAMIENTO (SCORE Y HEATMAP) */}
+            {/* SECCIÓN DE COMPORTAMIENTO (SCORE Y HEATMAP) */}
             <div className={styles.behaviorSection}>
                 <div className={styles.scoreContainer}>
                     <div className={styles.scoreCircle} style={{ borderColor: scoreColor }}>
@@ -237,7 +238,7 @@ function HistorialPagos() {
                 </div>
 
                 <div className={styles.heatmapContainer}>
-                    <span className={styles.heatmapTitle}>Actividad de Pagos (Últimos 6 Meses)</span>
+                    <span className={styles.heatmapTitle}>Actividad de Pagos (Últimos 10 Meses)</span>
                     <div className={styles.heatBlocks}>
                         {heatmapData.map((data, index) => (
                             <div key={index} className={styles.heatBlockWrapper}>

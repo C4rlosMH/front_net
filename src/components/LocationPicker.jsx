@@ -1,68 +1,87 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import ReactDOMServer from "react-dom/server";
-import { User, Server, Building2, Map as MapIcon, Satellite } from "lucide-react";
+import { User, Server, Building2, Map as MapIcon, Satellite, Wifi, MapPin } from "lucide-react";
+import "leaflet/dist/leaflet.css";
 import styles from "./styles/LocationPicker.module.css";
 
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+const Sede = [17.687171, -91.029577];
 
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-});
-L.Marker.prototype.options.icon = DefaultIcon;
-
-const UBICACION_NEGOCIO = [17.6852292,-91.0269451];
-const SEDE_POS = [17.687171, -91.029577];
-
+// Creador de iconos personalizados
 const createCustomIcon = (iconComponent, bgColor) => {
     const iconHtml = ReactDOMServer.renderToString(
-        <div className={styles.customIcon} style={{ backgroundColor: bgColor }}>
+        <div className={styles.iconMarker} style={{ backgroundColor: bgColor }}>
             {iconComponent}
         </div>
     );
-
     return new L.DivIcon({
-        html: iconHtml, className: 'custom-marker',
-        iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -28]
+        html: iconHtml,
+        className: 'custom-marker',
+        iconSize: [26, 26],
+        iconAnchor: [13, 26],
+        popupAnchor: [0, -26]
     });
 };
 
-const iconCliente = createCustomIcon(<User size={16} />, '#2563eb'); 
-const iconCaja = createCustomIcon(<Server size={16} />, '#f97316'); 
-const iconSede = createCustomIcon(<Building2 size={16} />, '#dc2626');
+// Iconos de contexto (ligeramente más pequeños que el principal)
+const iconFibra = createCustomIcon(<User size={14} />, '#2563eb'); 
+const iconRadio = createCustomIcon(<Wifi size={14} />, '#10b981'); 
+const iconCaja = createCustomIcon(<Server size={14} />, '#f97316'); 
+const iconSede = createCustomIcon(<Building2 size={14} />, '#dc2626'); 
 
-function ClickHandler({ onLocationSelect }) {
+// Icono destacado para el punto que el usuario está seleccionando/arrastrando
+const iconSeleccion = createCustomIcon(<MapPin size={18} />, '#ef4444');
+
+function LocationMarker({ position, setPosition, onLocationChange }) {
+    const markerRef = useRef(null);
     useMapEvents({
         click(e) {
-            onLocationSelect(e.latlng);
+            setPosition(e.latlng);
+            onLocationChange(e.latlng);
         },
     });
-    return null;
+
+    const eventHandlers = {
+        dragend() {
+            const marker = markerRef.current;
+            if (marker != null) {
+                const latlng = marker.getLatLng();
+                setPosition(latlng);
+                onLocationChange(latlng);
+            }
+        },
+    };
+
+    return position === null ? null : (
+        <Marker
+            draggable={true}
+            eventHandlers={eventHandlers}
+            position={position}
+            ref={markerRef}
+            icon={iconSeleccion}
+            zIndexOffset={1000} // Asegura que quede siempre por encima de los demás
+        >
+            <Popup minWidth={90}>Ubicación seleccionada.</Popup>
+        </Marker>
+    );
 }
 
-const LocationPicker = ({ onLocationChange, initialLat, initialLng, clients = [], cajas = [] }) => {
+function LocationPicker({ initialLat, initialLng, onLocationChange, clients = [], cajas = [] }) {
     const [position, setPosition] = useState(null);
     
+    // Leemos la preferencia guardada para que coincida con el mapa principal
     const [tipoMapa, setTipoMapa] = useState(() => {
         return localStorage.getItem('vistaMapaPreferencia') || 'calle';
     });
 
     useEffect(() => {
         if (initialLat && initialLng) {
-            setPosition({ lat: initialLat, lng: initialLng });
+            setPosition({ lat: parseFloat(initialLat), lng: parseFloat(initialLng) });
         }
     }, [initialLat, initialLng]);
 
-    const handleSelect = (latlng) => {
-        setPosition(latlng);
-        onLocationChange(latlng);
-    };
+    const center = position ? [position.lat, position.lng] : Sede;
 
     const cambiarVista = (vista) => {
         setTipoMapa(vista);
@@ -70,30 +89,28 @@ const LocationPicker = ({ onLocationChange, initialLat, initialLng, clients = []
     };
 
     return (
-        <div className={styles.container}>
+        <div className={styles.mapWrapper}>
             
+            {/* CONTROL DE VISTAS FLOTANTE */}
             <div className={styles.layerSwitcher}>
                 <button 
                     type="button" 
-                    onClick={() => cambiarVista('calle')}
+                    onClick={(e) => { e.preventDefault(); cambiarVista('calle'); }} 
                     className={`${styles.layerBtn} ${tipoMapa === 'calle' ? styles.layerBtnActive : ''}`}
                 >
                     <MapIcon size={14} /> Calle
                 </button>
                 <button 
                     type="button" 
-                    onClick={() => cambiarVista('satelite')}
+                    onClick={(e) => { e.preventDefault(); cambiarVista('satelite'); }} 
                     className={`${styles.layerBtn} ${tipoMapa === 'satelite' ? styles.layerBtnActive : ''}`}
                 >
                     <Satellite size={14} /> Satélite
                 </button>
             </div>
 
-            <MapContainer 
-                center={initialLat ? [initialLat, initialLng] : UBICACION_NEGOCIO} 
-                zoom={16} 
-                className={styles.map}
-            >
+            {/* CONTENEDOR DEL MAPA */}
+            <MapContainer center={center} zoom={16} className={styles.mapInstance} scrollWheelZoom={true}>
                 {tipoMapa === 'calle' ? (
                     <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -105,38 +122,38 @@ const LocationPicker = ({ onLocationChange, initialLat, initialLng, clients = []
                         attribution='&copy; Esri'
                     />
                 )}
-                
-                <Marker position={SEDE_POS} icon={iconSede} />
 
-                {cajas.map(c => (
-                    c.latitud && c.longitud ? (
-                        <Marker key={`caja-${c.id}`} position={[c.latitud, c.longitud]} icon={iconCaja}>
-                            <Popup>NAP: {c.nombre}</Popup>
+                <Marker position={Sede} icon={iconSede} opacity={0.7} />
+
+                {/* CONTEXTO: CAJAS NAP */}
+                {cajas.map(caja => (
+                    caja.latitud && caja.longitud ? (
+                        <Marker key={`caja-${caja.id}`} position={[caja.latitud, caja.longitud]} icon={iconCaja} opacity={0.5}>
+                            <Popup>Caja NAP: {caja.nombre}</Popup>
                         </Marker>
                     ) : null
                 ))}
 
-                {clients.map(c => (
-                    c.latitud && c.longitud ? (
-                        <Marker key={`cli-${c.id}`} position={[c.latitud, c.longitud]} icon={iconCliente}>
-                            <Popup>{c.nombre_completo}</Popup>
-                        </Marker>
-                    ) : null
-                ))}
+                {/* CONTEXTO: CLIENTES EXISTENTES */}
+                {clients.map(c => {
+                    // Evitar dibujar al cliente que estamos editando para no duplicar el marcador
+                    if (position && c.latitud === position.lat && c.longitud === position.lng) return null;
 
-                <ClickHandler onLocationSelect={handleSelect} />
-                {position && <Marker position={position} />}
+                    if (c.latitud && c.longitud) {
+                        const isRadio = c.tipo_conexion?.toLowerCase() === 'radio' || !c.caja;
+                        return (
+                            <Marker key={`cli-${c.id}`} position={[c.latitud, c.longitud]} icon={isRadio ? iconRadio : iconFibra} opacity={0.5}>
+                                <Popup>{c.nombre_completo} ({isRadio ? 'Radio' : 'Fibra'})</Popup>
+                            </Marker>
+                        );
+                    }
+                    return null;
+                })}
+
+                <LocationMarker position={position} setPosition={setPosition} onLocationChange={onLocationChange} />
             </MapContainer>
-            
-            <div className={styles.legend}>
-                <span>Clic para ubicar</span>
-                <span className={styles.legendSeparator}>|</span>
-                <span><span className={`${styles.dot} ${styles.dotBlue}`}></span> Clientes</span>
-                <span className={styles.legendSeparator}>|</span>
-                <span><span className={`${styles.dot} ${styles.dotOrange}`}></span> Cajas</span>
-            </div>
         </div>
     );
-};
+}
 
 export default LocationPicker;

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import client from "../api/axios";
 import { toast } from "sonner";
 import { 
-    Users, Wifi, Activity, Scissors, 
+    Wifi, Activity, Scissors, 
     Banknote, Landmark, DollarSign, Bell, 
     Clock, CheckCircle, ArrowRight
 } from "lucide-react";
@@ -34,6 +34,19 @@ function Dashboard() {
 
     const formatoDinero = (num) => `$${parseFloat(num || 0).toFixed(2)}`;
 
+    // Calculadora de Días de Gracia
+    const calcularDiasGracia = (diaPago) => {
+        const hoy = new Date();
+        const diaActual = hoy.getDate();
+        let dias = diaActual - diaPago;
+        
+        if (dias < 0 && diaActual <= 7) {
+            const ultimoDiaMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0).getDate();
+            dias = diaActual + (ultimoDiaMesAnterior - diaPago);
+        }
+        return dias;
+    };
+
     if (loading) return <div className={styles.loading}>Cargando centro de operaciones...</div>;
 
     const totalClientes = stats?.clientes?.total || 0;
@@ -54,7 +67,7 @@ function Dashboard() {
                 </div>
             </div>
 
-            {/* 1. ARQUEO DE CAJA (Lo más importante del día a día arriba) */}
+            {/* 1. ARQUEO DE CAJA */}
             <div className={styles.cashRegisterBox}>
                 <div className={styles.cashHeader}>
                     <h2><DollarSign size={22} /> Arqueo de Caja</h2>
@@ -67,7 +80,7 @@ function Dashboard() {
                             <DollarSign size={24} />
                         </div>
                         <div className={styles.moneyInfo}>
-                            <span className={styles.moneyLabel}>Ingreso Total por Quincena</span>
+                            <span className={styles.moneyLabel}>Ingreso Total Acumulado</span>
                             <div className={styles.moneyValue} style={{color: '#16a34a'}}>{formatoDinero(recaudadoTotal)}</div>
                         </div>
                     </div>
@@ -94,7 +107,7 @@ function Dashboard() {
                 </div>
             </div>
 
-            {/* 2. ALERTAS RÁPIDAS (Grid) */}
+            {/* 2. ALERTAS RÁPIDAS */}
             <div className={styles.grid}>
                 {/* VENCIMIENTOS */}
                 <div className={`${styles.card} ${vencimientosHoy.length > 0 ? styles.cardWarning : styles.cardSuccess}`}>
@@ -106,7 +119,7 @@ function Dashboard() {
                     </div>
                     <p className={styles.cardValue}>{vencimientosHoy.length}</p>
                     <div className={styles.details}>
-                        {vencimientosHoy.length > 0 ? <span>Clientes que deben pagar hoy</span> : <span>Todos al corriente hoy</span>}
+                        {vencimientosHoy.length > 0 ? <span>Clientes pendientes de cobro</span> : <span>Todos al corriente hoy</span>}
                     </div>
                 </div>
 
@@ -139,43 +152,54 @@ function Dashboard() {
                 </div>
             </div>
 
-            {/* 3. PANELES DE DETALLE (Dos columnas) */}
+            {/* 3. PANELES DE DETALLE */}
             <div className={styles.panelsGrid}>
                 {/* Panel Izquierdo: Lista de a quién cobrarle hoy */}
                 <div className={styles.panelCard}>
                     <div className={styles.panelHeader}>    
-                        <h3><Clock size={18} /> Vencimientos del Día</h3>
+                        <h3><Clock size={18} /> Vencimientos y Periodos de Gracia</h3>
                     </div>
                     <div className={styles.listContainer}>
                         {vencimientosHoy.length > 0 ? (
-                            vencimientosHoy.map((cliente, index) => (
-                                <div key={index} className={styles.listItem}>
-                                    <div className={styles.itemInfo}>
-                                        <strong>{cliente.nombre_completo || 'Cliente'}</strong>
-                                        <span>{cliente.direccion || 'Sin dirección'}</span>
+                            vencimientosHoy.map((cliente, index) => {
+                                const diasGracia = calcularDiasGracia(cliente.dia_pago);
+                                
+                                return (
+                                    <div key={index} className={styles.listItem}>
+                                        <div className={styles.itemInfo}>
+                                            <div className={styles.itemNameWrapper}>
+                                                <strong>{cliente.nombre_completo || 'Cliente'}</strong>
+                                                {diasGracia > 0 && (
+                                                    <span className={styles.graceBadge}>
+                                                        Día {diasGracia} de gracia
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span>{cliente.direccion || 'Sin dirección'}</span>
+                                        </div>
+                                        <button 
+                                            className={styles.itemAction}
+                                            style={{cursor: 'pointer'}}
+                                            onClick={() => {
+                                                setClienteCobrarId(cliente.id);
+                                                setModalPagoOpen(true);
+                                            }}
+                                        >
+                                            Cobrar
+                                        </button>
                                     </div>
-                                    <button 
-                                        className={styles.itemAction}
-                                        style={{cursor: 'pointer'}}
-                                        onClick={() => {
-                                            setClienteCobrarId(cliente.id);
-                                            setModalPagoOpen(true);
-                                        }}
-                                    >
-                                        Cobrar
-                                    </button>
-                                </div>
-                            ))
+                                );
+                            })
                         ) : (
                             <div className={styles.emptyState}>
                                 <CheckCircle size={32} color="#10b981" style={{marginBottom: 10}}/>
-                                <p>No hay vencimientos programados para hoy.</p>
+                                <p>No hay deudores en periodo de gracia.</p>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Panel Derecho: Feed de actividad en tiempo real */}
+                {/* Panel Derecho: Feed de actividad */}
                 <div className={styles.panelCard}>
                     <div className={styles.panelHeader}>
                         <h3><Activity size={18} /> Actividad Reciente</h3>
@@ -204,13 +228,12 @@ function Dashboard() {
                     </div>
                 </div>
             </div>
+            
             <PagoModal 
                 isOpen={modalPagoOpen}
                 onClose={() => setModalPagoOpen(false)}
                 clienteIdPreseleccionado={clienteCobrarId}
                 onSuccess={() => {
-                    // Si el pago es exitoso, recargamos el Dashboard silenciosamente 
-                    // para que el dinero de caja se actualice al instante
                     client.get("/dashboard/stats").then(res => setStats(res.data));
                 }}
             />

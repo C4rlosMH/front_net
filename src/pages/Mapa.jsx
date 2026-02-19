@@ -5,8 +5,7 @@ import "leaflet/dist/leaflet.css";
 import client from "../api/axios";
 import { toast } from "sonner";
 import styles from "./styles/Mapa.module.css";
-// Importamos los nuevos iconos para los botones
-import { User, Server, Building2, Map as MapIcon, Satellite } from "lucide-react"; 
+import { User, Server, Building2, Map as MapIcon, Satellite, Wifi } from "lucide-react"; 
 import ReactDOMServer from "react-dom/server";
 
 const UBICACION_NEGOCIO = [17.6852292,-91.0269451];
@@ -27,15 +26,16 @@ const createCustomIcon = (iconComponent, bgColor) => {
     });
 };
 
-const iconCliente = createCustomIcon(<User size={18} />, '#2563eb');
-const iconCaja = createCustomIcon(<Server size={18} />, '#f97316');
-const iconSede = createCustomIcon(<Building2 size={18} />, '#dc2626');
+// --- ICONOS DINÁMICOS ---
+const iconFibra = createCustomIcon(<User size={18} />, '#2563eb'); // Azul
+const iconRadio = createCustomIcon(<Wifi size={18} />, '#10b981'); // Verde
+const iconCaja = createCustomIcon(<Server size={18} />, '#f97316'); // Naranja
+const iconSede = createCustomIcon(<Building2 size={18} />, '#dc2626'); // Rojo
 
 function Mapa() {
     const [clientes, setClientes] = useState([]);
     const [cajas, setCajas] = useState([]);
     
-    // ESTADO PARA LA VISTA (Recuerda la opción guardada o usa 'calle' por defecto)
     const [tipoMapa, setTipoMapa] = useState(() => {
         return localStorage.getItem('vistaMapaPreferencia') || 'calle';
     });
@@ -57,7 +57,6 @@ function Mapa() {
         cargarDatos();
     }, []);
 
-    // Función para cambiar vista y guardar en memoria
     const cambiarVista = (vista) => {
         setTipoMapa(vista);
         localStorage.setItem('vistaMapaPreferencia', vista);
@@ -67,16 +66,11 @@ function Mapa() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <h1 className={styles.title}>Mapa de Red</h1>
-                <div style={{fontSize:'0.85rem', color:'var(--text-muted)', display:'flex', gap:15}}>
-                   <span style={{display:'flex', alignItems:'center', gap:5}}>
-                       <span style={{width:20, height:2, background:'#3b82f6', display:'inline-block'}}></span> Conexión Fibra
-                   </span>
-                </div>
             </div>
 
             <div className={styles.mapWrapper} style={{ position: 'relative' }}>
                 
-                {/* NUEVO SELECTOR DE VISTAS FLOTANTE */}
+                {/* SELECTOR DE VISTAS FLOTANTE */}
                 <div className={styles.layerSwitcher}>
                     <button 
                         className={`${styles.layerBtn} ${tipoMapa === 'calle' ? styles.layerBtnActive : ''}`}
@@ -92,9 +86,29 @@ function Mapa() {
                     </button>
                 </div>
 
+                {/* SIMBOLOGÍA FLOTANTE (LEYENDA) */}
+                <div className={styles.legendBox}>
+                    <h4 className={styles.legendTitle}>Simbología</h4>
+                    <div className={styles.legendItem}>
+                        <div className={styles.legendIcon} style={{background: '#dc2626'}}><Building2 size={14} color="#fff"/></div>
+                        <span>Base Central</span>
+                    </div>
+                    <div className={styles.legendItem}>
+                        <div className={styles.legendIcon} style={{background: '#f97316'}}><Server size={14} color="#fff"/></div>
+                        <span>Caja NAP (Fibra)</span>
+                    </div>
+                    <div className={styles.legendItem}>
+                        <div className={styles.legendIcon} style={{background: '#2563eb'}}><User size={14} color="#fff"/></div>
+                        <span>Cliente Fibra</span>
+                    </div>
+                    <div className={styles.legendItem}>
+                        <div className={styles.legendIcon} style={{background: '#10b981'}}><Wifi size={14} color="#fff"/></div>
+                        <span>Cliente Radio</span>
+                    </div>
+                </div>
+
                 <MapContainer center={UBICACION_NEGOCIO} zoom={16} scrollWheelZoom={true} className={styles.mapInstance}>
                     
-                    {/* RENDERIZADO CONDICIONAL DE LA CAPA */}
                     {tipoMapa === 'calle' ? (
                         <TileLayer
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -115,45 +129,58 @@ function Mapa() {
                         </Popup>
                     </Marker>
 
+                    {/* DIBUJO DE LÍNEAS DE CONEXIÓN */}
                     {clientes.map(c => {
                         if (c.latitud && c.longitud && c.caja && c.caja.latitud && c.caja.longitud) {
+                            // Aplicamos la misma regla inteligente aquí por si acaso
+                            const isRadio = c.tipo_conexion?.toLowerCase() === 'radio' || !c.caja;
+                            const lineColor = isRadio ? '#10b981' : '#3b82f6';
+
                             return (
                                 <Polyline
                                     key={`line-${c.id}`}
                                     positions={[[c.latitud, c.longitud], [c.caja.latitud, c.caja.longitud]]}
-                                    pathOptions={{ color: '#3b82f6', weight: 2, opacity: 0.6, dashArray: '5, 5' }}
+                                    pathOptions={{ color: lineColor, weight: 2, opacity: 0.6, dashArray: '5, 5' }}
                                 >
-                                    <Popup><small>Conexión: {c.nombre_completo} ↔ {c.caja.nombre}</small></Popup>
+                                    <Popup><small>Conexión {isRadio ? 'Radio' : 'Fibra'}: {c.nombre_completo} ↔ {c.caja.nombre}</small></Popup>
                                 </Polyline>
                             );
                         }
                         return null;
                     })}
 
+                    {/* DIBUJO DE CAJAS/NODOS */}
                     {cajas.map(caja => (
                         caja.latitud && caja.longitud ? (
                             <Marker key={`caja-${caja.id}`} position={[caja.latitud, caja.longitud]} icon={iconCaja}>
-                                <Popup><strong>NAP: {caja.nombre}</strong><br/><small>Capacidad: {caja.capacidad_total} puertos</small></Popup>
+                                <Popup><strong>NAP / Nodo: {caja.nombre}</strong><br/><small>Capacidad: {caja.capacidad_total} puertos</small></Popup>
                             </Marker>
                         ) : null
                     ))}
 
-                    {clientes.map(c => (
-                        c.latitud && c.longitud ? (
-                            <Marker key={`cli-${c.id}`} position={[c.latitud, c.longitud]} icon={iconCliente}>
-                                <Popup>
-                                    <strong>👤 {c.nombre_completo}</strong>
-                                    <span className={styles.popupAddress}>{c.direccion}</span>
-                                    <span className={styles.popupPlan}>Plan: {c.plan?.nombre || "Sin Plan"}</span>
-                                    {c.caja && (
-                                        <div className={styles.popupConnectionBox}>
-                                            <small className={styles.popupConnectionText}>🔌 Conectado a: {c.caja.nombre}</small>
-                                        </div>
-                                    )}
-                                </Popup>
-                            </Marker>
-                        ) : null
-                    ))}
+                    {/* DIBUJO DE CLIENTES */}
+                    {clientes.map(c => {
+                        if (c.latitud && c.longitud) {
+                            // Lógica infalible: Es radio si la BD dice radio o si NO tiene caja NAP asignada
+                            const isRadio = c.tipo_conexion?.toLowerCase() === 'radio' || !c.caja;
+                            
+                            return (
+                                <Marker key={`cli-${c.id}`} position={[c.latitud, c.longitud]} icon={isRadio ? iconRadio : iconFibra}>
+                                    <Popup>
+                                        <strong>{isRadio ? '📡' : '👤'} {c.nombre_completo}</strong>
+                                        <span className={styles.popupAddress}>{c.direccion}</span>
+                                        <span className={styles.popupPlan}>Plan: {c.plan?.nombre || "Sin Plan"}</span>
+                                        {c.caja && (
+                                            <div className={styles.popupConnectionBox}>
+                                                <small className={styles.popupConnectionText}>🔌 Conectado a: {c.caja.nombre}</small>
+                                            </div>
+                                        )}
+                                    </Popup>
+                                </Marker>
+                            );
+                        }
+                        return null;
+                    })}
                 </MapContainer>
             </div>
         </div>

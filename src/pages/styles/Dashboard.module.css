@@ -353,3 +353,19 @@
 @media (max-width: 768px) {
     .panelsGrid { grid-template-columns: 1fr; }
 }
+
+/* --- ESTILOS PARA ALERTAS DE COBRO --- */
+.itemNameWrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.graceBadge {
+    font-size: 0.65rem;
+    background-color: #fef3c7;
+    color: #d97706;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+}

@@ -1,162 +1,211 @@
 .container {
-    padding: 20px;
-    height: 90vh;
-    display: flex;
-    flex-direction: column;
+  padding: 20px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
 .title {
-    font-size: 1.5rem;
-    color: var(--text-main);
-    margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-main);
+  margin: 0;
 }
 
 .mapWrapper {
-    flex: 1;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    position: relative;
-    z-index: 0;
-    /* CORREGIDO: Usar --card-bg */
-    background-color: var(--card-bg); 
+  flex: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 0;
+  /* CORREGIDO: Usar --card-bg */
+  background-color: var(--card-bg);
 }
 
 .mapInstance {
-    height: 100%;
-    width: 100%;
-    /* CORREGIDO: Usar --card-bg */
-    background-color: var(--card-bg);
+  height: 100%;
+  width: 100%;
+  /* CORREGIDO: Usar --card-bg */
+  background-color: var(--card-bg);
 }
 
 /* --- MAGIA DEL MODO OSCURO PARA EL MAPA --- */
 /* Esto invierte los colores del mapa tile layer si definiste --map-filter en index.css */
 .mapInstance :global(.leaflet-tile-pane) {
-    filter: var(--map-filter);
+  filter: var(--map-filter);
 }
 
 /* --- ICONOS --- */
 .iconMarker {
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* --- POPUPS (Adaptados a modo oscuro) --- */
 /* Leaflet usa sus propias clases globales, necesitamos forzar estilos dentro */
 .mapInstance :global(.leaflet-popup-content-wrapper),
 .mapInstance :global(.leaflet-popup-tip) {
-    /* CORREGIDO: Usar --card-bg para que tome el color del tema (blanco o gris oscuro) */
-    background: var(--card-bg);
-    color: var(--text-main);
-    box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+  /* CORREGIDO: Usar --card-bg para que tome el color del tema (blanco o gris oscuro) */
+  background: var(--card-bg);
+  color: var(--text-main);
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
 }
 
 /* Asegurar que el botón de cerrar también se vea bien */
 .mapInstance :global(.leaflet-popup-close-button) {
-    color: var(--text-muted) !important;
+  color: var(--text-muted) !important;
 }
 
 .popupCenter {
-    text-align: center;
+  text-align: center;
 }
 
 .popupTitleRed {
-    color: #ef4444; /* Rojo más brillante para oscuro */
-    font-weight: bold;
-    display: block;
-    margin-bottom: 2px;
+  color: #ef4444; /* Rojo más brillante para oscuro */
+  font-weight: bold;
+  display: block;
+  margin-bottom: 2px;
 }
 
 .popupTitle {
-    font-weight: bold;
-    display: block;
-    font-size: 0.95rem;
-    margin-bottom: 4px;
-    color: var(--text-main);
+  font-weight: bold;
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+  color: var(--text-main);
 }
 
 .popupAddress {
-    font-size: 0.85rem;
-    display: block;
-    margin-bottom: 2px;
-    color: var(--text-main);
+  font-size: 0.85rem;
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text-main);
 }
 
 .popupPlan {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: block;
 }
 
 .popupConnectionBox {
-    margin-top: 6px;
-    border-top: 1px solid var(--border);
-    padding-top: 4px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 4px;
 }
 
 .popupConnectionText {
-    color: #f97316;
-    font-weight: bold;
-    font-size: 0.8rem;
+  color: #f97316;
+  font-weight: bold;
+  font-size: 0.8rem;
 }
 
 /* NUEVO SELECTOR DE VISTAS (LAYER SWITCHER) */
 .layerSwitcher {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 1000; /* Para que quede sobre el mapa */
-    background: var(--card-bg);
-    padding: 5px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    display: flex;
-    gap: 4px;
-    border: 1px solid var(--border);
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000; /* Para que quede sobre el mapa */
+  background: var(--card-bg);
+  padding: 5px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  display: flex;
+  gap: 4px;
+  border: 1px solid var(--border);
 }
 
 .layerBtn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
 }
 
 .layerBtn:hover {
-    background: var(--body-bg);
-    color: var(--text-main);
+  background: var(--body-bg);
+  color: var(--text-main);
 }
 
 .layerBtnActive {
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
 }
 
 .layerBtnActive:hover {
-    background: var(--primary);
-    color: white;
+  background: var(--primary);
+  color: white;
+}
+
+/* --- SIMBOLOGÍA FLOTANTE --- */
+.legendBox {
+  position: absolute;
+  bottom: 25px;
+  left: 20px;
+  z-index: 1000; /* Para que quede sobre el mapa */
+  background: var(--card-bg);
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(5px);
+}
+
+.legendTitle {
+  margin: 0 0 10px 0;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.legendItem:last-child {
+  margin-bottom: 0;
+}
+
+.legendIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
 }

@@ -232,6 +232,31 @@
   border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
+.grace {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706; /* Naranja/Amarillo para advertencia */
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.immediate {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444; /* Rojo para corte inmediato */
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  animation: pulseWarning 2s infinite; /* Pequeño efecto para llamar la atención */
+}
+
+@keyframes pulseWarning {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
 /* Acciones por fila */
 .flexActions {
   display: flex;

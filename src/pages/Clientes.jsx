@@ -94,10 +94,20 @@ function Clientes() {
         let aVal = a[sortConfig.key] || '';
         let bVal = b[sortConfig.key] || '';
 
-        // Si ordenamos por deuda, convertir a número
         if (sortConfig.key === 'saldo_actual') {
-            aVal = parseFloat(aVal) || 0;
-            bVal = parseFloat(bVal) || 0;
+            aVal = (parseFloat(a.saldo_actual) || 0) + (parseFloat(a.saldo_aplazado) || 0);
+            bVal = (parseFloat(b.saldo_actual) || 0) + (parseFloat(b.saldo_aplazado) || 0);
+        }
+
+        if (sortConfig.key === 'tipo_conexion') {
+            aVal = (a.tipo_conexion?.toLowerCase() === 'radio' || !a.caja) ? 'radio' : 'fibra';
+            bVal = (b.tipo_conexion?.toLowerCase() === 'radio' || !b.caja) ? 'radio' : 'fibra';
+        }
+
+        if (sortConfig.key === 'confiabilidad') {
+            // Si es null, le asignamos -1 para que se vaya al fondo de la lista al ordenar de mayor a menor
+            aVal = a.confiabilidad ?? -1; 
+            bVal = b.confiabilidad ?? -1;
         }
 
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -113,11 +123,15 @@ function Clientes() {
     const exportarCSV = () => {
         if (clientesFiltrados.length === 0) return toast.warning("No hay datos para exportar");
         
-        let csv = "Nombre Completo,Telefono,IP,Direccion,Plan,Estado,Deuda\n";
+        let csv = "Nombre Completo,Telefono,Tipo Conexion,IP,Direccion,Plan,Estado,Deuda Total,Confiabilidad\n";
         clientesFiltrados.forEach(c => {
             const planStr = c.plan?.nombre || "Sin plan";
-            const dirStr = c.direccion ? c.direccion.replace(/,/g, '') : ""; // Evitar comas en CSV
-            csv += `"${c.nombre_completo}","${c.telefono || ''}","${c.ip_asignada || ''}","${dirStr}","${planStr}","${c.estado}","${c.saldo_actual || 0}"\n`;
+            const dirStr = c.direccion ? c.direccion.replace(/,/g, '') : ""; 
+            const tipoCon = (c.tipo_conexion?.toLowerCase() === 'radio' || !c.caja) ? 'Radio' : 'Fibra';
+            const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+            const confText = (c.confiabilidad !== null && c.confiabilidad !== undefined) ? `${c.confiabilidad}%` : 'Sin historial';
+            
+            csv += `"${c.nombre_completo}","${c.telefono || ''}","${tipoCon}","${c.ip_asignada || ''}","${dirStr}","${planStr}","${c.estado}","${deudaTotal}","${confText}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -180,12 +194,18 @@ function Clientes() {
                             <th onClick={() => handleSort('nombre_completo')} className={styles.sortableHeader}>
                                 Cliente {renderSortIcon('nombre_completo')}
                             </th>
+                            <th onClick={() => handleSort('tipo_conexion')} className={styles.sortableHeader}>
+                                Conexión {renderSortIcon('tipo_conexion')}
+                            </th>
                             <th onClick={() => handleSort('ip_asignada')} className={styles.sortableHeader}>
                                 Red / Ubicación {renderSortIcon('ip_asignada')}
                             </th>
-                            <th>Plan & Conexión</th>
+                            <th>Plan & Equipo</th>
                             <th onClick={() => handleSort('estado')} className={styles.sortableHeader}>
                                 Estado {renderSortIcon('estado')}
+                            </th>
+                            <th onClick={() => handleSort('confiabilidad')} className={styles.sortableHeader}>
+                                Confiabilidad {renderSortIcon('confiabilidad')}
                             </th>
                             <th onClick={() => handleSort('saldo_actual')} className={styles.sortableHeader}>
                                 Deuda {renderSortIcon('saldo_actual')}
@@ -198,46 +218,84 @@ function Clientes() {
                             Array(6).fill(0).map((_, i) => (
                                 <tr key={i} className={styles.skeletonRow}>
                                     <td><div className={styles.skeletonBlock} style={{width: '70%', height: '16px'}}></div><div className={styles.skeletonBlock} style={{width: '40%', height: '12px', marginTop: '6px'}}></div></td>
+                                    <td><div className={styles.skeletonBlock} style={{width: '70px', height: '24px', borderRadius: '6px'}}></div></td>
                                     <td><div className={styles.skeletonBlock} style={{width: '60%', height: '16px'}}></div></td>
                                     <td><div className={styles.skeletonBlock} style={{width: '50%', height: '16px'}}></div></td>
                                     <td><div className={styles.skeletonBlock} style={{width: '80px', height: '24px', borderRadius: '20px'}}></div></td>
+                                    <td><div className={styles.skeletonBlock} style={{width: '50px', height: '20px', borderRadius: '4px'}}></div></td>
                                     <td><div className={styles.skeletonBlock} style={{width: '40px', height: '16px'}}></div></td>
                                     <td><div className={styles.skeletonBlock} style={{width: '120px', height: '32px', borderRadius: '8px'}}></div></td>
                                 </tr>
                             ))
                         ) : currentClientes.length === 0 ? (
-                            <tr><td colSpan="6" className={styles.emptyState}>No se encontraron clientes con esos filtros.</td></tr>
+                            <tr><td colSpan="8" className={styles.emptyState}>No se encontraron clientes con esos filtros.</td></tr>
                         ) : (
-                            currentClientes.map(c => (
+                            currentClientes.map(c => {
+                                const conf = c.confiabilidad;
+                                const tieneConf = conf !== null && conf !== undefined;
+                                const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+                                const esRadio = c.tipo_conexion?.toLowerCase() === 'radio' || !c.caja;
+                                
+                                return (
                                 <tr key={c.id}>
+                                    {/* COLUMNA 1: CLIENTE */}
                                     <td>
                                         <div className={styles.bold}>{c.nombre_completo}</div>
                                         <div className={styles.muted}>{c.telefono || "Sin teléfono"}</div>
                                     </td>
+                                    
+                                    {/* COLUMNA 2: TIPO CONEXIÓN */}
+                                    <td>
+                                        {esRadio ? (
+                                            <span className={`${styles.tipoBadge} ${styles.badgeRadio}`} title="Conexión Inalámbrica">
+                                                <Wifi size={14} /> Radio
+                                            </span>
+                                        ) : (
+                                            <span className={`${styles.tipoBadge} ${styles.badgeFibra}`} title="Conexión Fibra Óptica">
+                                                <Cable size={14} /> Fibra
+                                            </span>
+                                        )}
+                                    </td>
+
+                                    {/* COLUMNA 3: RED / UBICACIÓN */}
                                     <td>
                                         <div className={styles.fontMono}>{c.ip_asignada}</div>
                                         <div className={styles.muted}>{c.direccion}</div>
                                     </td>
+
+                                    {/* COLUMNA 4: PLAN & EQUIPO */}
                                     <td>
                                         <div className={styles.medium}>{c.plan?.nombre || "Sin Plan"}</div>
-                                        {c.caja ? (
-                                            <span className={`${styles.cajaBadge} ${styles.badgeFibra}`}><Cable size={12} /> NAP: {c.caja.nombre}</span>
-                                        ) : (
-                                            <span className={`${styles.cajaBadge} ${styles.badgeRadio}`}><Wifi size={12} /> Antena</span>
-                                        )}
+                                        {c.caja && <div className={styles.muted}>NAP: {c.caja.nombre}</div>}
                                     </td>
+
+                                    {/* COLUMNA 5: ESTADO */}
                                     <td>
                                         <span className={`${styles.statusBadge} ${c.estado === 'ACTIVO' ? styles.statusActive : styles.statusInactive} ${getEstadoBadgeClass(c.estado)}`}>
                                             {c.estado}
                                         </span>
                                     </td>
+
+                                    {/* COLUMNA 6: CONFIABILIDAD */}
                                     <td>
-                                        {parseFloat(c.saldo_actual) > 0 ? (
-                                            <span className={styles.debtWarning}>${c.saldo_actual}</span>
+                                        <span className={`${styles.confiabilidadText} ${!tieneConf ? styles.textSlate : conf < 70 ? styles.textRed : conf < 90 ? styles.textOrange : styles.textGreen}`} title="Calificación de pagos">
+                                            {tieneConf ? `${conf}%` : 'Sin historial'}
+                                        </span>
+                                    </td>
+
+                                    {/* COLUMNA 7: DEUDA */}
+                                    <td>
+                                        {deudaTotal > 0 ? (
+                                            <div style={{display: 'flex', flexDirection: 'column'}}>
+                                                <span className={styles.debtWarning}>${deudaTotal.toFixed(2)}</span>
+                                                {parseFloat(c.saldo_aplazado) > 0 && <span className={styles.textOrange} style={{fontSize: '0.75rem', fontWeight: 'bold'}}>Adeudo atrasado</span>}
+                                            </div>
                                         ) : (
                                             <span className={styles.debtOk}>$0.00</span>
                                         )}
                                     </td>
+
+                                    {/* COLUMNA 8: ACCIONES */}
                                     <td>
                                         <div className={styles.flexActions}>
                                             <button 
@@ -255,7 +313,8 @@ function Clientes() {
                                         </div>
                                     </td>
                                 </tr>
-                            ))
+                                );
+                            })
                         )}
                     </tbody>
                 </table>

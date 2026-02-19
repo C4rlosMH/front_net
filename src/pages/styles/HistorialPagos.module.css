@@ -403,7 +403,7 @@
 
 .heatBlocks {
     display: flex;
-    gap: 12px;
+    gap: 8px; /* Redujimos el gap para que quepan 10 */
 }
 
 .heatBlockWrapper {
@@ -414,8 +414,8 @@
 }
 
 .heatBlock {
-    width: 32px;
-    height: 32px;
+    width: 26px; /* Redujimos el ancho */
+    height: 26px; /* Redujimos el alto */
     border-radius: 6px;
     border: 1px solid var(--border);
     transition: transform 0.2s ease, box-shadow 0.2s ease;

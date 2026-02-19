@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import client from "../api/axios";
 import { toast } from "sonner";
-import { DollarSign, CheckCircle2, Clock, User, FileText } from "lucide-react";
+import { DollarSign, CheckCircle2, Clock, User, FileText, AlertTriangle } from "lucide-react";
 import styles from "./styles/PagoModal.module.css";
 
 function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
@@ -11,7 +11,10 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
     const [tipoPago, setTipoPago] = useState("LIQUIDACION");
     const [metodoPago, setMetodoPago] = useState("EFECTIVO");
     const [mesPago, setMesPago] = useState("");
-    const [nota, setNota] = useState(""); // Nuevo estado para la nota
+    const [nota, setNota] = useState(""); 
+    
+    // Nuevo estado para la justificación del retraso
+    const [motivoRetraso, setMotivoRetraso] = useState("cliente");
 
     useEffect(() => {
         if (isOpen) {
@@ -21,7 +24,8 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
             setMontoAbono("");
             setTipoPago("LIQUIDACION");
             setMetodoPago("EFECTIVO");
-            setNota(""); // Limpiar nota al cerrar
+            setNota(""); 
+            setMotivoRetraso("cliente");
         }
     }, [isOpen, clienteIdPreseleccionado]);
 
@@ -55,15 +59,21 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
 
     const procesarSeleccionCliente = (id, listaClientes) => {
         setClienteSeleccionadoId(id);
+        setMotivoRetraso("cliente"); // Reseteamos el motivo al cambiar de cliente
+        
         const cliente = listaClientes.find(c => c.id === parseInt(id));
         
         if (cliente) {
-            const deuda = parseFloat(cliente.saldo_actual || 0);
+            // Calculamos la deuda real (actual + aplazado)
+            const deudaCorriente = parseFloat(cliente.saldo_actual || 0);
+            const deudaAplazada = parseFloat(cliente.saldo_aplazado || 0);
+            const deudaTotal = deudaCorriente + deudaAplazada;
+            
             const plan = parseFloat(cliente.plan?.precio_mensual || 0);
             
-            if (deuda > 0) {
+            if (deudaTotal > 0) {
                 setTipoPago("LIQUIDACION");
-                setMontoAbono(deuda);
+                setMontoAbono(deudaTotal);
             } else {
                 setTipoPago("ABONO");
                 setMontoAbono(plan);
@@ -71,6 +81,20 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
         } else {
             setMontoAbono("");
         }
+    };
+
+    // Calculadora para saber si el pago es tardío
+    const calcularDiasRetraso = (diaPago) => {
+        if (!diaPago) return 0;
+        const hoy = new Date();
+        const diaActual = hoy.getDate();
+        let dias = diaActual - diaPago;
+        
+        if (dias < 0 && diaActual <= 7) {
+            const ultimoDiaMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0).getDate();
+            dias = diaActual + (ultimoDiaMesAnterior - diaPago);
+        }
+        return dias;
     };
 
     const handleRegistrarPago = async (e) => {
@@ -84,7 +108,8 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
                 tipo_pago: tipoPago,
                 metodo_pago: metodoPago,
                 mes_servicio: mesPago,
-                descripcion: nota.trim() !== "" ? nota : undefined // Enviamos la nota si no está vacía
+                motivo_retraso: motivoRetraso, // Se envía al backend para la regla de confiabilidad
+                descripcion: nota.trim() !== "" ? nota : undefined 
             });
             toast.success("Pago registrado correctamente");
             
@@ -99,6 +124,14 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
 
     const listaMeses = generarMeses();
     const clienteActivo = clientes.find(c => c.id === parseInt(clienteSeleccionadoId));
+    
+    // Evaluaciones para UI condicional
+    const diasRetraso = clienteActivo ? calcularDiasRetraso(clienteActivo.dia_pago) : 0;
+    const tieneDeudaAplazada = clienteActivo ? Number(clienteActivo.saldo_aplazado) > 0 : false;
+    const esPagoTardio = diasRetraso > 5 || tieneDeudaAplazada;
+    
+    const deudaCorriente = clienteActivo ? parseFloat(clienteActivo.saldo_actual || 0) : 0;
+    const deudaTotal = clienteActivo ? deudaCorriente + (parseFloat(clienteActivo.saldo_aplazado || 0)) : 0;
 
     return (
         <div className={styles.modalOverlay} onClick={onClose}>
@@ -131,23 +164,51 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
                         
                         {clienteActivo && (
                             <div className={styles.deudaBox}>
-                                <span className={styles.muted}>Plan: {clienteActivo.plan?.nombre || 'Sin Plan'}</span>
-                                <span style={{fontWeight:'bold', color: clienteActivo.saldo_actual > 0 ? '#ef4444' : '#16a34a'}}>
-                                    {clienteActivo.saldo_actual > 0 ? `Debe: $${clienteActivo.saldo_actual}` : 'Al corriente'}
+                                <div style={{display: 'flex', flexDirection: 'column'}}>
+                                    <span className={styles.muted}>Plan: {clienteActivo.plan?.nombre || 'Sin Plan'}</span>
+                                    {tieneDeudaAplazada && (
+                                        <span style={{fontSize: '0.8rem', color: '#f59e0b', fontWeight: 'bold', marginTop: '2px'}}>
+                                            Adeudo Atrasado: ${clienteActivo.saldo_aplazado}
+                                        </span>
+                                    )}
+                                </div>
+                                <span style={{fontWeight:'bold', color: deudaTotal > 0 ? '#ef4444' : '#16a34a', textAlign: 'right'}}>
+                                    {deudaTotal > 0 ? `Debe: $${deudaTotal}` : 'Al corriente'}
                                 </span>
                             </div>
                         )}
                     </div>
 
+                    {/* ALERTA Y SELECTOR DE PAGO TARDÍO (Solo aparece si el cliente se atrasó) */}
+                    {clienteActivo && esPagoTardio && (
+                        <div className={styles.warningBox}>
+                            <p className={styles.warningText}>
+                                <AlertTriangle size={16} /> Pago detectado fuera de tiempo
+                            </p>
+                            <label style={{display: 'block', fontSize: '0.8rem', marginBottom: '6px', color: 'var(--text-main)'}}>
+                                Justificación del retraso:
+                            </label>
+                            <select 
+                                value={motivoRetraso} 
+                                onChange={(e) => setMotivoRetraso(e.target.value)}
+                                className={styles.warningSelect}
+                            >
+                                <option value="cliente">Responsabilidad del cliente (Aplicar penalización a confiabilidad)</option>
+                                <option value="acuerdo">Acuerdo previo (No penalizar)</option>
+                                <option value="logistica">Retraso de mi logística / No pasé a cobrar (No penalizar)</option>
+                            </select>
+                        </div>
+                    )}
+
                     <div className={styles.typeSelector}>
-                        <button type="button" onClick={()=>{setTipoPago("LIQUIDACION"); if(clienteActivo) setMontoAbono(clienteActivo.saldo_actual)}} className={`${styles.typeButton} ${tipoPago==='LIQUIDACION' ? styles.typeActive : styles.typeInactive}`}>
+                        <button type="button" onClick={()=>{setTipoPago("LIQUIDACION"); if(clienteActivo) setMontoAbono(deudaTotal)}} className={`${styles.typeButton} ${tipoPago==='LIQUIDACION' ? styles.typeActive : styles.typeInactive}`}>
                             <CheckCircle2 size={16}/> Liquidar
                         </button>
                         <button type="button" onClick={()=>setTipoPago("ABONO")} className={`${styles.typeButton} ${tipoPago==='ABONO' ? styles.typeActive : styles.typeInactive}`}>
                             <DollarSign size={16}/> Abono
                         </button>
                         <button type="button" onClick={()=>{setTipoPago("APLAZADO"); setMontoAbono(0)}} className={`${styles.typeButton} ${tipoPago==='APLAZADO' ? styles.typeActive : styles.typeInactive}`}>
-                            <Clock size={16}/> Aplazado
+                            <Clock size={16}/> Aplazar
                         </button>
                     </div>
 
@@ -184,7 +245,6 @@ function PagoModal({ isOpen, onClose, clienteIdPreseleccionado, onSuccess }) {
                         </div>
                     </div>
 
-                    {/* NUEVO CAMPO DE NOTA/CONCEPTO */}
                     <div className={styles.formGroup}>
                         <label>Concepto o Nota (Opcional)</label>
                         <div style={{position:'relative'}}>
