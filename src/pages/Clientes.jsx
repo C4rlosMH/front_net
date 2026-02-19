@@ -92,6 +92,9 @@ function Clientes() {
         return true;
     });
 
+    // Evaluar si debemos mostrar la columna de deuda histórica
+    const mostrarDeudaHistorica = clientesFiltrados.some(c => parseFloat(c.deuda_historica || 0) > 0);
+
     // Ordenamiento
     const clientesOrdenados = [...clientesFiltrados].sort((a, b) => {
         if (!sortConfig.key) return 0;
@@ -99,10 +102,10 @@ function Clientes() {
         let aVal = a[sortConfig.key] || '';
         let bVal = b[sortConfig.key] || '';
 
-        // Restamos el saldo a favor para que ordene financieramente perfecto
+        // Ordenamiento financiero total (Corriente + Aplazada + Historica - Favor)
         if (sortConfig.key === 'saldo_actual') {
-            aVal = (parseFloat(a.saldo_actual) || 0) + (parseFloat(a.saldo_aplazado) || 0) - (parseFloat(a.saldo_a_favor) || 0);
-            bVal = (parseFloat(b.saldo_actual) || 0) + (parseFloat(b.saldo_aplazado) || 0) - (parseFloat(b.saldo_a_favor) || 0);
+            aVal = (parseFloat(a.saldo_actual) || 0) + (parseFloat(a.saldo_aplazado) || 0) + (parseFloat(a.deuda_historica) || 0) - (parseFloat(a.saldo_a_favor) || 0);
+            bVal = (parseFloat(b.saldo_actual) || 0) + (parseFloat(b.saldo_aplazado) || 0) + (parseFloat(b.deuda_historica) || 0) - (parseFloat(b.saldo_a_favor) || 0);
         }
         if (sortConfig.key === 'tipo_conexion') {
             aVal = (a.tipo_conexion?.toLowerCase() === 'radio' || !a.caja) ? 'radio' : 'fibra';
@@ -125,16 +128,17 @@ function Clientes() {
     const exportarCSV = () => {
         if (clientesFiltrados.length === 0) return toast.warning("No hay datos para exportar");
         
-        let csv = "Nombre Completo,Telefono,Tipo Conexion,IP,Direccion,Plan,Estado,Deuda Total,Saldo a Favor,Confiabilidad\n";
+        let csv = "Nombre Completo,Telefono,Tipo Conexion,IP,Direccion,Plan,Estado,Deuda Mes,Deuda Historica,Saldo a Favor,Confiabilidad\n";
         clientesFiltrados.forEach(c => {
             const planStr = c.plan?.nombre || "Sin plan";
             const dirStr = c.direccion ? c.direccion.replace(/,/g, '') : ""; 
             const tipoCon = (c.tipo_conexion?.toLowerCase() === 'radio' || !c.caja) ? 'Radio' : 'Fibra';
-            const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+            const deudaMes = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+            const deudaHist = parseFloat(c.deuda_historica) || 0;
             const aFavor = parseFloat(c.saldo_a_favor) || 0;
             const confText = (c.confiabilidad !== null && c.confiabilidad !== undefined) ? `${c.confiabilidad}%` : 'Sin historial';
             
-            csv += `"${c.nombre_completo}","${c.telefono || ''}","${tipoCon}","${c.ip_asignada || ''}","${dirStr}","${planStr}","${c.estado}","${deudaTotal}","${aFavor}","${confText}"\n`;
+            csv += `"${c.nombre_completo}","${c.telefono || ''}","${tipoCon}","${c.ip_asignada || ''}","${dirStr}","${planStr}","${c.estado}","${deudaMes}","${deudaHist}","${aFavor}","${confText}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -199,7 +203,8 @@ function Clientes() {
                             <th>Plan & Equipo</th>
                             <th onClick={() => handleSort('estado')} className={styles.sortableHeader}>Estado {renderSortIcon('estado')}</th>
                             <th onClick={() => handleSort('confiabilidad')} className={styles.sortableHeader}>Confiabilidad {renderSortIcon('confiabilidad')}</th>
-                            <th onClick={() => handleSort('saldo_actual')} className={styles.sortableHeader}>Deuda / A Favor {renderSortIcon('saldo_actual')}</th>
+                            <th onClick={() => handleSort('saldo_actual')} className={styles.sortableHeader}>Deuda Mes / A Favor {renderSortIcon('saldo_actual')}</th>
+                            {mostrarDeudaHistorica && <th>Deuda Histórica</th>}
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -207,14 +212,17 @@ function Clientes() {
                         {loading ? (
                             Array(5).fill(0).map((_, i) => (
                                 <tr key={i} className={styles.skeletonRow}>
-                                    <td colSpan="8"><div className={styles.skeletonBlock} style={{height: '40px', width: '100%'}}></div></td>
+                                    <td colSpan={mostrarDeudaHistorica ? "9" : "8"}>
+                                        <div className={`${styles.skeletonBlock} ${styles.skeletonFull}`}></div>
+                                    </td>
                                 </tr>
                             ))
                         ) : currentClientes.length === 0 ? (
-                            <tr><td colSpan="8" className={styles.emptyState}>No se encontraron clientes.</td></tr>
+                            <tr><td colSpan={mostrarDeudaHistorica ? "9" : "8"} className={styles.emptyState}>No se encontraron clientes.</td></tr>
                         ) : (
                             currentClientes.map(c => {
-                                const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+                                const deudaCorriente = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+                                const deudaHistorica = parseFloat(c.deuda_historica) || 0;
                                 const aFavor = parseFloat(c.saldo_a_favor) || 0;
                                 const esRadio = c.tipo_conexion?.toLowerCase() === 'radio' || !c.caja;
                                 
@@ -249,19 +257,31 @@ function Clientes() {
                                         </span>
                                     </td>
                                     <td>
-                                        {/* NUEVA VISUALIZACIÓN: Si tiene dinero adelantado se marca de verde */}
                                         {aFavor > 0 ? (
-                                            <div style={{display: 'flex', flexDirection: 'column'}}>
-                                                <span style={{color: '#10b981', fontWeight: 'bold'}}>+ ${aFavor.toFixed(2)}</span>
-                                                <span style={{fontSize: '0.7rem', color: '#10b981', fontWeight: '600'}}>Adelantado</span>
+                                            <div className={styles.saldoCell}>
+                                                <span className={styles.textAdelantado}>+ ${aFavor.toFixed(2)}</span>
+                                                <span className={styles.lblAdelantado}>Adelantado</span>
                                             </div>
-                                        ) : deudaTotal > 0 ? (
-                                            <div style={{display: 'flex', flexDirection: 'column'}}>
-                                                <span className={styles.debtWarning}>${deudaTotal.toFixed(2)}</span>
-                                                {parseFloat(c.saldo_aplazado) > 0 && <span className={styles.textOrange} style={{fontSize: '0.7rem'}}>Atrasado</span>}
+                                        ) : deudaCorriente > 0 ? (
+                                            <div className={styles.saldoCell}>
+                                                <span className={styles.debtWarning}>${deudaCorriente.toFixed(2)}</span>
+                                                {parseFloat(c.saldo_aplazado) > 0 && <span className={styles.lblAtrasado}>Atrasado</span>}
                                             </div>
                                         ) : <span className={styles.debtOk}>$0.00</span>}
                                     </td>
+                                    
+                                    {mostrarDeudaHistorica && (
+                                        <td>
+                                            {deudaHistorica > 0 ? (
+                                                <span className={styles.textHistorica}>
+                                                    ${deudaHistorica.toFixed(2)}
+                                                </span>
+                                            ) : (
+                                                <span className={styles.textGuion}>-</span>
+                                            )}
+                                        </td>
+                                    )}
+
                                     <td>
                                         <div className={styles.flexActions}>
                                             <button 

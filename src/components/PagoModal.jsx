@@ -18,7 +18,8 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
     const motivoRetraso = watch("motivo_retraso");
 
     const [esPagoTardio, setEsPagoTardio] = useState(false);
-    const [deudaTotal, setDeudaTotal] = useState(0);
+    const [deudaTotalSugerida, setDeudaTotalSugerida] = useState(0);
+    const [desgloseDeuda, setDesgloseDeuda] = useState({ corriente: 0, historica: 0 });
 
     useEffect(() => {
         if (isOpen) {
@@ -33,7 +34,8 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
         } else {
             reset();
             setEsPagoTardio(false);
-            setDeudaTotal(0);
+            setDeudaTotalSugerida(0);
+            setDesgloseDeuda({ corriente: 0, historica: 0 });
             setClienteActivo(null);
         }
     }, [isOpen, cliente]);
@@ -51,8 +53,12 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
     const seleccionarCliente = (c) => {
         setClienteActivo(c);
         
-        const total = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
-        setDeudaTotal(total);
+        const dCorriente = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+        const dHistorica = parseFloat(c.deuda_historica) || 0;
+        const total = dCorriente + dHistorica;
+        
+        setDeudaTotalSugerida(total);
+        setDesgloseDeuda({ corriente: dCorriente, historica: dHistorica });
 
         const diasRetraso = calcularDiasRetraso(c.dia_pago);
         const tieneDeudaAplazada = Number(c.saldo_aplazado) > 0;
@@ -88,7 +94,6 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                 clienteId: clienteActivo.id,
                 monto: parseFloat(data.monto),
                 tipo_pago: data.tipo_pago,
-                // Forzamos "SISTEMA" si es aplazado
                 metodo_pago: data.tipo_pago === 'APLAZADO' ? 'SISTEMA' : data.metodo_pago,
                 referencia: (data.tipo_pago !== 'APLAZADO' && data.metodo_pago !== 'EFECTIVO' && data.referencia) ? data.referencia : null,
                 descripcion: data.notas || undefined,
@@ -152,9 +157,14 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                                 <span style={{ fontWeight: 600 }}>{clienteActivo.nombre_completo}</span>
                                 <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                                     <div className={styles.planTag}>{clienteActivo.plan?.nombre || "Sin Plan"}</div>
-                                    <div style={{ fontSize: '0.75rem', color: deudaTotal > 0 ? '#ef4444' : '#16a34a', fontWeight: 'bold' }}>
-                                        {deudaTotal > 0 ? `Debe: $${deudaTotal.toFixed(2)}` : 'Al corriente'}
+                                    <div style={{ fontSize: '0.75rem', color: deudaTotalSugerida > 0 ? '#ef4444' : '#16a34a', fontWeight: 'bold' }}>
+                                        {deudaTotalSugerida > 0 ? `Total a Pagar: $${deudaTotalSugerida.toFixed(2)}` : 'Al corriente'}
                                     </div>
+                                    {desgloseDeuda.historica > 0 && (
+                                         <div style={{ fontSize: '0.65rem', color: '#f59e0b', marginTop: '2px' }}>
+                                            (Corriente: ${desgloseDeuda.corriente.toFixed(2)} | Histórica: ${desgloseDeuda.historica.toFixed(2)})
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -197,7 +207,6 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                             </div>
 
                             <div className={styles.gridRow}>
-                                {/* Si es APLAZAMIENTO, ocultamos el selector de método de pago porque no nos están pagando */}
                                 {tipoPago !== 'APLAZADO' && (
                                     <div className={styles.formGroup}>
                                         <label>Método</label>

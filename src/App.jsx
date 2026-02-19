@@ -20,6 +20,7 @@ import Logs from "./pages/Logs";
 // --- IMPORTACIONES NUEVAS ---
 import Usuarios from "./pages/Usuarios";
 import Perfil from "./pages/Perfil";
+import NotFound from "./pages/NotFound"; 
 
 function App() {
   return (
@@ -32,8 +33,9 @@ function App() {
             {/* Ruta Pública */}
             <Route path="/login" element={<Login />} />
 
-            {/* Rutas Privadas (Todas van dentro del MainLayout) */}
+            {/* Rutas Privadas (Todas van dentro del MainLayout y tienen Sidebar) */}
             <Route element={<MainLayout />}>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/equipos" element={<Equipos />} />
               <Route path="/clientes" element={<Clientes />} />
@@ -45,13 +47,14 @@ function App() {
               <Route path="/cajas" element={<Cajas />} />
               <Route path="/cortes" element={<Cortes />} />
               <Route path="/logs" element={<Logs />} />
-              
-              {/* --- RUTAS NUEVAS --- */}
               <Route path="/usuarios" element={<Usuarios />} />
               <Route path="/perfil" element={<Perfil />} />
             </Route>
 
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* RUTA COMODÍN (404) FUERA DEL LAYOUT */}
+            {/* Al estar fuera de MainLayout, ocupará toda la pantalla sin el Sidebar */}
+            <Route path="*" element={<NotFound />} />
+            
           </Routes>
         </BrowserRouter>
       </ThemeProvider>

@@ -42,7 +42,10 @@ function HistorialPagos() {
     if (loading) return <div style={{padding: 20, color: 'var(--text-main)'}}>Cargando perfil del cliente...</div>;
     if (!datosCliente) return <div style={{padding: 20, color: 'var(--text-main)'}}>No se encontró información del cliente.</div>;
 
-    const deuda = (parseFloat(datosCliente.saldo_actual) || 0) + (parseFloat(datosCliente.saldo_aplazado) || 0);
+    const deudaCorriente = (parseFloat(datosCliente.saldo_actual) || 0) + (parseFloat(datosCliente.saldo_aplazado) || 0);
+    const deudaHistorica = parseFloat(datosCliente.deuda_historica) || 0;
+    const aFavor = parseFloat(datosCliente.saldo_a_favor) || 0;
+    const deudaTotal = deudaCorriente + deudaHistorica;
 
     const totalAbonado = historial
         .filter(mov => mov.tipo === 'ABONO')
@@ -102,7 +105,7 @@ function HistorialPagos() {
                         <div>
                             <h1 className={styles.clientName}>{datosCliente.nombre_completo}</h1>
                             <div className={styles.clientSubtitle}>
-                                {deuda > 0 ? (
+                                {deudaTotal > 0 ? (
                                     <><AlertCircle size={16} className={styles.textRed}/> Con saldo pendiente</>
                                 ) : (
                                     <><CheckCircle2 size={16} className={styles.textGreen}/> Al corriente</>
@@ -115,11 +118,27 @@ function HistorialPagos() {
                         </div>
                     </div>
 
-                    <div className={styles.balanceBox}>
-                        <span className={styles.balanceLabel}>Saldo Actual</span>
-                        <span className={`${styles.balanceAmount} ${deuda > 0 ? styles.textRed : styles.textGreen}`}>
-                            ${deuda.toFixed(2)}
-                        </span>
+                    <div className={styles.balancesWrapper}>
+                        {/* Tarjeta de Deuda Histórica Mejorada */}
+                        {deudaHistorica > 0 && (
+                            <div className={styles.historicalDebtCard}>
+                                <div className={styles.historicalIcon}>
+                                    <History size={18} />
+                                </div>
+                                <div className={styles.historicalInfo}>
+                                    <span className={styles.historicalLabel}>Deuda Histórica</span>
+                                    <span className={styles.historicalAmount}>${deudaHistorica.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Deuda del mes actual */}
+                        <div className={styles.balanceBox}>
+                            <span className={styles.balanceLabel}>Deuda Mes Actual</span>
+                            <span className={`${styles.balanceAmount} ${deudaCorriente > 0 ? styles.textRed : styles.textGreen}`}>
+                                ${deudaCorriente.toFixed(2)}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -258,7 +277,6 @@ function HistorialPagos() {
                                         </span>
                                     </div>
                                     
-                                    {/* COLOR Y SIGNO DEL MONTO DINÁMICO */}
                                     <div className={`${styles.movementAmount} ${mov.tipo === 'ABONO' ? styles.amountAbono : mov.tipo === 'APLAZAMIENTO' ? styles.textOrange : styles.amountCargo}`}>
                                         {mov.tipo === 'ABONO' ? '+' : mov.tipo === 'APLAZAMIENTO' ? '→' : '-'}${parseFloat(mov.monto).toFixed(2)}
                                     </div>

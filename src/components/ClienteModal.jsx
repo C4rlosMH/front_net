@@ -31,9 +31,6 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                 setValue("latitud", clienteEditar.latitud);
                 setValue("longitud", clienteEditar.longitud);
                 
-                // Cargamos el valor o lo dejamos vacío si es nulo
-                setValue("confiabilidad", clienteEditar.confiabilidad ?? "");
-                
                 const tipoReal = clienteEditar.tipo_conexion ? clienteEditar.tipo_conexion.toUpperCase() : (clienteEditar.caja ? "FIBRA" : "RADIO");
                 setTipoInstalacion(tipoReal);
 
@@ -52,8 +49,6 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                 reset();
                 setTipoInstalacion("FIBRA");
                 setValue("estado", "ACTIVO");
-                // Los clientes nuevos nacen con el campo vacío (null)
-                setValue("confiabilidad", ""); 
             }
         }
     }, [isOpen, clienteEditar]);
@@ -100,13 +95,6 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                 if (data.routerId) equiposIds.push(parseInt(data.routerId));
             }
 
-            // Procesamos la confiabilidad para forzar null si está vacío
-            let confFinal = null;
-            if (data.confiabilidad !== "" && data.confiabilidad !== null && data.confiabilidad !== undefined) {
-                confFinal = parseInt(data.confiabilidad);
-                if (isNaN(confFinal)) confFinal = null;
-            }
-
             const payload = {
                 ...data,
                 latitud: parseFloat(data.latitud),
@@ -116,8 +104,11 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                 cajaId: tipoInstalacion === 'FIBRA' && data.cajaId ? parseInt(data.cajaId) : null,
                 equiposIds,
                 tipo_conexion: tipoInstalacion.toLowerCase(),
-                confiabilidad: confFinal
             };
+
+            // Aseguramos que ninguna propiedad automática residual interfiera con la actualización
+            delete payload.confiabilidad;
+            delete payload.deuda_historica;
 
             if (clienteEditar) {
                 await client.put(`/clientes/${clienteEditar.id}`, payload);
@@ -170,21 +161,17 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                         </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-                        <div className={styles.formGroup} style={{marginBottom: 0}}>
+                    <div className={styles.formRow}>
+                        <div className={styles.formGroup}>
                             <label>IP Asignada</label>
                             <input {...register("ip_asignada")} className={styles.input} placeholder="Ej: 192.168..."/>
                         </div>
-                        <div className={styles.formGroup} style={{marginBottom: 0}}>
+                        <div className={styles.formGroup}>
                             <label>Día de Pago</label>
                             <select {...register("dia_pago")} className={styles.select}>
                                 <option value="15">Día 15</option>
                                 <option value="30">Día 30</option>
                             </select>
-                        </div>
-                        <div className={styles.formGroup} style={{marginBottom: 0}}>
-                            <label>Confiabilidad (%)</label>
-                            <input type="number" min="0" max="100" placeholder="Automático" {...register("confiabilidad")} className={styles.input}/>
                         </div>
                     </div>
                     

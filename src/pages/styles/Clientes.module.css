@@ -380,3 +380,40 @@
     transform: translateY(0);
   }
 }
+
+/* --- ESTILOS PARA LA COLUMNA DE SALDOS Y DEUDAS --- */
+.saldoCell {
+  display: flex;
+  flex-direction: column;
+}
+
+.textAdelantado {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.lblAdelantado {
+  font-size: 0.7rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.lblAtrasado {
+  font-size: 0.7rem;
+  color: #f97316; /* Tono naranja para advertencia */
+}
+
+.textHistorica {
+  color: #f59e0b;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.textGuion {
+  color: #94a3b8;
+}
+
+.skeletonFull {
+  height: 40px;
+  width: 100%;
+}
