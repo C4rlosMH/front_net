@@ -9,7 +9,6 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
     const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
     const [loading, setLoading] = useState(false);
     
-    // Estados para modo "Buscar Cliente"
     const [modoBusqueda, setModoBusqueda] = useState(false);
     const [listaClientes, setListaClientes] = useState([]);
     const [clienteActivo, setClienteActivo] = useState(null);
@@ -18,7 +17,6 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
     const metodoPago = watch("metodo_pago"); 
     const motivoRetraso = watch("motivo_retraso");
 
-    // Lógica de Deuda y Retraso
     const [esPagoTardio, setEsPagoTardio] = useState(false);
     const [deudaTotal, setDeudaTotal] = useState(0);
 
@@ -61,10 +59,9 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
         const tardio = diasRetraso > 5 || tieneDeudaAplazada;
         setEsPagoTardio(tardio);
 
-        // Prellenado
         setValue("monto", total > 0 ? total : (c.plan?.precio_mensual || ""));
         setValue("tipo_pago", total > 0 ? "LIQUIDACION" : "ABONO");
-        setValue("metodo_pago", "EFECTIVO"); // Default
+        setValue("metodo_pago", "EFECTIVO"); 
         setValue("mes_correspondiente", new Date().toISOString().slice(0, 7));
         setValue("referencia", "");
         setValue("notas", "");
@@ -87,31 +84,25 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
         if (!clienteActivo) return;
         setLoading(true);
         try {
-            // Construimos el payload limpio
             const payload = {
                 clienteId: clienteActivo.id,
                 monto: parseFloat(data.monto),
                 tipo_pago: data.tipo_pago,
-                metodo_pago: data.metodo_pago,
-                // Si es efectivo, enviamos null en referencia
-                referencia: (data.metodo_pago !== 'EFECTIVO' && data.referencia) ? data.referencia : null,
+                // Forzamos "SISTEMA" si es aplazado
+                metodo_pago: data.tipo_pago === 'APLAZADO' ? 'SISTEMA' : data.metodo_pago,
+                referencia: (data.tipo_pago !== 'APLAZADO' && data.metodo_pago !== 'EFECTIVO' && data.referencia) ? data.referencia : null,
                 descripcion: data.notas || undefined,
                 motivo_retraso: esPagoTardio ? data.motivo_retraso : undefined,
                 mes_servicio: data.mes_correspondiente
             };
 
-            // Debug para ver qué estamos enviando
-            console.log("Enviando pago:", payload);
-
             await client.post("/pagos/abono", payload);
-            toast.success("Pago registrado correctamente");
+            toast.success(data.tipo_pago === 'APLAZADO' ? "Prórroga registrada" : "Pago registrado correctamente");
             if (onSuccess) onSuccess();
             onClose();
         } catch (error) {
-            console.error("Error en pago:", error);
-            // Mostramos el mensaje exacto que devuelve el backend si existe
-            const msg = error.response?.data?.message || "Error al registrar el pago (400)";
-            toast.error(msg);
+            console.error("Error:", error);
+            toast.error(error.response?.data?.message || "Error al procesar la solicitud");
         } finally {
             setLoading(false);
         }
@@ -123,7 +114,7 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
         <div className={styles.modalOverlay}>
             <div className={styles.modal}>
                 <div className={styles.modalHeader}>
-                    <h3>Registrar Pago</h3>
+                    <h3>{tipoPago === 'APLAZADO' ? 'Registrar Prórroga' : 'Registrar Pago'}</h3>
                     <button onClick={onClose} className={styles.closeBtn} type="button"><X size={24} /></button>
                 </div>
 
@@ -167,7 +158,7 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                                 </div>
                             </div>
 
-                            {esPagoTardio && (
+                            {esPagoTardio && tipoPago !== 'APLAZADO' && (
                                 <div className={styles.warningBox}>
                                     <div className={styles.warningTitle}>
                                         <AlertTriangle size={16} /> Pago fuera de tiempo
@@ -199,24 +190,28 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                                     <label>Tipo Movimiento</label>
                                     <select {...register("tipo_pago")} className={styles.select}>
                                         <option value="LIQUIDACION">Liquidación</option>
-                                        <option value="ABONO">Abono</option>
-                                        <option value="APLAZADO">Aplazar (Mover deuda)</option>
+                                        <option value="ABONO">Abono parcial</option>
+                                        <option value="APLAZADO">Aplazar / Prórroga</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div className={styles.gridRow}>
-                                <div className={styles.formGroup}>
-                                    <label>Método</label>
-                                    <div className={styles.inputIconWrap}>
-                                        <CreditCard size={18} />
-                                        <select {...register("metodo_pago")} className={styles.select}>
-                                            <option value="EFECTIVO">Efectivo</option>
-                                            <option value="TRANSFERENCIA">Transferencia</option>
-                                            <option value="DEPOSITO">Depósito</option>
-                                        </select>
+                                {/* Si es APLAZAMIENTO, ocultamos el selector de método de pago porque no nos están pagando */}
+                                {tipoPago !== 'APLAZADO' && (
+                                    <div className={styles.formGroup}>
+                                        <label>Método</label>
+                                        <div className={styles.inputIconWrap}>
+                                            <CreditCard size={18} />
+                                            <select {...register("metodo_pago")} className={styles.select}>
+                                                <option value="EFECTIVO">Efectivo</option>
+                                                <option value="TRANSFERENCIA">Transferencia</option>
+                                                <option value="DEPOSITO">Depósito</option>
+                                                <option value="TARJETA">Tarjeta</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 <div className={styles.formGroup}>
                                     <label>Mes Correspondiente</label>
@@ -227,7 +222,7 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                                 </div>
                             </div>
 
-                            {metodoPago !== 'EFECTIVO' && (
+                            {tipoPago !== 'APLAZADO' && metodoPago !== 'EFECTIVO' && (
                                 <div className={styles.formGroup} style={{marginBottom: '15px'}}>
                                     <label>Referencia / Folio / Autorización</label>
                                     <input 
@@ -247,7 +242,7 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                             <div className={styles.modalActions}>
                                 <button type="button" onClick={onClose} className={styles.btnCancel}>Cancelar</button>
                                 <button type="submit" className={styles.btnSubmit} disabled={loading}>
-                                    {loading ? 'Procesando...' : 'Confirmar Pago'}
+                                    {loading ? 'Procesando...' : 'Confirmar Operación'}
                                 </button>
                             </div>
                         </form>

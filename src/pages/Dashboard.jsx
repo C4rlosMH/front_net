@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import client from "../api/axios";
 import { toast } from "sonner";
 import { 
-    Wifi, Activity, Scissors, 
+    Wifi, Activity, AlertTriangle, 
     Banknote, Landmark, DollarSign, Bell, 
     Clock, CheckCircle, ArrowRight
 } from "lucide-react";
@@ -15,7 +15,7 @@ function Dashboard() {
     const [loading, setLoading] = useState(true);
 
     const [modalPagoOpen, setModalPagoOpen] = useState(false);
-    const [clienteCobrarId, setClienteCobrarId] = useState(null);
+    const [clienteCobrar, setClienteCobrar] = useState(null);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -51,7 +51,10 @@ function Dashboard() {
 
     const totalClientes = stats?.clientes?.total || 0;
     const activos = stats?.clientes?.resumen?.activos || 0;
-    const pendientesCorte = (stats?.clientes?.resumen?.cortados || 0) + (stats?.clientes?.resumen?.suspendidos || 0);
+    
+    // NUEVA VARIABLE: Extraemos los clientes en riesgo (Confiabilidad < 60)
+    const clientesEnRiesgo = stats?.clientes?.resumen?.en_riesgo || 0;
+    
     const recaudadoTotal = stats?.financiero?.recaudado_total || 0;
     const enEfectivo = stats?.financiero?.arqueo?.efectivo || 0;
     const enBanco = stats?.financiero?.arqueo?.banco || 0;
@@ -112,7 +115,7 @@ function Dashboard() {
                 {/* VENCIMIENTOS */}
                 <div className={`${styles.card} ${vencimientosHoy.length > 0 ? styles.cardWarning : styles.cardSuccess}`}>
                     <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>Cobros de Hoy</h3>
+                        <h3 className={styles.cardTitle}>Pendientes de Pago</h3>
                         <div className={styles.cardIconBox}>
                             {vencimientosHoy.length > 0 ? <Bell size={24} /> : <CheckCircle size={24} />}
                         </div>
@@ -123,18 +126,19 @@ function Dashboard() {
                     </div>
                 </div>
 
-                {/* CORTES */}
-                <div className={`${styles.card} ${pendientesCorte > 0 ? styles.cardDanger : styles.cardSuccess}`}>
+                {/* CLIENTES EN RIESGO (Reemplaza a los deudores o requeridos de corte) */}
+                <div className={`${styles.card} ${clientesEnRiesgo > 0 ? styles.cardDanger : styles.cardSuccess}`}>
                     <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>Requieren Corte</h3>
+                        <h3 className={styles.cardTitle}>Clientes en Riesgo</h3>
                         <div className={styles.cardIconBox}>
-                            <Scissors size={24} />
+                            <AlertTriangle size={24} />
                         </div>
                     </div>
-                    <p className={styles.cardValue}>{pendientesCorte}</p>
+                    <p className={styles.cardValue}>{clientesEnRiesgo}</p>
                     <div className={styles.details} style={{padding: '10px 0 0 0'}}>
-                        <Link to="/cortes" className={styles.fullWidthLink}>
-                            <button className={styles.actionBtn}>Ir a Módulo de Cortes <ArrowRight size={14} /></button>
+                        <span style={{display: 'block', marginBottom: '8px', fontSize: '0.8rem', color: 'var(--text-muted)'}}>Confiabilidad menor al 60%</span>
+                        <Link to="/clientes" className={styles.fullWidthLink}>
+                            <button className={styles.actionBtn}>Revisar Cartera <ArrowRight size={14} /></button>
                         </Link>
                     </div>
                 </div>
@@ -181,7 +185,7 @@ function Dashboard() {
                                             className={styles.itemAction}
                                             style={{cursor: 'pointer'}}
                                             onClick={() => {
-                                                setClienteCobrarId(cliente.id);
+                                                setClienteCobrar(cliente); 
                                                 setModalPagoOpen(true);
                                             }}
                                         >
@@ -232,7 +236,7 @@ function Dashboard() {
             <PagoModal 
                 isOpen={modalPagoOpen}
                 onClose={() => setModalPagoOpen(false)}
-                clienteIdPreseleccionado={clienteCobrarId}
+                cliente={clienteCobrar} 
                 onSuccess={() => {
                     client.get("/dashboard/stats").then(res => setStats(res.data));
                 }}

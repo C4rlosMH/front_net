@@ -28,8 +28,6 @@ function Clientes() {
     // Modales
     const [modalClienteOpen, setModalClienteOpen] = useState(false);
     const [clienteEditar, setClienteEditar] = useState(null);
-    
-    // --- CORRECCIÓN AQUÍ: Usamos 'clienteCobrar' (Objeto) en lugar de ID ---
     const [modalPagoOpen, setModalPagoOpen] = useState(false);
     const [clienteCobrar, setClienteCobrar] = useState(null); 
 
@@ -53,9 +51,8 @@ function Clientes() {
         setModalClienteOpen(true);
     };
 
-    // --- FUNCIÓN CORREGIDA ---
     const abrirModalPago = (clienteObj) => {
-        setClienteCobrar(clienteObj); // Guardamos todo el objeto
+        setClienteCobrar(clienteObj);
         setModalPagoOpen(true);
     };
 
@@ -102,10 +99,10 @@ function Clientes() {
         let aVal = a[sortConfig.key] || '';
         let bVal = b[sortConfig.key] || '';
 
-        // Lógica especial de ordenamiento
+        // Restamos el saldo a favor para que ordene financieramente perfecto
         if (sortConfig.key === 'saldo_actual') {
-            aVal = (parseFloat(a.saldo_actual) || 0) + (parseFloat(a.saldo_aplazado) || 0);
-            bVal = (parseFloat(b.saldo_actual) || 0) + (parseFloat(b.saldo_aplazado) || 0);
+            aVal = (parseFloat(a.saldo_actual) || 0) + (parseFloat(a.saldo_aplazado) || 0) - (parseFloat(a.saldo_a_favor) || 0);
+            bVal = (parseFloat(b.saldo_actual) || 0) + (parseFloat(b.saldo_aplazado) || 0) - (parseFloat(b.saldo_a_favor) || 0);
         }
         if (sortConfig.key === 'tipo_conexion') {
             aVal = (a.tipo_conexion?.toLowerCase() === 'radio' || !a.caja) ? 'radio' : 'fibra';
@@ -128,15 +125,16 @@ function Clientes() {
     const exportarCSV = () => {
         if (clientesFiltrados.length === 0) return toast.warning("No hay datos para exportar");
         
-        let csv = "Nombre Completo,Telefono,Tipo Conexion,IP,Direccion,Plan,Estado,Deuda Total,Confiabilidad\n";
+        let csv = "Nombre Completo,Telefono,Tipo Conexion,IP,Direccion,Plan,Estado,Deuda Total,Saldo a Favor,Confiabilidad\n";
         clientesFiltrados.forEach(c => {
             const planStr = c.plan?.nombre || "Sin plan";
             const dirStr = c.direccion ? c.direccion.replace(/,/g, '') : ""; 
             const tipoCon = (c.tipo_conexion?.toLowerCase() === 'radio' || !c.caja) ? 'Radio' : 'Fibra';
             const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+            const aFavor = parseFloat(c.saldo_a_favor) || 0;
             const confText = (c.confiabilidad !== null && c.confiabilidad !== undefined) ? `${c.confiabilidad}%` : 'Sin historial';
             
-            csv += `"${c.nombre_completo}","${c.telefono || ''}","${tipoCon}","${c.ip_asignada || ''}","${dirStr}","${planStr}","${c.estado}","${deudaTotal}","${confText}"\n`;
+            csv += `"${c.nombre_completo}","${c.telefono || ''}","${tipoCon}","${c.ip_asignada || ''}","${dirStr}","${planStr}","${c.estado}","${deudaTotal}","${aFavor}","${confText}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -201,7 +199,7 @@ function Clientes() {
                             <th>Plan & Equipo</th>
                             <th onClick={() => handleSort('estado')} className={styles.sortableHeader}>Estado {renderSortIcon('estado')}</th>
                             <th onClick={() => handleSort('confiabilidad')} className={styles.sortableHeader}>Confiabilidad {renderSortIcon('confiabilidad')}</th>
-                            <th onClick={() => handleSort('saldo_actual')} className={styles.sortableHeader}>Deuda {renderSortIcon('saldo_actual')}</th>
+                            <th onClick={() => handleSort('saldo_actual')} className={styles.sortableHeader}>Deuda / A Favor {renderSortIcon('saldo_actual')}</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -217,6 +215,7 @@ function Clientes() {
                         ) : (
                             currentClientes.map(c => {
                                 const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
+                                const aFavor = parseFloat(c.saldo_a_favor) || 0;
                                 const esRadio = c.tipo_conexion?.toLowerCase() === 'radio' || !c.caja;
                                 
                                 return (
@@ -250,7 +249,13 @@ function Clientes() {
                                         </span>
                                     </td>
                                     <td>
-                                        {deudaTotal > 0 ? (
+                                        {/* NUEVA VISUALIZACIÓN: Si tiene dinero adelantado se marca de verde */}
+                                        {aFavor > 0 ? (
+                                            <div style={{display: 'flex', flexDirection: 'column'}}>
+                                                <span style={{color: '#10b981', fontWeight: 'bold'}}>+ ${aFavor.toFixed(2)}</span>
+                                                <span style={{fontSize: '0.7rem', color: '#10b981', fontWeight: '600'}}>Adelantado</span>
+                                            </div>
+                                        ) : deudaTotal > 0 ? (
                                             <div style={{display: 'flex', flexDirection: 'column'}}>
                                                 <span className={styles.debtWarning}>${deudaTotal.toFixed(2)}</span>
                                                 {parseFloat(c.saldo_aplazado) > 0 && <span className={styles.textOrange} style={{fontSize: '0.7rem'}}>Atrasado</span>}
@@ -261,7 +266,7 @@ function Clientes() {
                                         <div className={styles.flexActions}>
                                             <button 
                                                 className={`${styles.actionBtn} ${styles.btnPay}`} 
-                                                onClick={() => abrirModalPago(c)} // <--- ENVÍO OBJETO COMPLETO
+                                                onClick={() => abrirModalPago(c)} 
                                                 title="Cobrar"
                                             >
                                                 <Wallet size={18} />
@@ -290,11 +295,10 @@ function Clientes() {
                 onSuccess={cargarDatos}
             />
             
-            {/* COMPONENTE MODAL DE PAGO */}
             <PagoModal 
                 isOpen={modalPagoOpen}
                 onClose={() => setModalPagoOpen(false)}
-                cliente={clienteCobrar} // <--- Prop "cliente" correcta
+                cliente={clienteCobrar} 
                 onSuccess={cargarDatos}
             />
         </div>

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import TablePagination from "../components/TablePagination";
 import PagoModal from "../components/PagoModal";
+import WhatsAppMessageModal from "../components/WhatsAppMessageModal";
 import styles from "./styles/Cortes.module.css";
 
 function Cortes() {
@@ -20,7 +21,11 @@ function Cortes() {
 
     // Modal de Pago Global
     const [modalPagoOpen, setModalPagoOpen] = useState(false);
-    const [clienteCobrarId, setClienteCobrarId] = useState(null);
+    const [clienteCobrar, setClienteCobrar] = useState(null);
+
+    // Modal de WhatsApp
+    const [modalWhatsAppOpen, setModalWhatsAppOpen] = useState(false);
+    const [clienteWhatsApp, setClienteWhatsApp] = useState(null);
 
     useEffect(() => { 
         cargarMorosos(); 
@@ -35,17 +40,22 @@ function Cortes() {
             setLoading(true);
             const res = await client.get("/clientes");
             
-            // FILTRO A PRUEBA DE FALLOS:
             const lista = res.data.filter(c => {
                 const deudaCorriente = parseFloat(c.saldo_actual) || 0;
                 const deudaAplazada = parseFloat(c.saldo_aplazado) || 0;
-                const deudaTotal = deudaCorriente + deudaAplazada;
                 
-                // Mostrar si debe dinero, O si ya está cortado (Ignorando a los dados de baja)
-                return (deudaTotal > 0 || c.estado === 'CORTADO') && c.estado !== 'BAJA';
+                // Calculamos a cuántos meses equivale su deuda total
+                const precioMensual = parseFloat(c.plan?.precio_mensual) || Infinity; // Previene dividir entre 0
+                const mesesDeuda = (deudaCorriente + deudaAplazada) / precioMensual;
+                
+                // MUESTRA AL CLIENTE EN LA LISTA SI:
+                // 1. Debe dinero del mes actual (y no ha pedido prórroga)
+                // 2. O si ya alcanzó el Límite Crítico de 5 meses arrastrados
+                // 3. O si ya está CORTADO actualmente
+                return (deudaCorriente > 0 || mesesDeuda >= 5 || c.estado === 'CORTADO') && c.estado !== 'BAJA';
             });
             
-            // Ordenar: Los que deben más dinero primero
+            // Ordenar: Los que tienen límite de 5 meses primero, luego los de mayor deuda
             lista.sort((a, b) => {
                 const deudaA = (parseFloat(a.saldo_actual) || 0) + (parseFloat(a.saldo_aplazado) || 0);
                 const deudaB = (parseFloat(b.saldo_actual) || 0) + (parseFloat(b.saldo_aplazado) || 0);
@@ -61,7 +71,6 @@ function Cortes() {
         }
     };
 
-    // Calculadora de Días de Gracia
     const calcularDiasRetraso = (diaPago) => {
         if (!diaPago) return 0;
         const hoy = new Date();
@@ -75,38 +84,45 @@ function Cortes() {
         return dias;
     };
 
-    // Evaluador de Estado de Corte
     const getEstadoCorte = (cliente) => {
         if (cliente.estado === 'CORTADO') {
             return { texto: 'YA CORTADO', clase: styles.cut };
         }
         
-        const tieneDeudaAplazada = (parseFloat(cliente.saldo_aplazado) || 0) > 0;
+        const deudaCorriente = parseFloat(cliente.saldo_actual) || 0;
+        const deudaAplazada = parseFloat(cliente.saldo_aplazado) || 0;
+        const precioMensual = parseFloat(cliente.plan?.precio_mensual) || Infinity;
+        const mesesDeuda = (deudaCorriente + deudaAplazada) / precioMensual;
+
         const diasRetraso = calcularDiasRetraso(cliente.dia_pago);
 
-        if (tieneDeudaAplazada || diasRetraso > 5) {
+        // NUEVA REGLA ESTRELLA: Si llega a 5 meses de arrastre, se corta sí o sí
+        if (mesesDeuda >= 5) {
+            return { texto: 'LÍMITE: 5 MESES (CORTAR)', clase: styles.immediate };
+        }
+
+        // Si tiene deuda corriente (del mes actual) y superó los 5 días sin avisar
+        if (deudaCorriente > 0 && diasRetraso > 5) {
             return { texto: 'CORTE INMEDIATO', clase: styles.immediate };
         }
 
-        if (diasRetraso > 0 && diasRetraso <= 5) {
+        // Si tiene deuda corriente pero está en sus 5 días para avisar/pagar
+        if (deudaCorriente > 0 && diasRetraso > 0 && diasRetraso <= 5) {
             return { texto: `GRACIA (DÍA ${diasRetraso})`, clase: styles.grace };
         }
 
         return { texto: 'PENDIENTE', clase: styles.pending };
     };
 
-    // Filtro por búsqueda
     const morososFiltrados = morosos.filter(c => 
         c.nombre_completo.toLowerCase().includes(busqueda.toLowerCase()) ||
         (c.direccion && c.direccion.toLowerCase().includes(busqueda.toLowerCase()))
     );
 
-    // Lógica Paginación
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentMorosos = morososFiltrados.slice(indexOfFirstItem, indexOfLastItem);
 
-    // Acciones Generales
     const handlePrint = () => window.print();
 
     const handleCopy = () => {
@@ -114,32 +130,16 @@ function Cortes() {
             const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
             return `• ${c.nombre_completo} | Debe: $${deudaTotal.toFixed(2)} | Dir: ${c.direccion || 'N/A'}`;
         }).join("\n");
-        navigator.clipboard.writeText(`🚨 LISTA DE CORTES/MOROSOS:\n\n${texto}`);
-        toast.success("Lista copiada al portapapeles (Lista para WhatsApp)");
+        navigator.clipboard.writeText(`LISTA DE CORTES/MOROSOS:\n\n${texto}`);
+        toast.success("Lista copiada al portapapeles");
     };
 
-    // Mensaje rápido de WhatsApp
     const handleWhatsApp = (cliente) => {
         if (!cliente.telefono) return toast.warning("El cliente no tiene teléfono registrado");
-        const deudaTotal = (parseFloat(cliente.saldo_actual) || 0) + (parseFloat(cliente.saldo_aplazado) || 0);
-        const estadoCorte = getEstadoCorte(cliente);
-        
-        let mensaje = `Hola ${cliente.nombre_completo}. Te recordamos que tienes un saldo pendiente de *$${deudaTotal.toFixed(2)}* en tu servicio de internet. `;
-        
-        if (estadoCorte.clase === styles.grace) {
-            mensaje += `Te invitamos a regularizar tu pago para evitar la suspensión del servicio. ¡Excelente día!`;
-        } else if (estadoCorte.clase === styles.immediate) {
-            mensaje += `Tu periodo de gracia ha expirado. Por favor, regulariza tu pago inmediatamente para evitar la suspensión del servicio.`;
-        } else {
-            mensaje += `Te invitamos a regularizar tu pago a la brevedad.`;
-        }
-
-        const numLimpio = cliente.telefono.replace(/\D/g, '');
-        const url = `https://wa.me/52${numLimpio}?text=${encodeURIComponent(mensaje)}`;
-        window.open(url, '_blank');
+        setClienteWhatsApp(cliente);
+        setModalWhatsAppOpen(true);
     };
 
-    // KPIs Calculados
     const totalDeuda = morosos.reduce((acc, c) => acc + (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0), 0);
     const porCortar = morosos.filter(c => {
         const estado = getEstadoCorte(c);
@@ -164,7 +164,6 @@ function Cortes() {
                 </div>
             </div>
 
-            {/* TARJETAS DE MÉTRICAS (KPIs) */}
             <div className={styles.kpiGrid}>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiIcon} style={{color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)'}}>
@@ -195,7 +194,6 @@ function Cortes() {
                 </div>
             </div>
 
-            {/* BUSCADOR */}
             <div className={styles.filterBar}>
                 <div className={styles.searchBox}>
                     <Search size={18} className={styles.searchIcon}/>
@@ -209,7 +207,6 @@ function Cortes() {
                 </div>
             </div>
 
-            {/* TABLA DE MOROSOS */}
             <div className={styles.tableWrapper}>
                 {loading ? (
                     <div className={styles.emptyState}>Analizando cartera de clientes...</div>
@@ -228,7 +225,7 @@ function Cortes() {
                             </thead>
                             <tbody>
                                 {currentMorosos.length === 0 ? (
-                                    <tr><td colSpan="6" className={styles.emptyState}>No se encontraron clientes morosos en el sistema.</td></tr>
+                                    <tr><td colSpan="6" className={styles.emptyState}>No hay clientes pendientes de corte.</td></tr>
                                 ) : (
                                     currentMorosos.map(c => {
                                         const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
@@ -255,7 +252,12 @@ function Cortes() {
                                             <td>
                                                 <div style={{display: 'flex', flexDirection: 'column'}}>
                                                     <span className={styles.debt}>${deudaTotal.toFixed(2)}</span>
-                                                    {(parseFloat(c.saldo_aplazado) || 0) > 0 && <span style={{fontSize: '0.75rem', color: '#f59e0b', fontWeight: 'bold'}}>Adeudo Atrasado</span>}
+                                                    {/* Mostrar los meses que arrastra */}
+                                                    {(parseFloat(c.saldo_aplazado) || 0) > 0 && (
+                                                        <span style={{fontSize: '0.75rem', color: '#f59e0b', fontWeight: 'bold'}}>
+                                                            Arrastrando {Math.floor(((parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0)) / (parseFloat(c.plan?.precio_mensual) || 1))} meses
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td>
@@ -274,8 +276,8 @@ function Cortes() {
                                                     </button>
                                                     <button 
                                                         className={`${styles.actionBtn} ${styles.btnPay}`} 
-                                                        onClick={() => { setClienteCobrarId(c.id); setModalPagoOpen(true); }} 
-                                                        title="Registrar Pago"
+                                                        onClick={() => { setClienteCobrar(c); setModalPagoOpen(true); }} 
+                                                        title="Registrar Pago o Prórroga"
                                                     >
                                                         <Wallet size={16} />
                                                     </button>
@@ -299,12 +301,17 @@ function Cortes() {
                 )}
             </div>
 
-            {/* MODAL DE COBRO REUTILIZADO */}
             <PagoModal 
                 isOpen={modalPagoOpen}
                 onClose={() => setModalPagoOpen(false)}
-                clienteIdPreseleccionado={clienteCobrarId}
+                cliente={clienteCobrar} 
                 onSuccess={cargarMorosos} 
+            />
+
+            <WhatsAppMessageModal 
+                isOpen={modalWhatsAppOpen}
+                onClose={() => setModalWhatsAppOpen(false)}
+                cliente={clienteWhatsApp}
             />
         </div>
     );

@@ -1,0 +1,189 @@
+.modalOverlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+}
+
+.modalContent {
+    background: var(--card-bg);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+    animation: slideUp 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--body-bg);
+    border-radius: 12px 12px 0 0;
+}
+
+.headerTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.headerTitle h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.closeButton {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+}
+.closeButton:hover { color: var(--text-main); }
+
+.modalBody {
+    padding: 20px;
+}
+
+.subtitle {
+    margin: 0 0 15px 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.optionsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Reducido levemente el gap para acomodar las 5 opciones */
+    margin-bottom: 15px;
+}
+
+.optionCard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px; /* Ajuste para que quede compacto y limpio */
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: var(--body-bg);
+}
+
+.optionCard:hover {
+    border-color: #cbd5e1;
+    background-color: var(--card-bg);
+}
+
+.selected {
+    border-color: #25D366;
+    background-color: rgba(37, 211, 102, 0.05);
+    box-shadow: 0 0 0 1px #25D366;
+}
+
+.optionText {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.optionText strong {
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+.optionText span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Colores de Iconos */
+.iconBlue { color: #3b82f6; }
+.iconGreen { color: #22c55e; }
+.iconRed { color: #ef4444; }
+.iconOrange { color: #f97316; } /* Nuevo color naranja para Adeudos */
+.iconGray { color: var(--text-muted); }
+
+.customTextContainer {
+    margin-top: 15px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--body-bg);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.textarea:focus {
+    outline: none;
+    border-color: #25D366;
+    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+}
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+}
+
+.btnCancel {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.btnCancel:hover {
+    background-color: var(--body-bg);
+    color: var(--text-main);
+}
+
+.btnSend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #25D366;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+.btnSend:hover:not(:disabled) {
+    background: #1ebc5a;
+}
+.btnSend:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

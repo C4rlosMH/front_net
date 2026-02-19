@@ -13,7 +13,7 @@ function HistorialPagos() {
     const { id } = useParams(); 
     const navigate = useNavigate();
     
-    const [datosHistorial, setDatosHistorial] = useState(null);
+    const [historial, setHistorial] = useState([]);
     const [datosCliente, setDatosCliente] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -25,7 +25,8 @@ function HistorialPagos() {
                     client.get(`/clientes`) 
                 ]);
                 
-                setDatosHistorial(resHistorial.data);
+                setHistorial(Array.isArray(resHistorial.data) ? resHistorial.data : []);
+                
                 const clienteInfo = resClientes.data.find(c => c.id === parseInt(id));
                 setDatosCliente(clienteInfo);
 
@@ -39,20 +40,14 @@ function HistorialPagos() {
     }, [id]);
 
     if (loading) return <div style={{padding: 20, color: 'var(--text-main)'}}>Cargando perfil del cliente...</div>;
-    if (!datosHistorial || !datosCliente) return <div style={{padding: 20, color: 'var(--text-main)'}}>No se encontró información del cliente.</div>;
+    if (!datosCliente) return <div style={{padding: 20, color: 'var(--text-main)'}}>No se encontró información del cliente.</div>;
 
-    const historial = datosHistorial.historial || [];
-    const deuda = parseFloat(datosHistorial.saldo_actual || 0);
+    const deuda = (parseFloat(datosCliente.saldo_actual) || 0) + (parseFloat(datosCliente.saldo_aplazado) || 0);
 
-    // Cálculos Generales
     const totalAbonado = historial
         .filter(mov => mov.tipo === 'ABONO')
         .reduce((sum, mov) => sum + parseFloat(mov.monto), 0);
         
-    const totalCargado = historial
-        .filter(mov => mov.tipo === 'CARGO')
-        .reduce((sum, mov) => sum + parseFloat(mov.monto), 0);
-
     const ultimoAbono = historial.find(mov => mov.tipo === 'ABONO');
     const fechaUltimoPago = ultimoAbono 
         ? new Date(ultimoAbono.fecha).toLocaleDateString() 
@@ -60,46 +55,30 @@ function HistorialPagos() {
 
     const esFibra = !!datosCliente.caja;
 
-    // --- LÓGICA DE SCORE UNIFICADA (Fuente de la verdad: Base de datos) ---
-    let scoreColor = "#94a3b8"; // Gris neutro para "Sin historial"
+    let scoreColor = "#94a3b8"; 
     let scoreText = "Sin historial";
     let scoreDisplay = "--";
 
     const confiabilidadBD = datosCliente.confiabilidad;
-    // Consideramos que tiene historial si el valor no es nulo y tiene al menos un movimiento
     const tieneHistorial = confiabilidadBD !== null && confiabilidadBD !== undefined && historial.length > 0;
 
     if (tieneHistorial) {
         scoreDisplay = `${confiabilidadBD}%`;
-        
-        if (confiabilidadBD >= 90) {
-            scoreColor = "#10b981"; // Verde
-            scoreText = "Excelente";
-        } else if (confiabilidadBD >= 70) {
-            scoreColor = "#f59e0b"; // Naranja
-            scoreText = "Regular";
-        } else {
-            scoreColor = "#ef4444"; // Rojo
-            scoreText = "Riesgo";
-        }
+        if (confiabilidadBD >= 90) { scoreColor = "#10b981"; scoreText = "Excelente"; } 
+        else if (confiabilidadBD >= 70) { scoreColor = "#f59e0b"; scoreText = "Regular"; } 
+        else { scoreColor = "#ef4444"; scoreText = "Riesgo"; }
     }
 
-    // --- MAPA DE CALOR: AHORA A 10 MESES ---
     const ultimos10Meses = [];
     const hoy = new Date();
-    // Bucle de 9 a 0 genera exactamente 10 meses
     for (let i = 9; i >= 0; i--) {
         const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-        ultimos10Meses.push({
-            month: d.getMonth(),
-            year: d.getFullYear(),
-            name: d.toLocaleString('es-ES', { month: 'short' })
-        });
+        ultimos10Meses.push({ month: d.getMonth(), year: d.getFullYear(), name: d.toLocaleString('es-ES', { month: 'short' }) });
     }
 
     const heatmapData = ultimos10Meses.map(mes => {
         const abonosMes = historial.filter(m => m.tipo === 'ABONO' && new Date(m.fecha).getMonth() === mes.month && new Date(m.fecha).getFullYear() === mes.year);
-        const cargosMes = historial.filter(m => m.tipo === 'CARGO' && new Date(m.fecha).getMonth() === mes.month && new Date(m.fecha).getFullYear() === mes.year);
+        const cargosMes = historial.filter(m => m.tipo === 'CARGO_MENSUAL' && new Date(m.fecha).getMonth() === mes.month && new Date(m.fecha).getFullYear() === mes.year);
 
         if (abonosMes.length > 0) return { ...mes, status: 'pagado' };
         if (cargosMes.length > 0 && abonosMes.length === 0) return { ...mes, status: 'deuda' };
@@ -114,7 +93,6 @@ function HistorialPagos() {
                 </button>
             </div>
 
-            {/* TARJETA DE PERFIL COMPLETO */}
             <div className={styles.profileCard}>
                 <div className={styles.profileHeader}>
                     <div className={styles.clientInfo}>
@@ -145,7 +123,6 @@ function HistorialPagos() {
                     </div>
                 </div>
 
-                {/* PANEL DE DETALLES DEL CLIENTE */}
                 <div className={styles.clientDetailsPanel}>
                     <div className={styles.detailItem}>
                         <MapPin size={18} className={styles.detailIcon} />
@@ -192,7 +169,6 @@ function HistorialPagos() {
                 </div>
             </div>
 
-            {/* TARJETAS DE ESTADÍSTICAS */}
             <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
                     <div className={`${styles.statIcon} ${styles.blue}`}>
@@ -225,7 +201,6 @@ function HistorialPagos() {
                 </div>
             </div>
 
-            {/* SECCIÓN DE COMPORTAMIENTO (SCORE Y HEATMAP) */}
             <div className={styles.behaviorSection}>
                 <div className={styles.scoreContainer}>
                     <div className={styles.scoreCircle} style={{ borderColor: scoreColor }}>
@@ -253,7 +228,6 @@ function HistorialPagos() {
                 </div>
             </div>
 
-            {/* LÍNEA DE TIEMPO (TIMELINE) */}
             <div className={styles.timelineSection}>
                 <div className={styles.timelineHeader}>
                     <CreditCard size={22} /> Estado de Cuenta Detallado
@@ -267,14 +241,14 @@ function HistorialPagos() {
                     <div className={styles.timeline}>
                         {historial.map(mov => (
                             <div key={mov.id} className={styles.timelineItem}>
-                                <div className={`${styles.timelineIcon} ${mov.tipo === 'ABONO' ? styles.iconAbono : styles.iconCargo}`}>
+                                <div className={`${styles.timelineIcon} ${mov.tipo === 'ABONO' ? styles.iconAbono : mov.tipo === 'APLAZAMIENTO' ? styles.iconOrange : styles.iconCargo}`}>
                                     <DollarSign size={14} />
                                 </div>
                                 
                                 <div className={styles.timelineContent}>
                                     <div className={styles.movementInfo}>
                                         <span className={styles.movementTitle}>
-                                            {mov.tipo === 'ABONO' ? 'Pago Recibido' : 'Cargo Registrado'}
+                                            {mov.tipo === 'ABONO' ? 'Pago Recibido' : mov.tipo === 'CARGO_MENSUAL' ? 'Cargo Mensual' : mov.tipo === 'APLAZAMIENTO' ? 'Prórroga de Pago' : mov.tipo.replace('_', ' ')}
                                         </span>
                                         <span className={styles.movementDate}>
                                             {new Date(mov.fecha).toLocaleDateString()} a las {new Date(mov.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
@@ -284,8 +258,9 @@ function HistorialPagos() {
                                         </span>
                                     </div>
                                     
-                                    <div className={`${styles.movementAmount} ${mov.tipo === 'ABONO' ? styles.amountAbono : styles.amountCargo}`}>
-                                        {mov.tipo === 'ABONO' ? '+' : '-'}${parseFloat(mov.monto).toFixed(2)}
+                                    {/* COLOR Y SIGNO DEL MONTO DINÁMICO */}
+                                    <div className={`${styles.movementAmount} ${mov.tipo === 'ABONO' ? styles.amountAbono : mov.tipo === 'APLAZAMIENTO' ? styles.textOrange : styles.amountCargo}`}>
+                                        {mov.tipo === 'ABONO' ? '+' : mov.tipo === 'APLAZAMIENTO' ? '→' : '-'}${parseFloat(mov.monto).toFixed(2)}
                                     </div>
                                 </div>
                             </div>

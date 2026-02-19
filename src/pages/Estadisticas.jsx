@@ -57,7 +57,6 @@ function Estadisticas() {
     if (loading) return <div className={styles.loading}>Cargando análisis financiero...</div>;
     if (!data) return <div className={styles.loading}>Sin datos para mostrar</div>;
 
-    // --- CÁLCULOS RÁPIDOS (ACTUALIZADOS PARA METAS) ---
     const metas = data.financiero?.metas || {
         q1: { estimada: 0, a_tiempo: 0, recuperado: 0 },
         q2: { estimada: 0, a_tiempo: 0, recuperado: 0 }
@@ -82,7 +81,6 @@ function Estadisticas() {
     const clientesActivos = data.clientes?.resumen?.activos || 0;
     const topDeudores = data.pendientes_pago?.lista?.slice(0, 5) || [];
 
-    // --- CONFIGURACIÓN GRÁFICAS ---
     const COLORS_CLIENTES = ['#10b981', '#f59e0b', '#ef4444'];
     const clientesData = [
         { name: 'Activos', value: clientesActivos },
@@ -110,7 +108,6 @@ function Estadisticas() {
                 </button>
             </div>
 
-            {/* --- 1. TARJETAS DE KPI --- */}
             <div className={styles.kpiGrid}>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiIconWrapper} style={{background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6'}}>
@@ -153,9 +150,7 @@ function Estadisticas() {
                 </div>
             </div>
 
-            {/* --- 2. GRÁFICAS PRINCIPALES --- */}
             <div className={styles.chartsGrid}>
-                {/* Tendencia Ingresos */}
                 <div className={`${styles.chartCard} ${styles.span2}`}>
                     <div className={styles.cardHeader}>
                         <div>
@@ -182,7 +177,6 @@ function Estadisticas() {
                     </div>
                 </div>
 
-                {/* Estado Cartera */}
                 <div className={styles.chartCard}>
                     <div className={styles.cardHeader}>
                         <div>
@@ -214,23 +208,21 @@ function Estadisticas() {
                 </div>
             </div>
 
-            {/* --- 3. DETALLES OPERATIVOS --- */}
             <div className={styles.bottomGrid}>
-                {/* Rendimiento Quincenal */}
                 <div className={styles.chartCard}>
                     <div className={styles.cardHeaderSmall}>
                         <Calendar size={20} className={styles.iconBlue} />
-                        <h3>Desglose Quincenal</h3>
+                        <h3>Desglose de Ciclos de Facturación</h3>
                     </div>
                     <div className={styles.quincenaContainer}>
-                        {/* QUINCENA 1 */}
+                        {/* CICLO 1 AL 15 */}
                         <div className={styles.qBlock}>
                             <div className={styles.qTitleRow}>
-                                <span className={styles.qTitle}>1ª Quincena (Meta: ${metas.q1.estimada.toFixed(2)})</span>
+                                <span className={styles.qTitle}>Ingresos del 1 - 15 (Meta: ${metas.q1.estimada.toFixed(2)})</span>
                                 <span className={styles.qPercent}>{((totalQ1 / metaQ1) * 100).toFixed(0)}%</span>
                             </div>
                             
-                            <div className={styles.progressWrapper} title="Progreso de la quincena">
+                            <div className={styles.progressWrapper} title="Progreso del ciclo">
                                 <div className={styles.progressOntimeQ1} style={{ width: `${pctTiempoQ1}%` }} title={`A tiempo: $${metas.q1.a_tiempo}`} />
                                 <div className={styles.progressLate} style={{ width: `${pctRecupQ1}%` }} title={`Recuperado: $${metas.q1.recuperado}`} />
                             </div>
@@ -241,14 +233,14 @@ function Estadisticas() {
                             </div>
                         </div>
                         
-                        {/* QUINCENA 2 */}
+                        {/* CICLO 16 AL 30 */}
                         <div className={`${styles.qBlock} ${styles.qBlockMargin}`}>
                             <div className={styles.qTitleRow}>
-                                <span className={styles.qTitle}>2ª Quincena (Meta: ${metas.q2.estimada.toFixed(2)})</span>
+                                <span className={styles.qTitle}>Ingresos del 16 - 30 (Meta: ${metas.q2.estimada.toFixed(2)})</span>
                                 <span className={styles.qPercent}>{((totalQ2 / metaQ2) * 100).toFixed(0)}%</span>
                             </div>
                             
-                            <div className={styles.progressWrapper} title="Progreso de la quincena">
+                            <div className={styles.progressWrapper} title="Progreso del ciclo">
                                 <div className={styles.progressOntimeQ2} style={{ width: `${pctTiempoQ2}%` }} title={`A tiempo: $${metas.q2.a_tiempo}`} />
                                 <div className={styles.progressLate} style={{ width: `${pctRecupQ2}%` }} title={`Recuperado: $${metas.q2.recuperado}`} />
                             </div>
@@ -261,7 +253,6 @@ function Estadisticas() {
                     </div>
                 </div>
 
-                {/* Resumen de Morosidad */}
                 <div className={styles.chartCard}>
                     <div className={styles.cardHeaderSmall}>
                         <AlertCircle size={20} className={styles.iconRed} />
