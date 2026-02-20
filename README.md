@@ -1,4 +1,4 @@
-# Miranda Net - Frontend
+# Miranda Net | Frontend
 
 Interfaz de usuario (SPA) para el sistema de administración de Miranda Net. Diseñada para ser rápida, responsiva y ofrecer herramientas visuales avanzadas para la gestión de clientes, facturación y monitoreo de la red del ISP.
 
