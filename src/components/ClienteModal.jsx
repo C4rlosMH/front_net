@@ -57,14 +57,19 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
         try {
             const [resPlanes, resEquipos, resCajas] = await Promise.all([
                 client.get("/planes"),
-                client.get("/equipos"),
+                // Pedimos un límite alto (ej. 1000) para asegurar que traiga todos los equipos libres para el select
+                client.get("/equipos?limit=1000"), 
                 client.get("/cajas").catch(() => ({ data: [] })) 
             ]);
 
             setPlanes(resPlanes.data);
             setCajasList(resCajas.data);
 
-            const libres = resEquipos.data.filter(e => e.estado === 'ALMACEN');
+            // CORRECCIÓN: Extraemos el arreglo de equipos desde resEquipos.data.equipos
+            // Añadimos un fallback a un arreglo vacío por si resEquipos.data.equipos no existe
+            const arrayEquipos = resEquipos.data.equipos || []; 
+            const libres = arrayEquipos.filter(e => e.estado === 'ALMACEN');
+            
             let libresAntenas = libres.filter(e => e.tipo === 'ANTENA');
             let libresRouters = libres.filter(e => e.tipo === 'ROUTER' || e.tipo === 'MODEM');
 
@@ -78,6 +83,7 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
             setAntenasLibres(libresAntenas);
             setRoutersLibres(libresRouters);
         } catch (error) {
+            console.error("Error cargando dependencias:", error); // Añadido para ver el error real en consola si vuelve a fallar
             toast.error("Error al cargar opciones de formulario");
         }
     };

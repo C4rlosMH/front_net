@@ -1,0 +1,247 @@
+.container {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.titleContainer {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.backLink {
+    color: var(--text-muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.backButton {
+    padding: 8px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.backButton:hover {
+    background: var(--border-color);
+    color: var(--text-main);
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 4px 0;
+    display: flex;
+    align-items: center;
+}
+
+.titleIcon {
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+}
+
+.btnExport {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--bg-secondary);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnExport:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--text-muted);
+}
+
+/* --- KPI CARDS (Estilo idéntico a Cortes.jsx) --- */
+.kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.kpiCard {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.kpiIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kpiInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpiInfo span {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.kpiInfo strong {
+    font-size: 1.25rem;
+    color: var(--text-main);
+}
+
+/* --- TABLA ESTÁNDAR --- */
+.tableWrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow-x: auto;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.table th {
+    padding: 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table td {
+    padding: 16px;
+    font-size: 0.875rem;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: var(--bg-hover);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 48px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* --- ELEMENTOS VISUALES INTERNOS --- */
+.textMainBold {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.textMutedSmall {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.amountGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.badgeSuccess {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.badgeDanger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.progressContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+}
+
+.progressTrack {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.progressText {
+    font-size: 0.8rem;
+    font-weight: 600;
+}

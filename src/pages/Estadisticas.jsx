@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import client from "../api/axios";
 import { toast } from "sonner";
 import { 
@@ -6,7 +7,7 @@ import {
     PieChart, Pie, Cell, Legend, AreaChart, Area
 } from 'recharts';
 import { 
-    TrendingUp, AlertCircle, Wallet, Download, Calendar, Users, ArrowRight
+    TrendingUp, AlertCircle, Wallet, Download, Calendar, Users, ArrowRight, History
 } from "lucide-react";
 import styles from "./styles/Estadisticas.module.css";
 import { useTheme } from "../context/ThemeContext";
@@ -210,9 +211,17 @@ function Estadisticas() {
 
             <div className={styles.bottomGrid}>
                 <div className={styles.chartCard}>
-                    <div className={styles.cardHeaderSmall}>
-                        <Calendar size={20} className={styles.iconBlue} />
-                        <h3>Desglose de Ciclos de Facturación</h3>
+                    <div className={styles.cardHeaderSmall} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Calendar size={20} className={styles.iconBlue} />
+                            <h3 style={{ margin: 0 }}>Desglose de Ciclos de Facturación</h3>
+                        </div>
+                        
+                        <Link to="/cierres" style={{ textDecoration: 'none' }}>
+                            <button className={styles.viewAllBtn} style={{ margin: 0, padding: '4px 12px' }}>
+                                Ver Historial <History size={14} />
+                            </button>
+                        </Link>
                     </div>
                     <div className={styles.quincenaContainer}>
                         {/* CICLO 1 AL 15 */}

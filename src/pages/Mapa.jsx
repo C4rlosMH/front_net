@@ -27,10 +27,10 @@ const createCustomIcon = (iconComponent, bgColor) => {
 };
 
 // --- ICONOS DINÁMICOS ---
-const iconFibra = createCustomIcon(<User size={18} />, '#2563eb'); // Azul
-const iconRadio = createCustomIcon(<Wifi size={18} />, '#10b981'); // Verde
-const iconCaja = createCustomIcon(<Server size={18} />, '#f97316'); // Naranja
-const iconSede = createCustomIcon(<Building2 size={18} />, '#dc2626'); // Rojo
+const iconFibra = createCustomIcon(<User size={16} />, '#2563eb'); // Azul
+const iconRadio = createCustomIcon(<Wifi size={16} />, '#10b981'); // Verde
+const iconCaja = createCustomIcon(<Server size={16} />, '#f97316'); // Naranja
+const iconSede = createCustomIcon(<Building2 size={16} />, '#dc2626'); // Rojo
 
 function Mapa() {
     const [clientes, setClientes] = useState([]);
@@ -44,10 +44,13 @@ function Mapa() {
         const cargarDatos = async () => {
             try {
                 const [resClientes, resCajas] = await Promise.all([
-                    client.get("/clientes"),
+                    // Agregamos un limit alto para que traiga todos los clientes al mapa
+                    client.get("/clientes?limit=1000"), 
                     client.get("/cajas").catch(() => ({ data: [] }))
                 ]);
-                setClientes(resClientes.data);
+                
+                // Extraemos específicamente el arreglo .clientes de la respuesta
+                setClientes(resClientes.data.clientes || []); 
                 setCajas(resCajas.data);
             } catch (error) {
                 console.error(error);

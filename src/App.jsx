@@ -16,6 +16,7 @@ import Estadisticas from "./pages/Estadisticas";
 import Cajas from "./pages/Cajas";
 import Cortes from "./pages/Cortes";
 import Logs from "./pages/Logs";
+import Cierres from "./pages/Cierres"; // Agrégalo en los imports
 
 // --- IMPORTACIONES NUEVAS ---
 import Usuarios from "./pages/Usuarios";
@@ -49,11 +50,14 @@ function App() {
               <Route path="/logs" element={<Logs />} />
               <Route path="/usuarios" element={<Usuarios />} />
               <Route path="/perfil" element={<Perfil />} />
+              <Route path="/cierres" element={<Cierres />} />
+              
             </Route>
 
             {/* RUTA COMODÍN (404) FUERA DEL LAYOUT */}
             {/* Al estar fuera de MainLayout, ocupará toda la pantalla sin el Sidebar */}
             <Route path="*" element={<NotFound />} />
+            
             
           </Routes>
         </BrowserRouter>
