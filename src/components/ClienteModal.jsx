@@ -11,6 +11,7 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
     const [antenasLibres, setAntenasLibres] = useState([]);
     const [routersLibres, setRoutersLibres] = useState([]);
     const [cajasList, setCajasList] = useState([]);
+    const [clientesMapa, setClientesMapa] = useState([]); // NUEVO ESTADO PARA EL MAPA
     const [tipoInstalacion, setTipoInstalacion] = useState("FIBRA");
 
     const { register, handleSubmit, setValue, reset } = useForm();
@@ -55,18 +56,20 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
 
     const cargarDependencias = async () => {
         try {
-            const [resPlanes, resEquipos, resCajas] = await Promise.all([
+            // Añadimos la petición de clientes al Promise.all
+            const [resPlanes, resEquipos, resCajas, resClientes] = await Promise.all([
                 client.get("/planes"),
-                // Pedimos un límite alto (ej. 1000) para asegurar que traiga todos los equipos libres para el select
                 client.get("/equipos?limit=1000"), 
-                client.get("/cajas").catch(() => ({ data: [] })) 
+                client.get("/cajas").catch(() => ({ data: [] })),
+                client.get("/clientes?limit=1000").catch(() => ({ data: { clientes: [] } }))
             ]);
 
             setPlanes(resPlanes.data);
             setCajasList(resCajas.data);
+            
+            // Guardamos los clientes extraídos de la respuesta
+            setClientesMapa(resClientes.data.clientes || []);
 
-            // CORRECCIÓN: Extraemos el arreglo de equipos desde resEquipos.data.equipos
-            // Añadimos un fallback a un arreglo vacío por si resEquipos.data.equipos no existe
             const arrayEquipos = resEquipos.data.equipos || []; 
             const libres = arrayEquipos.filter(e => e.estado === 'ALMACEN');
             
@@ -83,7 +86,7 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
             setAntenasLibres(libresAntenas);
             setRoutersLibres(libresRouters);
         } catch (error) {
-            console.error("Error cargando dependencias:", error); // Añadido para ver el error real en consola si vuelve a fallar
+            console.error("Error cargando dependencias:", error);
             toast.error("Error al cargar opciones de formulario");
         }
     };
@@ -112,7 +115,6 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                 tipo_conexion: tipoInstalacion.toLowerCase(),
             };
 
-            // Aseguramos que ninguna propiedad automática residual interfiera con la actualización
             delete payload.confiabilidad;
             delete payload.deuda_historica;
 
@@ -206,7 +208,7 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                                 initialLat={clienteEditar?.latitud} 
                                 initialLng={clienteEditar?.longitud} 
                                 onLocationChange={(c)=>{setValue("latitud",c.lat);setValue("longitud",c.lng)}} 
-                                clients={clientesContext} 
+                                clients={clientesMapa} 
                                 cajas={cajasList}
                             />
                         </div>

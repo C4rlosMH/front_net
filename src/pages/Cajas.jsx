@@ -18,10 +18,17 @@ function Cajas() {
         try {
             const [resCajas, resClientes] = await Promise.all([
                 client.get("/cajas"),
-                client.get("/clientes").catch(() => ({ data: [] }))
+                // Pedimos un límite alto para traer todos los clientes al mapa
+                client.get("/clientes?limit=1000").catch(() => ({ data: { clientes: [] } }))
             ]);
+            
             setCajas(resCajas.data);
-            setClientes(resClientes.data); 
+            
+            // CORRECCIÓN: Extraer específicamente el arreglo .clientes 
+            // Si la estructura falla, aseguramos que siempre sea un array vacío []
+            const arrayClientes = resClientes.data.clientes || [];
+            setClientes(arrayClientes); 
+            
         } catch (error) {
             toast.error("Error al cargar datos");
         }

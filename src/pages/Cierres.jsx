@@ -2,22 +2,18 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import client from "../api/axios";
 import { toast } from "sonner";
-import { Download, CalendarCheck, AlertCircle, ArrowLeft, TrendingUp, Wallet } from "lucide-react";
+import { Download, CalendarCheck, AlertCircle, ArrowLeft, TrendingUp, Wallet, Award } from "lucide-react";
 import styles from "./styles/Cierres.module.css"; 
 
 function Cierres() {
     const [cierres, setCierres] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [ultimoCierre, setUltimoCierre] = useState(null);
 
     useEffect(() => {
         const fetchCierres = async () => {
             try {
                 const res = await client.get("/cierres");
                 setCierres(res.data);
-                if (res.data.length > 0) {
-                    setUltimoCierre(res.data[0]); 
-                }
             } catch (error) {
                 toast.error("Error al cargar el historial de cierres");
             } finally {
@@ -46,7 +42,7 @@ function Cierres() {
         toast.success("Reporte descargado correctamente");
     };
 
-    // Funciones auxiliares
+    // --- FUNCIONES AUXILIARES ---
     const formatMoney = (amount) => `$${parseFloat(amount || 0).toFixed(2)}`;
     const calculateTotal = (c) => parseFloat(c.cobrado_a_tiempo) + parseFloat(c.cobrado_recuperado);
     const calculatePercent = (c) => {
@@ -54,69 +50,105 @@ function Cierres() {
         const meta = parseFloat(c.meta_estimada) || 1;
         return Math.min(100, (total / meta) * 100);
     };
-    const getColor = (pct) => pct >= 95 ? '#10b981' : (pct >= 80 ? '#f59e0b' : '#ef4444');
+    const getColor = (pct) => pct >= 95 ? '#16a34a' : (pct >= 80 ? '#d97706' : '#ef4444');
+
+    // --- CÁLCULOS PARA KPIs GLOBALES ---
+    const totalHistorico = cierres.reduce((acc, c) => acc + calculateTotal(c), 0);
+    const metaHistorica = cierres.reduce((acc, c) => acc + (parseFloat(c.meta_estimada) || 0), 0);
+    const efectividadGlobal = metaHistorica > 0 ? (totalHistorico / metaHistorica) * 100 : 0;
+    
+    const quincenasDeficit = cierres.filter(c => parseFloat(c.faltante) > 1).length;
+    
+    let mejorPeriodo = null;
+    let maxRecaudacion = 0;
+    cierres.forEach(c => {
+        const total = calculateTotal(c);
+        if (total > maxRecaudacion) {
+            maxRecaudacion = total;
+            mejorPeriodo = c;
+        }
+    });
 
     return (
         <div className={styles.container}>
+            {/* CABECERA */}
             <div className={styles.header}>
-                <div className={styles.titleContainer}>
-                    <Link to="/estadisticas" className={styles.backLink} title="Regresar a Estadísticas">
+                <div className={styles.titleGroup}>
+                    <Link to="/estadisticas" title="Regresar a Estadísticas">
                         <div className={styles.backButton}>
                             <ArrowLeft size={20} />
                         </div>
                     </Link>
                     
-                    <div>
+                    <div className={styles.titleWrapper}>
                         <h1 className={styles.title}>
-                            <CalendarCheck size={24} className={styles.titleIcon} /> 
+                            <CalendarCheck size={26} /> 
                             Historial de Cierres
                         </h1>
-                        <span className={styles.subtitle}>Registro consolidado del progreso quincenal y cumplimiento de metas</span>
+                        <p className={styles.subtitle}>Registro consolidado del progreso quincenal y cumplimiento de metas</p>
                     </div>
                 </div>
-                <div className={styles.headerActions}>
+                
+                <div className={styles.actions}>
                     <button className={styles.btnExport} onClick={exportarCSV}>
                         <Download size={18} /> Exportar CSV
                     </button>
                 </div>
             </div>
 
-            {/* KPIs ESTÁNDAR (Estilo Cortes.jsx) */}
-            {!loading && ultimoCierre && (
-                <div className={styles.kpiGrid}>
+            {/* KPIs GLOBALES HISTÓRICOS */}
+            {!loading && cierres.length > 0 && (
+                <div className={styles.kpiGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                    
+                    {/* KPI 1: Efectividad */}
                     <div className={styles.kpiCard}>
                         <div className={styles.kpiIcon} style={{color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)'}}>
                             <TrendingUp size={24} />
                         </div>
                         <div className={styles.kpiInfo}>
-                            <span>Último Periodo ({ultimoCierre.periodo})</span>
-                            <strong>{formatMoney(ultimoCierre.meta_estimada)} <small style={{fontSize:'0.8rem', fontWeight:'normal', color:'var(--text-muted)'}}>Meta</small></strong>
+                            <span>Efectividad Histórica</span>
+                            <strong>{efectividadGlobal.toFixed(1)}% <small style={{fontSize:'0.85rem', fontWeight:'600', color:'var(--text-muted)'}}>Promedio</small></strong>
                         </div>
                     </div>
 
+                    {/* KPI 2: Total Recaudado */}
                     <div className={styles.kpiCard}>
-                        <div className={styles.kpiIcon} style={{color: '#10b981', background: 'rgba(16, 185, 129, 0.1)'}}>
+                        <div className={styles.kpiIcon} style={{color: '#16a34a', background: 'rgba(34, 197, 94, 0.1)'}}>
                             <Wallet size={24} />
                         </div>
                         <div className={styles.kpiInfo}>
-                            <span>Recaudación Total</span>
-                            <strong>{formatMoney(calculateTotal(ultimoCierre))}</strong>
+                            <span>Total Histórico Recaudado</span>
+                            <strong>{formatMoney(totalHistorico)}</strong>
                         </div>
                     </div>
 
+                    {/* KPI 3: Cierres con Déficit */}
                     <div className={styles.kpiCard}>
-                        <div className={styles.kpiIcon} style={{color: parseFloat(ultimoCierre.faltante) > 0 ? '#ef4444' : '#10b981', background: parseFloat(ultimoCierre.faltante) > 0 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'}}>
+                        <div className={styles.kpiIcon} style={{color: quincenasDeficit > 0 ? '#ef4444' : '#16a34a', background: quincenasDeficit > 0 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)'}}>
                             <AlertCircle size={24} />
                         </div>
                         <div className={styles.kpiInfo}>
-                            <span>Déficit / Faltante</span>
-                            <strong>{formatMoney(ultimoCierre.faltante)}</strong>
+                            <span>Cierres con Déficit</span>
+                            <strong>{quincenasDeficit} <small style={{fontSize:'0.85rem', fontWeight:'600', color:'var(--text-muted)'}}>Quincenas</small></strong>
                         </div>
                     </div>
+
+                    {/* KPI 4: Récord de Recaudación */}
+                    <div className={styles.kpiCard}>
+                        <div className={styles.kpiIcon} style={{color: '#d97706', background: 'rgba(245, 158, 11, 0.1)'}}>
+                            <Award size={24} />
+                        </div>
+                        <div className={styles.kpiInfo}>
+                            <span>Récord de Recaudación</span>
+                            <strong style={{fontSize: '1.2rem'}}>{mejorPeriodo ? mejorPeriodo.periodo : 'N/A'}</strong>
+                            <span style={{marginTop: '2px', color: '#d97706', fontWeight: 'bold'}}>{mejorPeriodo ? formatMoney(maxRecaudacion) : '$0.00'}</span>
+                        </div>
+                    </div>
+
                 </div>
             )}
 
-            {/* TABLA ESTÁNDAR */}
+            {/* TABLA DE REGISTROS */}
             <div className={styles.tableWrapper}>
                 <table className={styles.table}>
                     <thead>
@@ -153,8 +185,8 @@ function Cierres() {
                                         </td>
                                         <td>
                                             <div className={styles.amountGroup}>
-                                                <div className={styles.textMutedSmall}>A Tiempo: <span style={{color: '#10b981', fontWeight: 600}}>{formatMoney(c.cobrado_a_tiempo)}</span></div>
-                                                <div className={styles.textMutedSmall}>Recuperado: <span style={{color: '#f59e0b', fontWeight: 600}}>{formatMoney(c.cobrado_recuperado)}</span></div>
+                                                <div className={styles.textMutedSmall}>A Tiempo: <span style={{color: '#16a34a', fontWeight: 800}}>{formatMoney(c.cobrado_a_tiempo)}</span></div>
+                                                <div className={styles.textMutedSmall}>Recuperado: <span style={{color: '#d97706', fontWeight: 800}}>{formatMoney(c.cobrado_recuperado)}</span></div>
                                             </div>
                                         </td>
                                         <td>

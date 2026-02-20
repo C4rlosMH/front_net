@@ -24,13 +24,11 @@ const createCustomIcon = (iconComponent, bgColor) => {
     });
 };
 
-// Iconos de contexto (ligeramente más pequeños que el principal)
+// Iconos de contexto 
 const iconFibra = createCustomIcon(<User size={14} />, '#2563eb'); 
 const iconRadio = createCustomIcon(<Wifi size={14} />, '#10b981'); 
 const iconCaja = createCustomIcon(<Server size={14} />, '#f97316'); 
 const iconSede = createCustomIcon(<Building2 size={14} />, '#dc2626'); 
-
-// Icono destacado para el punto que el usuario está seleccionando/arrastrando
 const iconSeleccion = createCustomIcon(<MapPin size={18} />, '#ef4444');
 
 function LocationMarker({ position, setPosition, onLocationChange }) {
@@ -60,7 +58,7 @@ function LocationMarker({ position, setPosition, onLocationChange }) {
             position={position}
             ref={markerRef}
             icon={iconSeleccion}
-            zIndexOffset={1000} // Asegura que quede siempre por encima de los demás
+            zIndexOffset={1000} 
         >
             <Popup minWidth={90}>Ubicación seleccionada.</Popup>
         </Marker>
@@ -70,7 +68,6 @@ function LocationMarker({ position, setPosition, onLocationChange }) {
 function LocationPicker({ initialLat, initialLng, onLocationChange, clients = [], cajas = [] }) {
     const [position, setPosition] = useState(null);
     
-    // Leemos la preferencia guardada para que coincida con el mapa principal
     const [tipoMapa, setTipoMapa] = useState(() => {
         return localStorage.getItem('vistaMapaPreferencia') || 'calle';
     });
@@ -88,10 +85,13 @@ function LocationPicker({ initialLat, initialLng, onLocationChange, clients = []
         localStorage.setItem('vistaMapaPreferencia', vista);
     };
 
+    // PROTECCIÓN DEFENSIVA: Asegurar que siempre sean arreglos antes de mapear
+    const safeClients = Array.isArray(clients) ? clients : (clients?.clientes ? clients.clientes : []);
+    const safeCajas = Array.isArray(cajas) ? cajas : [];
+
     return (
         <div className={styles.mapWrapper}>
             
-            {/* CONTROL DE VISTAS FLOTANTE */}
             <div className={styles.layerSwitcher}>
                 <button 
                     type="button" 
@@ -109,7 +109,6 @@ function LocationPicker({ initialLat, initialLng, onLocationChange, clients = []
                 </button>
             </div>
 
-            {/* CONTENEDOR DEL MAPA */}
             <MapContainer center={center} zoom={16} className={styles.mapInstance} scrollWheelZoom={true}>
                 {tipoMapa === 'calle' ? (
                     <TileLayer
@@ -125,8 +124,8 @@ function LocationPicker({ initialLat, initialLng, onLocationChange, clients = []
 
                 <Marker position={Sede} icon={iconSede} opacity={0.7} />
 
-                {/* CONTEXTO: CAJAS NAP */}
-                {cajas.map(caja => (
+                {/* MAEPEO SEGURO DE CAJAS */}
+                {safeCajas.map(caja => (
                     caja.latitud && caja.longitud ? (
                         <Marker key={`caja-${caja.id}`} position={[caja.latitud, caja.longitud]} icon={iconCaja} opacity={0.5}>
                             <Popup>Caja NAP: {caja.nombre}</Popup>
@@ -134,9 +133,8 @@ function LocationPicker({ initialLat, initialLng, onLocationChange, clients = []
                     ) : null
                 ))}
 
-                {/* CONTEXTO: CLIENTES EXISTENTES */}
-                {clients.map(c => {
-                    // Evitar dibujar al cliente que estamos editando para no duplicar el marcador
+                {/* MAPEO SEGURO DE CLIENTES */}
+                {safeClients.map(c => {
                     if (position && c.latitud === position.lat && c.longitud === position.lng) return null;
 
                     if (c.latitud && c.longitud) {
