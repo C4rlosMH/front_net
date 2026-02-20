@@ -2,7 +2,8 @@ import axios from "axios";
 
 const client = axios.create({
     // Ajusta el puerto si tu backend corre en el 4000 o 3000
-    baseURL: "http://localhost:4000/api", 
+    
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000/api", 
     //withCredentials: true
 });
 
