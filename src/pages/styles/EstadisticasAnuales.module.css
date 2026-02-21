@@ -2,7 +2,7 @@
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-  animation: fadeIn 0.3s ease-in; /* Animación estandarizada */
+  animation: fadeIn 0.3s ease-in; 
 }
 
 .header {
@@ -34,7 +34,7 @@
   margin-bottom: 15px;
   padding: 8px 12px;
   border-radius: 8px;
-  margin-left: -12px; /* Alineación óptica con el título */
+  margin-left: -12px; 
   transition: all 0.2s ease;
 }
 
@@ -43,19 +43,96 @@
   transform: translateX(-2px);
 }
 
-/* Tarjeta Principal estandarizada */
+/* --- TARJETAS KPI ANUALES --- */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.kpiCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+
+.kpiCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px -3px rgba(0,0,0,0.05);
+}
+
+.kpiBlue { border-top: 4px solid #3b82f6; }
+.kpiBlue .kpiIconWrapper { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+.kpiPurple { border-top: 4px solid #a855f7; }
+.kpiPurple .kpiIconWrapper { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+
+.kpiGreen { border-top: 4px solid #10b981; }
+.kpiGreen .kpiIconWrapper { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+.kpiRed { border-top: 4px solid #ef4444; }
+.kpiRed .kpiIconWrapper { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.kpiOrange { border-top: 4px solid #f59e0b; }
+.kpiOrange .kpiIconWrapper { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+.kpiIconWrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  flex-shrink: 0;
+}
+
+.kpiInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpiLabel {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpiValue {
+  font-size: 1.5rem; 
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+  margin-top: 4px;
+}
+
+.kpiValue small {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 5px;
+}
+
+/* --- GRÁFICA --- */
 .chartCard {
   background: var(--card-bg);
   border-radius: 12px;
   border: 1px solid var(--border);
   padding: 20px;
-  height: 600px; /* Gráfica alta para mejor lectura anual */
+  height: 500px; 
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); /* Sombra estandarizada */
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); 
 }
 
-/* Cabecera de Tarjeta estandarizada */
 .cardHeader {
   display: flex;
   justify-content: space-between;
@@ -85,16 +162,26 @@
   width: 100%;
 }
 
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  color: var(--text-muted);
-  font-size: 1.1rem;
-}
-
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* --- SKELETON LOADERS --- */
+.skeletonPulse {
+  animation: pulse 1.5s ease-in-out infinite;
+  background: var(--body-bg); 
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.skeletonTitle { width: 280px; height: 32px; margin-bottom: 12px; }
+.skeletonSubtitle { width: 380px; height: 18px; }
+.skeletonKpi { height: 90px; }
+.skeletonChart { height: 500px; }

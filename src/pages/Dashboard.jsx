@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import client from "../api/axios";
 import { toast } from "sonner";
+import useSWR from "swr"; 
 import { 
     Wifi, Activity, AlertTriangle, 
     Banknote, Landmark, DollarSign, Bell, 
@@ -12,31 +13,52 @@ import PagoModal from "../components/PagoModal";
 
 import { APP_CONFIG } from "../config/appConfig";
 
-function Dashboard() {
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
+const fetcher = (url) => client.get(url).then(res => res.data);
 
+function Dashboard() {
     const [modalPagoOpen, setModalPagoOpen] = useState(false);
     const [clienteCobrar, setClienteCobrar] = useState(null);
 
+    // --- ESTADO PARA EL KONAMI CODE ---
+    const [konamiTriggered, setKonamiTriggered] = useState(false);
+
+    const { data: stats, error, isLoading, mutate } = useSWR("/dashboard/stats", fetcher, {
+        revalidateOnFocus: false,
+        dedupingInterval: 10000, 
+    });
+
+    // --- LISTENER DEL KONAMI CODE ---
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const res = await client.get("/dashboard/stats");
-                setStats(res.data);
-            } catch (error) {
-                console.error(error);
-                toast.error("Error al cargar el resumen");
-            } finally {
-                setLoading(false);
+        // Todo en minúsculas para evitar errores
+        const konamiCode = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+        let keySequence = [];
+
+        const handleKeyDown = (e) => {
+            // Convertimos la tecla presionada a minúsculas
+            keySequence.push(e.key.toLowerCase());
+            
+            if (keySequence.length > konamiCode.length) {
+                keySequence.shift();
+            }
+            
+            if (keySequence.join(',') === konamiCode.join(',')) {
+                setKonamiTriggered(true);
+                toast.success("Secuencia secreta aceptada.");
+                setTimeout(() => setKonamiTriggered(false), 1500);
+                keySequence = [];
             }
         };
-        fetchStats();
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
+
+    if (error) {
+        toast.error("Error al cargar el resumen");
+    }
 
     const formatoDinero = (num) => `${APP_CONFIG.currencySymbol}${parseFloat(num || 0).toFixed(2)}`;
 
-    // Calculadora de Días de Gracia
     const calcularDiasGracia = (diaPago) => {
         const hoy = new Date();
         const diaActual = hoy.getDate();
@@ -49,14 +71,30 @@ function Dashboard() {
         return dias;
     };
 
-    if (loading) return <div className={styles.loading}>Cargando centro de operaciones...</div>;
+    if (isLoading || !stats) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.header}>
+                    <div>
+                        <div className={`${styles.skeletonPulse} ${styles.skeletonTitle}`}></div>
+                        <div className={`${styles.skeletonPulse} ${styles.skeletonSubtitle}`}></div>
+                    </div>
+                </div>
+                <div className={`${styles.skeletonPulse} ${styles.skeletonBox}`}></div>
+                <div className={styles.grid}>
+                    {[1,2,3].map(i => <div key={i} className={`${styles.skeletonPulse} ${styles.skeletonCard}`}></div>)}
+                </div>
+                <div className={styles.panelsGrid}>
+                    <div className={`${styles.skeletonPulse} ${styles.skeletonPanel}`}></div>
+                    <div className={`${styles.skeletonPulse} ${styles.skeletonPanel}`}></div>
+                </div>
+            </div>
+        );
+    }
 
     const totalClientes = stats?.clientes?.total || 0;
     const activos = stats?.clientes?.resumen?.activos || 0;
-    
-    // NUEVA VARIABLE: Extraemos los clientes en riesgo (Confiabilidad < 60)
     const clientesEnRiesgo = stats?.clientes?.resumen?.en_riesgo || 0;
-    
     const recaudadoTotal = stats?.financiero?.recaudado_total || 0;
     const enEfectivo = stats?.financiero?.arqueo?.efectivo || 0;
     const enBanco = stats?.financiero?.arqueo?.banco || 0;
@@ -64,7 +102,8 @@ function Dashboard() {
     const logsRecientes = stats?.alertas?.actividad_reciente || [];
 
     return (
-        <div className={styles.container}>
+        // APLICAMOS LA CLASE DE LA ANIMACIÓN SI SE ACTIVA EL KONAMI CODE
+        <div className={`${styles.container} ${konamiTriggered ? styles.barrelRoll : ''}`}>
             <div className={styles.header}>
                 <div>
                     <h1 className={styles.title}>Panel Principal</h1>
@@ -72,7 +111,6 @@ function Dashboard() {
                 </div>
             </div>
 
-            {/* 1. ARQUEO DE CAJA */}
             <div className={styles.cashRegisterBox}>
                 <div className={styles.cashHeader}>
                     <h2><DollarSign size={22} /> Arqueo de Caja</h2>
@@ -112,9 +150,7 @@ function Dashboard() {
                 </div>
             </div>
 
-            {/* 2. ALERTAS RÁPIDAS */}
             <div className={styles.grid}>
-                {/* VENCIMIENTOS */}
                 <div className={`${styles.card} ${vencimientosHoy.length > 0 ? styles.cardWarning : styles.cardSuccess}`}>
                     <div className={styles.cardHeader}>
                         <h3 className={styles.cardTitle}>Pendientes de Pago</h3>
@@ -128,7 +164,6 @@ function Dashboard() {
                     </div>
                 </div>
 
-                {/* CLIENTES EN RIESGO (Reemplaza a los deudores o requeridos de corte) */}
                 <div className={`${styles.card} ${clientesEnRiesgo > 0 ? styles.cardDanger : styles.cardSuccess}`}>
                     <div className={styles.cardHeader}>
                         <h3 className={styles.cardTitle}>Clientes en Riesgo</h3>
@@ -145,7 +180,6 @@ function Dashboard() {
                     </div>
                 </div>
 
-                {/* ACTIVOS */}
                 <div className={`${styles.card} ${styles.cardInfo}`}>
                     <div className={styles.cardHeader}>
                         <h3 className={styles.cardTitle}>Estado de Red</h3>
@@ -158,9 +192,7 @@ function Dashboard() {
                 </div>
             </div>
 
-            {/* 3. PANELES DE DETALLE */}
             <div className={styles.panelsGrid}>
-                {/* Panel Izquierdo: Lista de a quién cobrarle hoy */}
                 <div className={styles.panelCard}>
                     <div className={styles.panelHeader}>    
                         <h3><Clock size={18} /> Vencimientos y Periodos de Gracia</h3>
@@ -169,7 +201,6 @@ function Dashboard() {
                         {vencimientosHoy.length > 0 ? (
                             vencimientosHoy.map((cliente, index) => {
                                 const diasGracia = calcularDiasGracia(cliente.dia_pago);
-                                
                                 return (
                                     <div key={index} className={styles.listItem}>
                                         <div className={styles.itemInfo}>
@@ -205,7 +236,6 @@ function Dashboard() {
                     </div>
                 </div>
 
-                {/* Panel Derecho: Feed de actividad */}
                 <div className={styles.panelCard}>
                     <div className={styles.panelHeader}>
                         <h3><Activity size={18} /> Actividad Reciente</h3>
@@ -240,7 +270,7 @@ function Dashboard() {
                 onClose={() => setModalPagoOpen(false)}
                 cliente={clienteCobrar} 
                 onSuccess={() => {
-                    client.get("/dashboard/stats").then(res => setStats(res.data));
+                    mutate();
                 }}
             />
         </div>

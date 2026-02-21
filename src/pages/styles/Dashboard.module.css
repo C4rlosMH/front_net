@@ -369,3 +369,43 @@
     border-radius: 4px;
     font-weight: bold;
 }
+
+/* --- SKELETON LOADERS (NUEVO) --- */
+.skeletonPulse {
+  animation: pulse 1.5s ease-in-out infinite;
+  background: var(--body-bg); 
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.skeletonTitle { width: 280px; height: 32px; margin-bottom: 12px; }
+.skeletonSubtitle { width: 380px; height: 18px; }
+.skeletonBox { height: 160px; margin-bottom: 30px;}
+.skeletonCard { height: 160px; }
+.skeletonPanel { height: 350px; }
+
+/* --- ANIMACIÓN KONAMI CODE --- */
+.barrelRoll {
+  animation: roll 1.5s ease-in-out;
+}
+
+@keyframes roll {
+  0% { 
+      transform: rotate(0deg); 
+      filter: hue-rotate(0deg); 
+  }
+  50% { 
+      transform: rotate(180deg) scale(0.8); 
+      filter: hue-rotate(180deg); 
+  }
+  100% { 
+      transform: rotate(360deg) scale(1); 
+      filter: hue-rotate(360deg); 
+  }
+}

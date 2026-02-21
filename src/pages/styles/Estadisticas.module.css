@@ -409,7 +409,8 @@
     flex-direction: column;
     width: 100%;
   }
-  .headerActions button {
+  .headerActions button,
+  .headerActions a {
     width: 100%;
     justify-content: center;
   }
@@ -420,7 +421,7 @@
   display: flex;
   width: 100%;
   height: 10px;
-  background-color: var(--border); 
+  background-color: var(--border);
   border-radius: 5px;
   overflow: hidden;
   margin-top: 8px;
@@ -462,10 +463,22 @@
 }
 
 /* Colores para Iconos de KPIs */
-.kpiIconBlue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.kpiIconGreen { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.kpiIconRed { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-.kpiIconPurple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+.kpiIconBlue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+.kpiIconGreen {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+.kpiIconRed {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.kpiIconPurple {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+}
 
 /* Ajustes de Layout para el panel pequeño inferior */
 .headerSpaceBetween {
@@ -492,3 +505,43 @@
   margin: 0;
 }
 
+/* --- SKELETON LOADERS (NUEVO) --- */
+.skeletonPulse {
+  animation: pulse 1.5s ease-in-out infinite;
+  background: var(--body-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.skeletonTitle {
+  width: 280px;
+  height: 32px;
+  margin-bottom: 12px;
+}
+
+.skeletonSubtitle {
+  width: 380px;
+  height: 18px;
+}
+
+.skeletonKpi {
+  height: 90px;
+}
+.skeletonChart {
+  height: 380px;
+}
+.skeletonBottom {
+  height: 340px;
+}

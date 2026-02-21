@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import client from "../api/axios"; // <--- IMPORTANTE: Importar axios
+import client from "../api/axios"; 
 import { toast } from "sonner";
 import { Hexagon, User, Lock, ArrowRight, Loader2, ShieldCheck, Cpu, Activity, AlertCircle } from "lucide-react";
 import styles from "./styles/Login.module.css";
@@ -13,17 +13,21 @@ function Login() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     
-    // Estado del servidor: 'checking' | 'online' | 'offline'
+    // Estado del servidor
     const [serverStatus, setServerStatus] = useState("checking");
+
+    // --- VARIABLES PARA EL EASTER EGG ---
+    const [showSecret, setShowSecret] = useState(false);
+    const clickCount = useRef(0); // Contador instantáneo
+    const clickTimer = useRef(null);
 
     const { signin, errors } = useAuth();
     const navigate = useNavigate();
 
-    // Verificamos el estado del servidor al cargar
     useEffect(() => {
         const checkHealth = async () => {
             try {
-                await client.get('/health'); // Asegúrate que esta ruta exista en backend
+                await client.get('/health'); 
                 setServerStatus("online");
             } catch (error) {
                 console.error("Servidor desconectado");
@@ -36,6 +40,29 @@ function Login() {
             errors.forEach(err => toast.error(err));
         }
     }, [errors]);
+
+    // --- FUNCIÓN DEL EASTER EGG ---
+    const handleLogoClick = () => {
+        clickCount.current += 1;
+        
+        // Si ya hay un temporizador de reseteo, lo cancelamos
+        if (clickTimer.current) clearTimeout(clickTimer.current);
+        
+        if (clickCount.current >= 7) {
+            setShowSecret(true);
+            toast.success("Protocolo de desarrollador iniciado.");
+            clickCount.current = 0; // Reiniciamos
+            
+            setTimeout(() => {
+                setShowSecret(false);
+            }, 5000);
+        } else {
+            // Si pasas más de 1.5 segundos sin hacer clic, el contador vuelve a cero
+            clickTimer.current = setTimeout(() => {
+                clickCount.current = 0;
+            }, 1500);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -58,20 +85,18 @@ function Login() {
 
     return (
         <div className={styles.container}>
-            
             <div className={styles.authWrapper}>
                 
-                {/* --- PANEL DE ESTADO DEL SISTEMA (Izquierda) --- */}
                 <div className={styles.systemPanel}>
                     <div className={styles.systemHeader}>
-                        <div className={styles.logoBox}>
+                        {/* APLICAMOS EL EVENTO CLIC AL LOGO SIN CAMBIAR EL CURSOR PARA QUE SEA SECRETO */}
+                        <div className={styles.logoBox} onClick={handleLogoClick}>
                             <Hexagon size={32} color="white" fill="currentColor"/>
                         </div>
                         <span className={styles.brandText}>{APP_CONFIG.appName}</span>
                     </div>
 
                     <div className={styles.systemStatus}>
-                        {/* BADGE DINÁMICO SEGÚN ESTADO */}
                         <div className={`${styles.statusBadge} ${styles[serverStatus]}`}>
                             <div className={styles.pulseDot}></div>
                             {serverStatus === 'online' && "SISTEMA EN LÍNEA"}
@@ -99,7 +124,6 @@ function Login() {
                     </div>
                 </div>
 
-                {/* --- FORMULARIO DE ACCESO (Derecha) --- */}
                 <div className={styles.formPanel}>
                     <div className={styles.formHeader}>
                         <h2>Autorización Requerida</h2>
@@ -107,8 +131,6 @@ function Login() {
                     </div>
 
                     <form onSubmit={handleSubmit} className={styles.form}>
-                        
-                        {/* AVISO VISUAL SI ESTÁ OFFLINE EN EL FORMULARIO */}
                         {serverStatus === 'offline' && (
                             <div style={{color: '#ef4444', fontSize: '0.9rem', display: 'flex', gap: '8px', alignItems:'center', background:'#fee2e2', padding:'10px', borderRadius:'8px'}}>
                                 <AlertCircle size={18}/> Error de conexión con el Backend
@@ -148,7 +170,7 @@ function Login() {
                         <button 
                             type="submit" 
                             className={styles.submitBtn} 
-                            disabled={isLoading || serverStatus === 'offline'} // Bloqueado si offline
+                            disabled={isLoading || serverStatus === 'offline'} 
                         >
                             {isLoading ? (
                                 <> <Loader2 size={18} className={styles.spinner} /> Autenticando... </>
@@ -159,10 +181,14 @@ function Login() {
                     </form>
 
                     <div className={styles.formFooter}>
-                        Acceso restringido a personal técnico y administrativo.
+                        <span>Acceso restringido a personal técnico y administrativo.</span>
+                        <span className={styles.copyright}>
+                            {showSecret 
+                                ? "Preparando el terreno para Legacy..." 
+                                : `© ${new Date().getFullYear()} ${APP_CONFIG.appName}. Todos los derechos reservados.`}
+                        </span>
                     </div>
                 </div>
-
             </div>
         </div>
     );
