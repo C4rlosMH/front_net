@@ -75,7 +75,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
 
 .btnExport:hover {
@@ -244,4 +246,61 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* --- NUEVAS CLASES PARA ELIMINAR ESTILOS EN LÍNEA --- */
+
+.kpiGrid {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 25px;
+  /* Movido desde el JSX */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.kpiLabelSmall {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.recordValue {
+  font-size: 1.2rem;
+}
+
+.recordAmount {
+  margin-top: 2px;
+  color: #d97706;
+  font-weight: bold;
+}
+
+.textGreenBold {
+  color: #16a34a;
+  font-weight: 800;
+}
+
+.textOrangeBold {
+  color: #d97706;
+  font-weight: 800;
+}
+
+/* Colores para los Iconos de los KPIs */
+.iconBlue {
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.iconGreen {
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.iconRed {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.iconOrange {
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.1);
 }

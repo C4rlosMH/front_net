@@ -4,6 +4,7 @@ import client from "../api/axios";
 import { toast } from "sonner";
 import { Download, CalendarCheck, AlertCircle, ArrowLeft, TrendingUp, Wallet, Award } from "lucide-react";
 import styles from "./styles/Cierres.module.css"; 
+import { APP_CONFIG } from "../config/appConfig";
 
 function Cierres() {
     const [cierres, setCierres] = useState([]);
@@ -43,7 +44,7 @@ function Cierres() {
     };
 
     // --- FUNCIONES AUXILIARES ---
-    const formatMoney = (amount) => `$${parseFloat(amount || 0).toFixed(2)}`;
+    const formatMoney = (amount) => `${APP_CONFIG.currencySymbol}${parseFloat(amount || 0).toFixed(2)}`;
     const calculateTotal = (c) => parseFloat(c.cobrado_a_tiempo) + parseFloat(c.cobrado_recuperado);
     const calculatePercent = (c) => {
         const total = calculateTotal(c);
@@ -98,22 +99,22 @@ function Cierres() {
 
             {/* KPIs GLOBALES HISTÓRICOS */}
             {!loading && cierres.length > 0 && (
-                <div className={styles.kpiGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                <div className={styles.kpiGrid}>
                     
                     {/* KPI 1: Efectividad */}
                     <div className={styles.kpiCard}>
-                        <div className={styles.kpiIcon} style={{color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)'}}>
+                        <div className={`${styles.kpiIcon} ${styles.iconBlue}`}>
                             <TrendingUp size={24} />
                         </div>
                         <div className={styles.kpiInfo}>
                             <span>Efectividad Histórica</span>
-                            <strong>{efectividadGlobal.toFixed(1)}% <small style={{fontSize:'0.85rem', fontWeight:'600', color:'var(--text-muted)'}}>Promedio</small></strong>
+                            <strong>{efectividadGlobal.toFixed(1)}% <small className={styles.kpiLabelSmall}>Promedio</small></strong>
                         </div>
                     </div>
 
                     {/* KPI 2: Total Recaudado */}
                     <div className={styles.kpiCard}>
-                        <div className={styles.kpiIcon} style={{color: '#16a34a', background: 'rgba(34, 197, 94, 0.1)'}}>
+                        <div className={`${styles.kpiIcon} ${styles.iconGreen}`}>
                             <Wallet size={24} />
                         </div>
                         <div className={styles.kpiInfo}>
@@ -124,24 +125,24 @@ function Cierres() {
 
                     {/* KPI 3: Cierres con Déficit */}
                     <div className={styles.kpiCard}>
-                        <div className={styles.kpiIcon} style={{color: quincenasDeficit > 0 ? '#ef4444' : '#16a34a', background: quincenasDeficit > 0 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)'}}>
+                        <div className={`${styles.kpiIcon} ${quincenasDeficit > 0 ? styles.iconRed : styles.iconGreen}`}>
                             <AlertCircle size={24} />
                         </div>
                         <div className={styles.kpiInfo}>
                             <span>Cierres con Déficit</span>
-                            <strong>{quincenasDeficit} <small style={{fontSize:'0.85rem', fontWeight:'600', color:'var(--text-muted)'}}>Quincenas</small></strong>
+                            <strong>{quincenasDeficit} <small className={styles.kpiLabelSmall}>Quincenas</small></strong>
                         </div>
                     </div>
 
                     {/* KPI 4: Récord de Recaudación */}
                     <div className={styles.kpiCard}>
-                        <div className={styles.kpiIcon} style={{color: '#d97706', background: 'rgba(245, 158, 11, 0.1)'}}>
+                        <div className={`${styles.kpiIcon} ${styles.iconOrange}`}>
                             <Award size={24} />
                         </div>
                         <div className={styles.kpiInfo}>
                             <span>Récord de Recaudación</span>
-                            <strong style={{fontSize: '1.2rem'}}>{mejorPeriodo ? mejorPeriodo.periodo : 'N/A'}</strong>
-                            <span style={{marginTop: '2px', color: '#d97706', fontWeight: 'bold'}}>{mejorPeriodo ? formatMoney(maxRecaudacion) : '$0.00'}</span>
+                            <strong className={styles.recordValue}>{mejorPeriodo ? mejorPeriodo.periodo : 'N/A'}</strong>
+                            <span className={styles.recordAmount}>{mejorPeriodo ? formatMoney(maxRecaudacion) : `${APP_CONFIG.currencySymbol}0.00`}</span>
                         </div>
                     </div>
 
@@ -185,8 +186,8 @@ function Cierres() {
                                         </td>
                                         <td>
                                             <div className={styles.amountGroup}>
-                                                <div className={styles.textMutedSmall}>A Tiempo: <span style={{color: '#16a34a', fontWeight: 800}}>{formatMoney(c.cobrado_a_tiempo)}</span></div>
-                                                <div className={styles.textMutedSmall}>Recuperado: <span style={{color: '#d97706', fontWeight: 800}}>{formatMoney(c.cobrado_recuperado)}</span></div>
+                                                <div className={styles.textMutedSmall}>A Tiempo: <span className={styles.textGreenBold}>{formatMoney(c.cobrado_a_tiempo)}</span></div>
+                                                <div className={styles.textMutedSmall}>Recuperado: <span className={styles.textOrangeBold}>{formatMoney(c.cobrado_recuperado)}</span></div>
                                             </div>
                                         </td>
                                         <td>

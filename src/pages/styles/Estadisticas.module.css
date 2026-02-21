@@ -428,3 +428,36 @@
 .qBlockMargin {
   margin-top: 20px;
 }
+
+/* --- NUEVAS CLASES PARA ELIMINAR ESTILOS EN LÍNEA --- */
+
+/* Colores para Iconos de KPIs */
+.kpiIconBlue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.kpiIconGreen { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.kpiIconRed { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.kpiIconPurple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+
+/* Ajustes de Layout para el panel pequeño inferior */
+.headerSpaceBetween {
+  justify-content: space-between;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.titleGroup h3 {
+  margin: 0;
+}
+
+.linkClean {
+  text-decoration: none;
+}
+
+.btnSmall {
+  padding: 4px 12px;
+  margin: 0;
+}

@@ -349,3 +349,32 @@
     border-bottom: 1px solid #ccc !important;
   }
 }
+
+/* --- NUEVAS CLASES PARA ELIMINAR ESTILOS EN LÍNEA --- */
+
+.kpiIconRed { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.kpiIconOrange { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.kpiIconSlate { background: rgba(100, 116, 139, 0.1); color: #64748b; }
+
+.kpiSmallText {
+  font-size: 0.8rem;
+  font-weight: normal;
+  color: var(--text-muted);
+}
+
+.iconLeft { margin-right: 4px; }
+.iconLeftShrink { margin-right: 4px; flex-shrink: 0; }
+
+.colUbicacion { max-width: 250px; }
+.metaWrap { white-space: normal; }
+
+.deudaGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.deudaArrastrando {
+  font-size: 0.75rem;
+  color: #f59e0b;
+  font-weight: bold;
+}

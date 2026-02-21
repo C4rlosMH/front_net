@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Plus, Pencil, Gauge, Zap } from "lucide-react";
 import PlanModal from "../components/PlanModal";
 import styles from "./styles/Planes.module.css";
+import { APP_CONFIG } from "../config/appConfig";
 
 function Planes() {
     const [planes, setPlanes] = useState([]);
@@ -58,7 +59,7 @@ function Planes() {
                         </div>
                         
                         <div className={styles.priceTag}>
-                            ${p.precio_mensual} <span>/mes</span>
+                            {APP_CONFIG.currencySymbol}{p.precio_mensual} <span>/mes</span>
                         </div>
                         
                         <div className={styles.details}>

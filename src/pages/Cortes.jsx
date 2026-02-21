@@ -9,6 +9,7 @@ import TablePagination from "../components/TablePagination";
 import PagoModal from "../components/PagoModal";
 import WhatsAppMessageModal from "../components/WhatsAppMessageModal";
 import styles from "./styles/Cortes.module.css";
+import { APP_CONFIG } from "../config/appConfig";
 
 function Cortes() {
     const [morosos, setMorosos] = useState([]);
@@ -121,7 +122,7 @@ function Cortes() {
     const handleCopy = () => {
         const texto = morosos.map(c => {
             const deudaTotal = (parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0);
-            return `• ${c.nombre_completo} | Debe: $${deudaTotal.toFixed(2)} | Dir: ${c.direccion || 'N/A'}`;
+            return `• ${c.nombre_completo} | Debe: ${APP_CONFIG.currencySymbol}${deudaTotal.toFixed(2)} | Dir: ${c.direccion || 'N/A'}`;
         }).join("\n");
         navigator.clipboard.writeText(`LISTA DE CORTES/MOROSOS:\n\n${texto}`);
         toast.success("Lista copiada al portapapeles");
@@ -159,30 +160,30 @@ function Cortes() {
 
             <div className={styles.kpiGrid}>
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiIcon} style={{color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)'}}>
+                    <div className={`${styles.kpiIcon} ${styles.kpiIconRed}`}>
                         <AlertTriangle size={24} />
                     </div>
                     <div className={styles.kpiInfo}>
                         <span>Deuda en Riesgo</span>
-                        <strong>${totalDeuda.toFixed(2)}</strong>
+                        <strong>{APP_CONFIG.currencySymbol}{totalDeuda.toFixed(2)}</strong>
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiIcon} style={{color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)'}}>
+                    <div className={`${styles.kpiIcon} ${styles.kpiIconOrange}`}>
                         <AlertOctagon size={24} />
                     </div>
                     <div className={styles.kpiInfo}>
                         <span>Cortes Inmediatos</span>
-                        <strong>{porCortar} <small style={{fontSize:'0.8rem', fontWeight:'normal', color:'var(--text-muted)'}}>Clientes</small></strong>
+                        <strong>{porCortar} <small className={styles.kpiSmallText}>Clientes</small></strong>
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiIcon} style={{color: '#64748b', background: 'rgba(100, 116, 139, 0.1)'}}>
+                    <div className={`${styles.kpiIcon} ${styles.kpiIconSlate}`}>
                         <Scissors size={24} />
                     </div>
                     <div className={styles.kpiInfo}>
                         <span>Ya Suspendidos</span>
-                        <strong>{yaCortados} <small style={{fontSize:'0.8rem', fontWeight:'normal', color:'var(--text-muted)'}}>Clientes</small></strong>
+                        <strong>{yaCortados} <small className={styles.kpiSmallText}>Clientes</small></strong>
                     </div>
                 </div>
             </div>
@@ -229,13 +230,13 @@ function Cortes() {
                                             <td>
                                                 <strong className={styles.name}>{c.nombre_completo}</strong>
                                                 <div className={styles.meta}>
-                                                    <Phone size={12} style={{marginRight:4}}/> 
+                                                    <Phone size={12} className={styles.iconLeft}/> 
                                                     {c.telefono || "Sin teléfono"}
                                                 </div>
                                             </td>
-                                            <td style={{maxWidth:'250px'}}>
-                                                <div className={styles.meta} style={{whiteSpace:'normal'}}>
-                                                    <MapPin size={14} style={{marginRight:4, flexShrink:0}}/> 
+                                            <td className={styles.colUbicacion}>
+                                                <div className={`${styles.meta} ${styles.metaWrap}`}>
+                                                    <MapPin size={14} className={styles.iconLeftShrink}/> 
                                                     {c.direccion || "Sin dirección"}
                                                 </div>
                                             </td>
@@ -243,10 +244,10 @@ function Cortes() {
                                                 <span className={styles.planBadge}>{c.plan?.nombre || "Sin Plan"}</span>
                                             </td>
                                             <td>
-                                                <div style={{display: 'flex', flexDirection: 'column'}}>
-                                                    <span className={styles.debt}>${deudaTotal.toFixed(2)}</span>
+                                                <div className={styles.deudaGroup}>
+                                                    <span className={styles.debt}>{APP_CONFIG.currencySymbol}{deudaTotal.toFixed(2)}</span>
                                                     {(parseFloat(c.saldo_aplazado) || 0) > 0 && (
-                                                        <span style={{fontSize: '0.75rem', color: '#f59e0b', fontWeight: 'bold'}}>
+                                                        <span className={styles.deudaArrastrando}>
                                                             Arrastrando {Math.floor(((parseFloat(c.saldo_actual) || 0) + (parseFloat(c.saldo_aplazado) || 0)) / (parseFloat(c.plan?.precio_mensual) || 1))} meses
                                                         </span>
                                                     )}

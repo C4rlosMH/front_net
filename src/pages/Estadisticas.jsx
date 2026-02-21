@@ -10,6 +10,7 @@ import {
     TrendingUp, AlertCircle, Wallet, Download, Calendar, Users, ArrowRight, History
 } from "lucide-react";
 import styles from "./styles/Estadisticas.module.css";
+import { APP_CONFIG } from "../config/appConfig";
 import { useTheme } from "../context/ThemeContext";
 
 function Estadisticas() {
@@ -111,37 +112,37 @@ function Estadisticas() {
 
             <div className={styles.kpiGrid}>
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiIconWrapper} style={{background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6'}}>
+                    <div className={`${styles.kpiIconWrapper} ${styles.kpiIconBlue}`}>
                         <Wallet size={24} />
                     </div>
                     <div className={styles.kpiInfo}>
                         <span className={styles.kpiLabel}>Ingresos Acumulados (Mes)</span>
-                        <span className={styles.kpiValue}>${ingresosTotalesMes.toFixed(2)}</span>
+                        <span className={styles.kpiValue}>{APP_CONFIG.currencySymbol}{ingresosTotalesMes.toFixed(2)}</span>
                     </div>
                 </div>
 
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiIconWrapper} style={{background: 'rgba(16, 185, 129, 0.1)', color: '#10b981'}}>
+                    <div className={`${styles.kpiIconWrapper} ${styles.kpiIconGreen}`}>
                         <TrendingUp size={24} />
                     </div>
                     <div className={styles.kpiInfo}>
                         <span className={styles.kpiLabel}>Proyección Próximo Mes</span>
-                        <span className={styles.kpiValue}>${proyeccion.toFixed(2)}</span>
+                        <span className={styles.kpiValue}>{APP_CONFIG.currencySymbol}{proyeccion.toFixed(2)}</span>
                     </div>
                 </div>
 
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiIconWrapper} style={{background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444'}}>
+                    <div className={`${styles.kpiIconWrapper} ${styles.kpiIconRed}`}>
                         <AlertCircle size={24} />
                     </div>
                     <div className={styles.kpiInfo}>
                         <span className={styles.kpiLabel}>Cartera Vencida Activa</span>
-                        <span className={styles.kpiValue}>${totalDeuda.toFixed(2)}</span>
+                        <span className={styles.kpiValue}>{APP_CONFIG.currencySymbol}{totalDeuda.toFixed(2)}</span>
                     </div>
                 </div>
 
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiIconWrapper} style={{background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7'}}>
+                    <div className={`${styles.kpiIconWrapper} ${styles.kpiIconPurple}`}>
                         <Users size={24} />
                     </div>
                     <div className={styles.kpiInfo}>
@@ -170,8 +171,8 @@ function Estadisticas() {
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#e5e7eb'} />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'var(--text-muted)'}} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-muted)'}} tickFormatter={(value) => `$${value}`} />
-                                <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`$${value}`, 'Ingresos']} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-muted)'}} tickFormatter={(value) => `${APP_CONFIG.currencySymbol}${value}`} />
+                                <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`${APP_CONFIG.currencySymbol}${value}`, 'Ingresos']} />
                                 <Area type="monotone" dataKey="total" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorIngresos)" />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -211,14 +212,14 @@ function Estadisticas() {
 
             <div className={styles.bottomGrid}>
                 <div className={styles.chartCard}>
-                    <div className={styles.cardHeaderSmall} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className={`${styles.cardHeaderSmall} ${styles.headerSpaceBetween}`}>
+                        <div className={styles.titleGroup}>
                             <Calendar size={20} className={styles.iconBlue} />
-                            <h3 style={{ margin: 0 }}>Desglose de Ciclos de Facturación</h3>
+                            <h3>Desglose de Ciclos de Facturación</h3>
                         </div>
                         
-                        <Link to="/cierres" style={{ textDecoration: 'none' }}>
-                            <button className={styles.viewAllBtn} style={{ margin: 0, padding: '4px 12px' }}>
+                        <Link to="/cierres" className={styles.linkClean}>
+                            <button className={`${styles.viewAllBtn} ${styles.btnSmall}`}>
                                 Ver Historial <History size={14} />
                             </button>
                         </Link>
@@ -227,7 +228,7 @@ function Estadisticas() {
                         {/* CICLO 1 AL 15 */}
                         <div className={styles.qBlock}>
                             <div className={styles.qTitleRow}>
-                                <span className={styles.qTitle}>Ingresos del 1 - 15 (Meta: ${metas.q1.estimada.toFixed(2)})</span>
+                                <span className={styles.qTitle}>Ingresos del 1 - 15 (Meta: {APP_CONFIG.currencySymbol}{metas.q1.estimada.toFixed(2)})</span>
                                 <span className={styles.qPercent}>{((totalQ1 / metaQ1) * 100).toFixed(0)}%</span>
                             </div>
                             
@@ -237,15 +238,15 @@ function Estadisticas() {
                             </div>
 
                             <div className={styles.progressDetails}>
-                                <span><span className={styles.textBlue}>${metas.q1.a_tiempo.toFixed(2)}</span> a tiempo</span>
-                                <span><span className={styles.textOrange}>${metas.q1.recuperado.toFixed(2)}</span> atrasado</span>
+                                <span><span className={styles.textBlue}>{APP_CONFIG.currencySymbol}{metas.q1.a_tiempo.toFixed(2)}</span> a tiempo</span>
+                                <span><span className={styles.textOrange}>{APP_CONFIG.currencySymbol}{metas.q1.recuperado.toFixed(2)}</span> atrasado</span>
                             </div>
                         </div>
                         
                         {/* CICLO 16 AL 30 */}
                         <div className={`${styles.qBlock} ${styles.qBlockMargin}`}>
                             <div className={styles.qTitleRow}>
-                                <span className={styles.qTitle}>Ingresos del 16 - 30 (Meta: ${metas.q2.estimada.toFixed(2)})</span>
+                                <span className={styles.qTitle}>Ingresos del 16 - 30 (Meta: {APP_CONFIG.currencySymbol}{metas.q2.estimada.toFixed(2)})</span>
                                 <span className={styles.qPercent}>{((totalQ2 / metaQ2) * 100).toFixed(0)}%</span>
                             </div>
                             
@@ -255,8 +256,8 @@ function Estadisticas() {
                             </div>
 
                             <div className={styles.progressDetails}>
-                                <span><span className={styles.textPurple}>${metas.q2.a_tiempo.toFixed(2)}</span> a tiempo</span>
-                                <span><span className={styles.textOrange}>${metas.q2.recuperado.toFixed(2)}</span> atrasado</span>
+                                <span><span className={styles.textPurple}>{APP_CONFIG.currencySymbol}{metas.q2.a_tiempo.toFixed(2)}</span> a tiempo</span>
+                                <span><span className={styles.textOrange}>{APP_CONFIG.currencySymbol}{metas.q2.recuperado.toFixed(2)}</span> atrasado</span>
                             </div>
                         </div>
                     </div>
@@ -270,7 +271,7 @@ function Estadisticas() {
                     <div className={styles.morosidadContainer}>
                         <div className={styles.morosidadTotal}>
                             <span>Deuda Pendiente Total</span>
-                            <strong className={styles.textRed}>${totalDeuda.toFixed(2)}</strong>
+                            <strong className={styles.textRed}>{APP_CONFIG.currencySymbol}{totalDeuda.toFixed(2)}</strong>
                         </div>
                         <p className={styles.morosidadDesc}>
                             Impacto de <strong>{data.pendientes_pago?.lista?.length || 0} clientes</strong> con atrasos activos.
@@ -285,7 +286,7 @@ function Estadisticas() {
                                             <span className={styles.deudorAddress}>{deudor.direccion || 'Sin dirección'}</span>
                                         </div>
                                         <span className={styles.deudorDeuda}>
-                                            ${Number(deudor.saldo_actual || 0) + Number(deudor.saldo_aplazado || 0)}
+                                            {APP_CONFIG.currencySymbol}{Number(deudor.saldo_actual || 0) + Number(deudor.saldo_aplazado || 0)}
                                         </span>
                                     </div>
                                 ))

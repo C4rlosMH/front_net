@@ -11,6 +11,8 @@ import {
 import WhatsAppStatus from "../components/WhatsAppStatus"; // <--- 3. Importar Modal
 import styles from "./MainLayout.module.css";
 
+import { APP_CONFIG } from "../config/appConfig";
+
 function MainLayout() {
     const { logout, user } = useAuth();
     const { theme, toggleTheme } = useTheme();
@@ -34,7 +36,7 @@ function MainLayout() {
                     <div className={styles.logoBox}>
                         <Hexagon size={24} color="white" fill="currentColor"/>
                     </div>
-                    <h2 className={styles.brandName}>NetAdmin</h2>
+                    <h2 className={styles.brandName}>{APP_CONFIG.appShortName}</h2>
                 </div>
 
                 {/* MENÚ DE NAVEGACIÓN */}

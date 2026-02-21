@@ -8,6 +8,7 @@ import {
     MapPin, Phone, CalendarDays, Wifi, Cable
 } from "lucide-react";
 import styles from "./styles/HistorialPagos.module.css"; 
+import { APP_CONFIG } from "../config/appConfig";
 
 function HistorialPagos() {
     const { id } = useParams(); 
@@ -129,7 +130,7 @@ function HistorialPagos() {
                                 </div>
                                 <div className={styles.historicalInfo}>
                                     <span className={styles.historicalLabel}>Deuda Histórica</span>
-                                    <span className={styles.historicalAmount}>${deudaHistorica.toFixed(2)}</span>
+                                    <span className={styles.historicalAmount}>{APP_CONFIG.currencySymbol}{deudaHistorica.toFixed(2)}</span>
                                 </div>
                             </div>
                         )}
@@ -138,7 +139,7 @@ function HistorialPagos() {
                         <div className={styles.balanceBox}>
                             <span className={styles.balanceLabel}>Deuda Mes Actual</span>
                             <span className={`${styles.balanceAmount} ${deudaCorriente > 0 ? styles.textRed : styles.textGreen}`}>
-                                ${deudaCorriente.toFixed(2)}
+                                {APP_CONFIG.currencySymbol}{deudaCorriente.toFixed(2)}
                             </span>
                         </div>
                     </div>
@@ -197,7 +198,7 @@ function HistorialPagos() {
                     </div>
                     <div className={styles.statDetails}>
                         <span className={styles.statTitle}>Total Pagado (Histórico)</span>
-                        <span className={styles.statValue}>${totalAbonado.toFixed(2)}</span>
+                        <span className={styles.statValue}>{APP_CONFIG.currencySymbol}{totalAbonado.toFixed(2)}</span>
                     </div>
                 </div>
                 
@@ -280,7 +281,7 @@ function HistorialPagos() {
                                     </div>
                                     
                                     <div className={`${styles.movementAmount} ${mov.tipo === 'ABONO' ? styles.amountAbono : mov.tipo === 'APLAZAMIENTO' ? styles.textOrange : styles.amountCargo}`}>
-                                        {mov.tipo === 'ABONO' ? '+' : mov.tipo === 'APLAZAMIENTO' ? '→' : '-'}${parseFloat(mov.monto).toFixed(2)}
+                                        {mov.tipo === 'ABONO' ? '+' : mov.tipo === 'APLAZAMIENTO' ? '→' : '-'}{APP_CONFIG.currencySymbol}{parseFloat(mov.monto).toFixed(2)}
                                     </div>
                                 </div>
                             </div>

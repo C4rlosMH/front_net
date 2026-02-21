@@ -8,6 +8,7 @@ import {
 import TablePagination from "../components/TablePagination";
 import PagoModal from "../components/PagoModal";
 import styles from "./styles/Pagos.module.css";
+import { APP_CONFIG } from "../config/appConfig";
 
 function Pagos() {
     const [movimientos, setMovimientos] = useState([]);
@@ -91,7 +92,7 @@ function Pagos() {
                     <div className={styles.iconBoxIngreso}><ArrowUpRight size={24}/></div>
                     <div className={styles.statInfo}>
                         <span className={styles.statLabel}>Ingresos de Hoy</span>
-                        <h3 className={styles.statValue}>${ingresosHoy.toLocaleString('en-US', {minimumFractionDigits: 2})}</h3>
+                        <h3 className={styles.statValue}>{APP_CONFIG.currencySymbol}{ingresosHoy.toLocaleString('en-US', {minimumFractionDigits: 2})}</h3>
                     </div>
                 </div>
                 <div className={styles.statCard}>
@@ -185,7 +186,7 @@ function Pagos() {
                                             <td className={styles.colMontoRight}>
                                                 <div className={styles.montoWrap}>
                                                     <span className={`${styles.amount} ${m.tipo === 'ABONO' || m.tipo === 'AJUSTE_FAVOR' ? styles.textGreen : styles.textRed}`}>
-                                                        {m.tipo === 'ABONO' || m.tipo === 'AJUSTE_FAVOR' ? '+' : '-'}${parseFloat(m.monto).toFixed(2)}
+                                                        {m.tipo === 'ABONO' || m.tipo === 'AJUSTE_FAVOR' ? '+' : '-'}{APP_CONFIG.currencySymbol}{parseFloat(m.monto).toFixed(2)}
                                                     </span>
                                                     <span className={styles.tinyType}>{m.tipo.replace('_', ' ')}</span>
                                                 </div>

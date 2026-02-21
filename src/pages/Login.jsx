@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Hexagon, User, Lock, ArrowRight, Loader2, ShieldCheck, Cpu, Activity, AlertCircle } from "lucide-react";
 import styles from "./styles/Login.module.css";
 
+import { APP_CONFIG } from "../config/appConfig";
+
 function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -65,7 +67,7 @@ function Login() {
                         <div className={styles.logoBox}>
                             <Hexagon size={32} color="white" fill="currentColor"/>
                         </div>
-                        <span className={styles.brandText}>NetAdmin Core</span>
+                        <span className={styles.brandText}>{APP_CONFIG.appName}</span>
                     </div>
 
                     <div className={styles.systemStatus}>
@@ -77,7 +79,7 @@ function Login() {
                             {serverStatus === 'checking' && "CONECTANDO..."}
                         </div>
                         
-                        <h2>Plataforma de<br/>Administración ISP</h2>
+                        <h2>{APP_CONFIG.tagline}</h2>
                         <p>Terminal de acceso seguro para gestión de infraestructura y enrutamiento de clientes.</p>
                     </div>
 

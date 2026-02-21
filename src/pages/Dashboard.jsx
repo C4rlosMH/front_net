@@ -10,6 +10,8 @@ import {
 import styles from "./styles/Dashboard.module.css";
 import PagoModal from "../components/PagoModal";
 
+import { APP_CONFIG } from "../config/appConfig";
+
 function Dashboard() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -32,7 +34,7 @@ function Dashboard() {
         fetchStats();
     }, []);
 
-    const formatoDinero = (num) => `$${parseFloat(num || 0).toFixed(2)}`;
+    const formatoDinero = (num) => `${APP_CONFIG.currencySymbol}${parseFloat(num || 0).toFixed(2)}`;
 
     // Calculadora de Días de Gracia
     const calcularDiasGracia = (diaPago) => {
