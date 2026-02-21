@@ -113,7 +113,6 @@
 
 /* --- NUEVA CLASE PARA EL BOTÓN (Estilo idéntico a navItem) --- */
 .navButton {
-    /* Copia de propiedades base de navItem */
     display: flex;
     align-items: center;
     gap: 12px;
@@ -123,8 +122,6 @@
     font-weight: 600;
     font-size: 0.95rem;
     transition: all 0.2s ease;
-    
-    /* Resets específicos de botón */
     background: transparent;
     border: none;
     width: 100%;
@@ -208,7 +205,7 @@
     gap: 10px;
 }
 
-.themeToggle {
+.actionBtn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -223,7 +220,7 @@
     flex-shrink: 0;
 }
 
-.themeToggle:hover {
+.actionBtn:hover {
     background-color: var(--body-bg);
     color: var(--text-main);
     border-color: var(--primary);

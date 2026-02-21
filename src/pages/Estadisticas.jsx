@@ -7,7 +7,8 @@ import {
     PieChart, Pie, Cell, Legend, AreaChart, Area
 } from 'recharts';
 import { 
-    TrendingUp, AlertCircle, Wallet, Download, Calendar, Users, ArrowRight, History
+    TrendingUp, AlertCircle, Wallet, Download, Calendar, Users, 
+    ArrowRight, History, TrendingDown, DollarSign
 } from "lucide-react";
 import styles from "./styles/Estadisticas.module.css";
 import { APP_CONFIG } from "../config/appConfig";
@@ -19,10 +20,13 @@ function Estadisticas() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
-    // MAGIA DE SWR: Carga instantánea de caché
     const { data, error, isLoading } = useSWR("/dashboard/stats", fetcher, {
         revalidateOnFocus: false,
         dedupingInterval: 10000, 
+    });
+
+    const { data: gastosData } = useSWR("/gastos", fetcher, {
+        revalidateOnFocus: false
     });
 
     if (error) {
@@ -51,7 +55,6 @@ function Estadisticas() {
         document.body.removeChild(link);
     };
 
-    // --- RENDER DE ESQUELETOS (Simulación de carga) ---
     if (isLoading || !data) {
         return (
             <div className={styles.container}>
@@ -62,7 +65,7 @@ function Estadisticas() {
                     </div>
                 </div>
                 <div className={styles.kpiGrid}>
-                    {[1,2,3,4].map(i => <div key={i} className={`${styles.kpiCard} ${styles.skeletonPulse} ${styles.skeletonKpi}`}></div>)}
+                    {[1,2,3,4,5,6].map(i => <div key={i} className={`${styles.kpiCard} ${styles.skeletonPulse} ${styles.skeletonKpi}`}></div>)}
                 </div>
                 <div className={styles.chartsGrid}>
                     <div className={`${styles.chartCard} ${styles.span2} ${styles.skeletonPulse} ${styles.skeletonChart}`}></div>
@@ -76,9 +79,13 @@ function Estadisticas() {
         );
     }
 
-    // --- RENDERIZADO NORMAL ---
     const metas = data.financiero?.metas || { q1: { estimada: 0, a_tiempo: 0, recuperado: 0 }, q2: { estimada: 0, a_tiempo: 0, recuperado: 0 } };
     const ingresosTotalesMes = data.financiero?.recaudado_total || 0;
+    
+    // Aprovechamos el nuevo resumen que manda el backend
+    const gastosDelMes = gastosData?.resumen?.totalMes || 0;
+    const gananciaNeta = ingresosTotalesMes - gastosDelMes;
+
     const totalQ1 = metas.q1.a_tiempo + metas.q1.recuperado;
     const metaQ1 = metas.q1.estimada > 0 ? metas.q1.estimada : 1; 
     const pctTiempoQ1 = Math.min(100, (metas.q1.a_tiempo / metaQ1) * 100);
@@ -94,7 +101,6 @@ function Estadisticas() {
     const clientesActivos = data.clientes?.resumen?.activos || 0;
     const topDeudores = data.pendientes_pago?.lista?.slice(0, 5) || [];
 
-    // --- LÓGICA: DATOS DE ARQUEO PARA LA GRÁFICA DE PASTEL ---
     const COLORS_ARQUEO = ['#10b981', '#8b5cf6']; 
     const arqueoData = [
         { name: 'Efectivo', value: data.financiero?.arqueo?.efectivo || 0 },
@@ -129,19 +135,37 @@ function Estadisticas() {
             </div>
 
             <div className={styles.kpiGrid}>
-                {/* CLASES CORREGIDAS PARA QUE TOMEN TU CSS ORIGINAL */}
                 <div className={styles.kpiCard}>
                     <div className={`${styles.kpiIconWrapper} ${styles.kpiIconBlue}`}><Wallet size={24} /></div>
                     <div className={styles.kpiInfo}>
-                        <span className={styles.kpiLabel}>Ingresos Acumulados (Mes)</span>
+                        <span className={styles.kpiLabel}>Ingresos Brutos</span>
                         <span className={styles.kpiValue}>{APP_CONFIG.currencySymbol}{ingresosTotalesMes.toFixed(2)}</span>
+                    </div>
+                </div>
+
+                <Link to="/gastos" className={styles.kpiLink}>
+                    <div className={`${styles.kpiCard} ${styles.kpiCardHover}`}>
+                        <div className={`${styles.kpiIconWrapper} ${styles.kpiIconOrange}`}><TrendingDown size={24} /></div>
+                        <div className={styles.kpiInfo}>
+                            <span className={styles.kpiLabel}>Egresos del Mes</span>
+                            <span className={styles.kpiValue}>{APP_CONFIG.currencySymbol}{gastosDelMes.toFixed(2)}</span>
+                            <span className={styles.kpiSubText}>Ver detalles →</span>
+                        </div>
+                    </div>
+                </Link>
+
+                <div className={styles.kpiCard}>
+                    <div className={`${styles.kpiIconWrapper} ${styles.kpiIconTeal}`}><DollarSign size={24} /></div>
+                    <div className={styles.kpiInfo}>
+                        <span className={styles.kpiLabel}>Ganancia Neta</span>
+                        <span className={styles.kpiValue}>{APP_CONFIG.currencySymbol}{gananciaNeta.toFixed(2)}</span>
                     </div>
                 </div>
 
                 <div className={styles.kpiCard}>
                     <div className={`${styles.kpiIconWrapper} ${styles.kpiIconGreen}`}><TrendingUp size={24} /></div>
                     <div className={styles.kpiInfo}>
-                        <span className={styles.kpiLabel}>Proyección Próximo Mes</span>
+                        <span className={styles.kpiLabel}>Proyección Mes</span>
                         <span className={styles.kpiValue}>{APP_CONFIG.currencySymbol}{proyeccion.toFixed(2)}</span>
                     </div>
                 </div>
@@ -149,7 +173,7 @@ function Estadisticas() {
                 <div className={styles.kpiCard}>
                     <div className={`${styles.kpiIconWrapper} ${styles.kpiIconRed}`}><AlertCircle size={24} /></div>
                     <div className={styles.kpiInfo}>
-                        <span className={styles.kpiLabel}>Cartera Vencida Activa</span>
+                        <span className={styles.kpiLabel}>Cartera Vencida</span>
                         <span className={styles.kpiValue}>{APP_CONFIG.currencySymbol}{totalDeuda.toFixed(2)}</span>
                     </div>
                 </div>
@@ -157,14 +181,13 @@ function Estadisticas() {
                 <div className={styles.kpiCard}>
                     <div className={`${styles.kpiIconWrapper} ${styles.kpiIconPurple}`}><Users size={24} /></div>
                     <div className={styles.kpiInfo}>
-                        <span className={styles.kpiLabel}>Total Clientes Activos</span>
+                        <span className={styles.kpiLabel}>Clientes Activos</span>
                         <span className={styles.kpiValue}>{clientesActivos}</span>
                     </div>
                 </div>
             </div>
 
             <div className={styles.chartsGrid}>
-                {/* 1. TENDENCIA 6 MESES */}
                 <div className={`${styles.chartCard} ${styles.span2}`}>
                     <div className={styles.cardHeader}>
                         <div>
@@ -191,7 +214,6 @@ function Estadisticas() {
                     </div>
                 </div>
 
-                {/* 2. GRÁFICA NUEVA: FLUJO DE INGRESOS */}
                 <div className={styles.chartCard}>
                     <div className={styles.cardHeader}>
                         <div>

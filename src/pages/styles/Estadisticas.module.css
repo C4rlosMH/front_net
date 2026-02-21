@@ -73,10 +73,10 @@
   transform: translateY(-2px);
 }
 
-/* --- 1. TARJETAS KPI --- */
+/* --- 1. TARJETAS KPI (MODIFICADO A 3x3) --- */
 .kpiGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   margin-bottom: 25px;
 }
@@ -388,6 +388,9 @@
 }
 
 @media (max-width: 1024px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .chartsGrid {
     grid-template-columns: 1fr;
   }
@@ -400,6 +403,9 @@
 }
 
 @media (max-width: 768px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
   .header {
     flex-direction: column;
     align-items: flex-start;
@@ -505,7 +511,7 @@
   margin: 0;
 }
 
-/* --- SKELETON LOADERS (NUEVO) --- */
+/* --- SKELETON LOADERS --- */
 .skeletonPulse {
   animation: pulse 1.5s ease-in-out infinite;
   background: var(--body-bg);
@@ -514,15 +520,9 @@
 }
 
 @keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-  100% {
-    opacity: 1;
-  }
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
 }
 
 .skeletonTitle {
@@ -544,4 +544,39 @@
 }
 .skeletonBottom {
   height: 340px;
+}
+
+/* --- NUEVAS CLASES PARA GASTOS Y GANANCIA NETA --- */
+.kpiLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.kpiCardHover {
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.kpiCardHover:hover {
+  border-color: #f97316;
+  background-color: rgba(249, 115, 22, 0.03);
+}
+
+.kpiSubText {
+  font-size: 0.75rem;
+  color: #f97316;
+  font-weight: 600;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+.kpiIconOrange {
+  background: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+}
+
+.kpiIconTeal {
+  background: rgba(20, 184, 166, 0.1);
+  color: #14b8a6;
 }

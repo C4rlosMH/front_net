@@ -438,3 +438,39 @@
   height: 32px;
   border-radius: 8px;
 }
+
+/* --- NUEVAS CLASES PARA EL ENLACE A INSUMOS --- */
+.iconBoxPurple {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+}
+
+.kpiLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.statCardHover {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.statCardHover:hover {
+  border-color: #a855f7;
+  background-color: rgba(168, 85, 247, 0.03);
+  transform: translateY(-4px);
+}
+
+.kpiSubText {
+  font-size: 0.75rem;
+  color: #a855f7;
+  font-weight: 600;
+  margin-top: 4px;
+}

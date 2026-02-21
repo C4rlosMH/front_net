@@ -1,16 +1,24 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import client from "../api/axios";
 import TablePagination from "../components/TablePagination"; 
 import EquipoModal from "../components/EquipoModal";
 import { toast } from "sonner";
 import { 
     Plus, Pencil, Trash2, Search, Download, 
-    ArrowUpDown, ArrowUp, ArrowDown, Package, Server, DollarSign
+    ArrowUpDown, ArrowUp, ArrowDown, Package, Server, DollarSign, Layers
 } from "lucide-react"; 
 import styles from "./styles/Equipos.module.css";
 
+// Función normalizadora idéntica a la del backend
+const normalizeStr = (str) => {
+    if (!str) return "";
+    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
 function Equipos() {
     const [equipos, setEquipos] = useState([]);
+    const [insumosData, setInsumosData] = useState([]);
     const [totalItems, setTotalItems] = useState(0); 
     const [loading, setLoading] = useState(true);
     
@@ -31,18 +39,14 @@ function Equipos() {
         try {
             setLoading(true);
             const res = await client.get("/equipos", {
-                params: {
-                    page: currentPage,
-                    limit: itemsPerPage,
-                    estado: filtro,
-                    search: busqueda
-                }
+                params: { page: currentPage, limit: itemsPerPage, estado: filtro, search: busqueda }
             });
 
-            // Extracción robusta de datos y prevención de NaN
             const eqArray = Array.isArray(res.data.equipos) ? res.data.equipos : (Array.isArray(res.data) ? res.data : []);
             setEquipos(eqArray);
             setTotalItems(res.data.total ?? eqArray.length);
+
+            client.get("/insumos").then(res => setInsumosData(res.data)).catch(() => {});
 
         } catch (error) {
             toast.error("Error al cargar inventario");
@@ -57,8 +61,7 @@ function Equipos() {
     };
 
     const eliminarEquipo = async (id) => {
-        const confirmar = window.confirm("¿Estás seguro de que deseas ELIMINAR permanentemente este equipo del inventario?");
-        if (confirmar) {
+        if (window.confirm("¿Estás seguro de que deseas ELIMINAR permanentemente este equipo?")) {
             try {
                 await client.delete(`/equipos/${id}`);
                 toast.success("Equipo eliminado del sistema");
@@ -79,16 +82,25 @@ function Equipos() {
     const enAlmacen = equipos.filter(e => e.estado === 'ALMACEN').length;
     const inversionAlmacen = equipos.filter(e => e.estado === 'ALMACEN').reduce((acc, e) => acc + parseFloat(e.precio_compra || 0), 0);
 
+    // <-- Cálculos A PRUEBA DE ERRORES para el KPI de Cable en Equipos
+    const metrosFibra = insumosData
+        .filter(i => normalizeStr(i.nombre).includes('fibra') && i.unidad_medida === 'Metros')
+        .reduce((acc, i) => acc + Number(i.cantidad), 0);
+        
+    const metrosUTP = insumosData
+        .filter(i => (normalizeStr(i.nombre).includes('utp') || normalizeStr(i.nombre).includes('cat')) && i.unidad_medida === 'Metros')
+        .reduce((acc, i) => acc + Number(i.cantidad), 0);
+        
+    const stockCable = metrosFibra + metrosUTP;
+
     const equiposOrdenados = [...equipos].sort((a, b) => {
         if (!sortConfig.key) return 0;
         let aVal = a[sortConfig.key] || '';
         let bVal = b[sortConfig.key] || '';
-
         if (sortConfig.key === 'precio_compra') {
             aVal = parseFloat(aVal) || 0;
             bVal = parseFloat(bVal) || 0;
         }
-
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
@@ -151,10 +163,29 @@ function Equipos() {
                 <div className={styles.statCard}>
                     <div className={styles.iconBoxWarning}><DollarSign size={24}/></div>
                     <div className={styles.statInfo}>
-                        <span className={styles.statLabel}>Capital Detenido (Almacén)</span>
+                        <span className={styles.statLabel}>Capital Detenido</span>
                         <h3 className={styles.statValue}>${inversionAlmacen.toLocaleString('en-US', {minimumFractionDigits: 2})}</h3>
                     </div>
                 </div>
+                
+                <Link to="/insumos" className={styles.kpiLink}>
+                    <div className={`${styles.statCard} ${styles.statCardHover}`}>
+                        <div className={styles.iconBoxPurple}><Layers size={24}/></div>
+                        <div className={styles.statInfo}>
+                            <span className={styles.statLabel}>Reserva de Cableado</span>
+                            <h3 className={styles.statValue}>{stockCable.toFixed(0)} <small>m totales</small></h3>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '6px' }}>
+                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                                    <span style={{ color: '#3b82f6' }}>Fibra:</span> {metrosFibra.toFixed(0)} m
+                                </span>
+                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                                    <span style={{ color: '#10b981' }}>UTP:</span> {metrosUTP.toFixed(0)} m
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </Link>
             </div>
 
             <div className={styles.filterBar}>
@@ -166,13 +197,7 @@ function Equipos() {
                 </div>
                 <div className={styles.searchBox}>
                     <Search size={18} className={styles.searchIcon}/>
-                    <input 
-                        type="text" 
-                        placeholder="Buscar MAC, serie, modelo..." 
-                        value={busqueda} 
-                        onChange={(e) => {setBusqueda(e.target.value); setCurrentPage(1);}} 
-                        className={styles.searchInput}
-                    />
+                    <input type="text" placeholder="Buscar MAC, serie, modelo..." value={busqueda} onChange={(e) => {setBusqueda(e.target.value); setCurrentPage(1);}} className={styles.searchInput} />
                 </div>
             </div>
 
@@ -180,34 +205,17 @@ function Equipos() {
                 <table className={styles.table}>
                     <thead>
                         <tr>
-                            <th onClick={() => handleSort('marca')} className={styles.sortableHeader}>
-                                Equipo / Modelo {renderSortIcon('marca')}
-                            </th>
+                            <th onClick={() => handleSort('marca')} className={styles.sortableHeader}>Equipo / Modelo {renderSortIcon('marca')}</th>
                             <th>Tipo</th>
-                            <th onClick={() => handleSort('mac_address')} className={styles.sortableHeader}>
-                                Identificación {renderSortIcon('mac_address')}
-                            </th>
-                            <th onClick={() => handleSort('precio_compra')} className={styles.sortableHeader}>
-                                Adquisición {renderSortIcon('precio_compra')}
-                            </th>
-                            <th onClick={() => handleSort('estado')} className={styles.sortableHeader}>
-                                Estado {renderSortIcon('estado')}
-                            </th>
+                            <th onClick={() => handleSort('mac_address')} className={styles.sortableHeader}>Identificación {renderSortIcon('mac_address')}</th>
+                            <th onClick={() => handleSort('precio_compra')} className={styles.sortableHeader}>Adquisición {renderSortIcon('precio_compra')}</th>
+                            <th onClick={() => handleSort('estado')} className={styles.sortableHeader}>Estado {renderSortIcon('estado')}</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            Array(5).fill(0).map((_, i) => (
-                                <tr key={i} className={styles.skeletonRow}>
-                                    <td><div className={`${styles.skeletonBlock} ${styles.skMarca}`}></div></td>
-                                    <td><div className={`${styles.skeletonBlock} ${styles.skTipo}`}></div></td>
-                                    <td><div className={`${styles.skeletonBlock} ${styles.skMac}`}></div></td>
-                                    <td><div className={`${styles.skeletonBlock} ${styles.skPrecio}`}></div></td>
-                                    <td><div className={`${styles.skeletonBlock} ${styles.skEstado}`}></div></td>
-                                    <td><div className={`${styles.skeletonBlock} ${styles.skAcciones}`}></div></td>
-                                </tr>
-                            ))
+                            <tr><td colSpan="6" style={{textAlign: "center", padding: "20px"}}>Cargando...</td></tr>
                         ) : equiposOrdenados.length === 0 ? (
                             <tr><td colSpan="6" className={styles.emptyState}>No se encontraron equipos en el inventario.</td></tr>
                         ) : (
@@ -228,7 +236,6 @@ function Equipos() {
                                     </td>
                                     <td>
                                         <div className={styles.priceText}>{e.precio_compra ? `$${parseFloat(e.precio_compra).toFixed(2)}` : '-'}</div>
-                                        <div className={styles.textGraySmall}>{e.fecha_compra ? new Date(e.fecha_compra).toLocaleDateString() : ''}</div>
                                     </td>
                                     <td>
                                         <span className={`${styles.statusBadge} ${e.estado === 'ALMACEN' ? styles.statusAlmacen : styles.statusDefault}`}>

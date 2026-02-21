@@ -45,11 +45,41 @@ function EquipoModal({ isOpen, onClose, equipoEditar, onSuccess }) {
             };
 
             if (equipoEditar) {
+                // Si estamos editando, solo actualizamos el equipo
                 await client.put(`/equipos/${equipoEditar.id}`, payload);
                 toast.success("Equipo actualizado correctamente");
             } else {
+                // 1. Guardar el nuevo equipo
                 await client.post("/equipos", payload);
-                toast.success("Equipo registrado correctamente");
+                
+                // 2. Lógica inteligente para registrar el gasto
+                let gastoRegistrado = false;
+                
+                if (payload.precio_compra && parseFloat(payload.precio_compra) > 0 && payload.fecha_compra) {
+                    const fechaActual = new Date();
+                    // Se añade 'T00:00:00' para evitar que se mueva de día por la zona horaria
+                    const fechaCompraObj = new Date(payload.fecha_compra + 'T00:00:00'); 
+
+                    const esMismoMes = fechaCompraObj.getMonth() === fechaActual.getMonth();
+                    const esMismoAnio = fechaCompraObj.getFullYear() === fechaActual.getFullYear();
+
+                    if (esMismoMes && esMismoAnio) {
+                        // Si es del mes actual, creamos el egreso
+                        await client.post("/gastos", {
+                            concepto: `Compra equipo: ${payload.marca} ${payload.modelo}`,
+                            monto: parseFloat(payload.precio_compra),
+                            categoria: "Inventario" 
+                        });
+                        gastoRegistrado = true;
+                    }
+                }
+
+                // 3. Notificar al usuario según lo que haya sucedido
+                if (gastoRegistrado) {
+                    toast.success("Equipo guardado y gasto registrado en este mes");
+                } else {
+                    toast.success("Equipo registrado en inventario histórico (sin afectar gastos actuales)");
+                }
             }
             
             if (onSuccess) onSuccess();

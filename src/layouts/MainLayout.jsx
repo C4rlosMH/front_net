@@ -1,4 +1,4 @@
-import { useState } from "react"; // <--- 1. Importar useState
+import { useState } from "react";
 import { Outlet, NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -6,9 +6,9 @@ import {
     LayoutDashboard, Users, Server, Wifi, Map as MapIcon, 
     LogOut, Activity, BarChart2, DollarSign, Package, 
     Scissors, ShieldCheck, Sun, Moon, Hexagon,
-    MessageCircle // <--- 2. Importar ícono
+    MessageCircle 
 } from "lucide-react";
-import WhatsAppStatus from "../components/WhatsAppStatus"; // <--- 3. Importar Modal
+import WhatsAppStatus from "../components/WhatsAppStatus";
 import styles from "./MainLayout.module.css";
 
 import { APP_CONFIG } from "../config/appConfig";
@@ -18,7 +18,6 @@ function MainLayout() {
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
-    // <--- 4. Estado para el modal
     const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
 
     const handleLogout = () => {
@@ -94,7 +93,6 @@ function MainLayout() {
                             <Activity size={20} /> <span>Registro de Actividad</span>
                         </NavLink>
                         
-                        {/* <--- 5. NUEVO BOTÓN WHATSAPP (Integrado visualmente) */}
                         <button 
                             onClick={() => setIsWhatsAppOpen(true)}
                             className={styles.navButton} 
@@ -118,10 +116,17 @@ function MainLayout() {
                     </Link>
 
                     <div className={styles.footerActions}>
-                        <button className={styles.themeToggle} onClick={toggleTheme} title="Cambiar tema">
+
+                        {/* 2. Botón de Tema */}
+                        <button 
+                            className={styles.actionBtn} 
+                            onClick={toggleTheme} 
+                            title="Cambiar tema"
+                        >
                             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                         </button>
                         
+                        {/* 3. Botón de Logout */}
                         <button onClick={handleLogout} className={styles.logoutBtn} title="Cerrar Sesión">
                             <LogOut size={18} /> <span>Salir</span>
                         </button>
@@ -134,7 +139,6 @@ function MainLayout() {
                 <Outlet />
             </main>
 
-            {/* <--- 6. MODAL RENDERIZADO FUERA DEL FLUJO */}
             <WhatsAppStatus 
                 isOpen={isWhatsAppOpen} 
                 onClose={() => setIsWhatsAppOpen(false)} 

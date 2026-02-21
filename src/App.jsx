@@ -19,6 +19,9 @@ import Logs from "./pages/Logs";
 import Cierres from "./pages/Cierres"; // Agrégalo en los imports
 import EstadisticasAnuales from "./pages/EstadisticasAnuales";
 
+import Gastos from "./pages/Gastos";
+import Insumos from "./pages/Insumos";
+
 // --- IMPORTACIONES NUEVAS ---
 import Usuarios from "./pages/Usuarios";
 import Perfil from "./pages/Perfil";
@@ -53,6 +56,9 @@ function App() {
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/cierres" element={<Cierres />} />
               <Route path="/estadisticas-anuales" element={<EstadisticasAnuales />} />
+
+              <Route path="/gastos" element={<Gastos />} />
+              <Route path="/insumos" element={<Insumos />} />
               
             </Route>
 
