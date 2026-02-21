@@ -1,0 +1,100 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-in; /* Animación estandarizada */
+}
+
+.header {
+  margin-bottom: 30px;
+}
+
+.title {
+  font-size: 1.8rem;
+  color: var(--text-main);
+  margin: 0;
+  font-weight: 800;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-top: 5px;
+}
+
+/* Enlace de retroceso elegante */
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-left: -12px; /* Alineación óptica con el título */
+  transition: all 0.2s ease;
+}
+
+.backLink:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  transform: translateX(-2px);
+}
+
+/* Tarjeta Principal estandarizada */
+.chartCard {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 20px;
+  height: 600px; /* Gráfica alta para mejor lectura anual */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); /* Sombra estandarizada */
+}
+
+/* Cabecera de Tarjeta estandarizada */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.cardSubtitle {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.chartWrapper {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

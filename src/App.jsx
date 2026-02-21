@@ -17,6 +17,7 @@ import Cajas from "./pages/Cajas";
 import Cortes from "./pages/Cortes";
 import Logs from "./pages/Logs";
 import Cierres from "./pages/Cierres"; // Agrégalo en los imports
+import EstadisticasAnuales from "./pages/EstadisticasAnuales";
 
 // --- IMPORTACIONES NUEVAS ---
 import Usuarios from "./pages/Usuarios";
@@ -51,6 +52,7 @@ function App() {
               <Route path="/usuarios" element={<Usuarios />} />
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/cierres" element={<Cierres />} />
+              <Route path="/estadisticas-anuales" element={<EstadisticasAnuales />} />
               
             </Route>
 

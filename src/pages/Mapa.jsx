@@ -153,13 +153,26 @@ function Mapa() {
                     })}
 
                     {/* DIBUJO DE CAJAS/NODOS */}
-                    {cajas.map(caja => (
-                        caja.latitud && caja.longitud ? (
+                    {cajas.map(caja => {    
+                        if (!caja.latitud || !caja.longitud) return null;
+
+                        // Calcular ocupación filtrando los clientes asignados a esta caja
+                        const clientesEnCaja = clientes.filter(c => c.caja && c.caja.id === caja.id).length;
+                        const puertosDisponibles = (caja.capacidad_total || 8) - clientesEnCaja;
+
+                        return (
                             <Marker key={`caja-${caja.id}`} position={[caja.latitud, caja.longitud]} icon={iconCaja}>
-                                <Popup><strong>NAP / Nodo: {caja.nombre}</strong><br/><small>Capacidad: {caja.capacidad_total} puertos</small></Popup>
+                                <Popup>
+                                    <strong>NAP / Nodo: {caja.nombre}</strong><br/>
+                                    <small>Capacidad: {caja.capacidad_total || 8} puertos</small><br/>
+                                    <small>Ocupados: {clientesEnCaja}</small><br/>
+                                    <small style={{ color: puertosDisponibles > 0 ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>
+                                        Disponibles: {puertosDisponibles}
+                                    </small>
+                                </Popup>
                             </Marker>
-                        ) : null
-                    ))}
+                        );
+                    })}
 
                     {/* DIBUJO DE CLIENTES */}
                     {clientes.map(c => {

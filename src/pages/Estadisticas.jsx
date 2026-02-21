@@ -4,7 +4,8 @@ import client from "../api/axios";
 import { toast } from "sonner";
 import { 
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-    PieChart, Pie, Cell, Legend, AreaChart, Area
+    PieChart, Pie, Cell, Legend, AreaChart, Area,
+    LineChart, Line
 } from 'recharts';
 import { 
     TrendingUp, AlertCircle, Wallet, Download, Calendar, Users, ArrowRight, History
@@ -66,13 +67,11 @@ function Estadisticas() {
 
     const ingresosTotalesMes = data.financiero?.recaudado_total || 0;
 
-    // Cálculos Quincena 1
     const totalQ1 = metas.q1.a_tiempo + metas.q1.recuperado;
     const metaQ1 = metas.q1.estimada > 0 ? metas.q1.estimada : 1; 
     const pctTiempoQ1 = Math.min(100, (metas.q1.a_tiempo / metaQ1) * 100);
     const pctRecupQ1 = Math.min(100 - pctTiempoQ1, (metas.q1.recuperado / metaQ1) * 100);
 
-    // Cálculos Quincena 2
     const totalQ2 = metas.q2.a_tiempo + metas.q2.recuperado;
     const metaQ2 = metas.q2.estimada > 0 ? metas.q2.estimada : 1;
     const pctTiempoQ2 = Math.min(100, (metas.q2.a_tiempo / metaQ2) * 100);
@@ -153,11 +152,12 @@ function Estadisticas() {
             </div>
 
             <div className={styles.chartsGrid}>
+                {/* 1. TENDENCIA 6 MESES */}
                 <div className={`${styles.chartCard} ${styles.span2}`}>
                     <div className={styles.cardHeader}>
                         <div>
                             <h3>Tendencia de Ingresos</h3>
-                            <span className={styles.cardSubtitle}>Histórico de recaudación mensual</span>
+                            <span className={styles.cardSubtitle}>Histórico de recaudación de los últimos 6 meses</span>
                         </div>
                     </div>
                     <div className={styles.chartWrapper}>
@@ -179,6 +179,7 @@ function Estadisticas() {
                     </div>
                 </div>
 
+                {/* 2. CARTERA DE CLIENTES */}
                 <div className={styles.chartCard}>
                     <div className={styles.cardHeader}>
                         <div>
@@ -205,6 +206,41 @@ function Estadisticas() {
                                 <Tooltip contentStyle={tooltipStyle} />
                                 <Legend verticalAlign="bottom" height={36} iconType="circle"/>
                             </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* 3. NUEVA GRÁFICA: COMPARATIVA ANUAL (Ocupa toda la fila con la clase del módulo CSS) */}
+                <div className={`${styles.chartCard} ${styles.spanFull}`}>
+                    <div className={styles.cardHeader}>
+                        <div>
+                            <h3>Comparativa Anual de Ingresos</h3>
+                            <span className={styles.cardSubtitle}>Evolución mes a mes contrastada por años</span>
+                        </div>
+                    </div>
+                    <div className={styles.chartWrapper}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={data.comparativaAnual?.datos || []}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#e5e7eb'} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'var(--text-muted)'}} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-muted)'}} tickFormatter={(val) => `$${val}`} />
+                                <Tooltip contentStyle={tooltipStyle} formatter={(value, name) => [`${APP_CONFIG.currencySymbol}${value.toFixed(2)}`, `Año ${name}`]} />
+                                <Legend verticalAlign="top" height={36} />
+                                {data.comparativaAnual?.anios?.map((anio, index) => {
+                                    const colors = ['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#ec4899'];
+                                    return (
+                                        <Line 
+                                            key={anio} 
+                                            type="monotone" 
+                                            dataKey={anio} 
+                                            name={anio.toString()} 
+                                            stroke={colors[index % colors.length]} 
+                                            strokeWidth={3}
+                                            activeDot={{ r: 6 }}
+                                        />
+                                    );
+                                })}
+                            </LineChart>
                         </ResponsiveContainer>
                     </div>
                 </div>

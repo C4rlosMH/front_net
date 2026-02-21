@@ -267,3 +267,39 @@
     gap: 15px;
   }
 }
+
+/* ... (todo tu CSS anterior se mantiene igual) ... */
+
+/* --- Caja de Adeudo --- */
+.adeudoBox {
+  background-color: rgba(245, 158, 11, 0.05); /* Fondo sutilmente naranja */
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px dashed #f59e0b; /* Borde punteado para denotar que es un ajuste/descuento */
+  margin-bottom: 15px;
+}
+
+.adeudoLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  transition: margin 0.2s ease;
+}
+
+.adeudoLabelActive {
+  margin-bottom: 12px;
+}
+
+.inputDescuento {
+  border-color: #f59e0b !important;
+}
+
+.inputDescuento:focus {
+  outline: none;
+  border-color: #d97706 !important;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1) !important;
+}

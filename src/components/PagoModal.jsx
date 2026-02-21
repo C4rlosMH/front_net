@@ -16,6 +16,7 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
     const tipoPago = watch("tipo_pago");
     const metodoPago = watch("metodo_pago"); 
     const motivoRetraso = watch("motivo_retraso");
+    const tieneAdeudo = watch("tiene_adeudo");
 
     const [esPagoTardio, setEsPagoTardio] = useState(false);
     const [deudaTotalSugerida, setDeudaTotalSugerida] = useState(0);
@@ -72,6 +73,8 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
         setValue("referencia", "");
         setValue("notas", "");
         setValue("motivo_retraso", "cliente");
+        setValue("tiene_adeudo", false);
+        setValue("monto_descuento", "");
     };
 
     const calcularDiasRetraso = (diaPago) => {
@@ -92,7 +95,8 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
         try {
             const payload = {
                 clienteId: clienteActivo.id,
-                monto: parseFloat(data.monto),
+                monto: parseFloat(data.monto || 0),
+                monto_descuento: tieneAdeudo ? parseFloat(data.monto_descuento || 0) : 0,
                 tipo_pago: data.tipo_pago,
                 metodo_pago: data.tipo_pago === 'APLAZADO' ? 'SISTEMA' : data.metodo_pago,
                 referencia: (data.tipo_pago !== 'APLAZADO' && data.metodo_pago !== 'EFECTIVO' && data.referencia) ? data.referencia : null,
@@ -102,7 +106,7 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
             };
 
             await client.post("/pagos/abono", payload);
-            toast.success(data.tipo_pago === 'APLAZADO' ? "Prórroga registrada" : "Pago registrado correctamente");
+            toast.success(data.tipo_pago === 'APLAZADO' ? "Prorroga registrada" : "Pago registrado correctamente");
             if (onSuccess) onSuccess();
             onClose();
         } catch (error) {
@@ -119,7 +123,7 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
         <div className={styles.modalOverlay}>
             <div className={styles.modal}>
                 <div className={styles.modalHeader}>
-                    <h3>{tipoPago === 'APLAZADO' ? 'Registrar Prórroga' : 'Registrar Pago'}</h3>
+                    <h3>{tipoPago === 'APLAZADO' ? 'Registrar Prorroga' : 'Registrar Pago'}</h3>
                     <button onClick={onClose} className={styles.closeBtn} type="button"><X size={24} /></button>
                 </div>
 
@@ -162,7 +166,7 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                                     </div>
                                     {desgloseDeuda.historica > 0 && (
                                          <div style={{ fontSize: '0.65rem', color: '#f59e0b', marginTop: '2px' }}>
-                                            (Corriente: ${desgloseDeuda.corriente.toFixed(2)} | Histórica: ${desgloseDeuda.historica.toFixed(2)})
+                                            (Corriente: ${desgloseDeuda.corriente.toFixed(2)} | Historica: ${desgloseDeuda.historica.toFixed(2)})
                                         </div>
                                     )}
                                 </div>
@@ -173,23 +177,26 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                                     <div className={styles.warningTitle}>
                                         <AlertTriangle size={16} /> Pago fuera de tiempo
                                     </div>
-                                    <label style={{ fontSize: '0.8rem' }}>Justificación:</label>
+                                    <label style={{ fontSize: '0.8rem' }}>Justificacion:</label>
                                     <select {...register("motivo_retraso")} className={styles.warningSelect}>
                                         <option value="cliente">Responsabilidad cliente (Penalizar)</option>
                                         <option value="acuerdo">Acuerdo previo (No penalizar)</option>
-                                        <option value="logistica">Logística interna (No penalizar)</option>
+                                        <option value="logistica">Logistica interna (No penalizar)</option>
                                     </select>
                                 </div>
                             )}
 
                             <div className={styles.gridRow}>
                                 <div className={styles.formGroup}>
-                                    <label>Monto ($)</label>
+                                    <label>Monto a recibir ($)</label>
                                     <div className={styles.inputIconWrap}>
                                         <DollarSign size={18} />
                                         <input 
                                             type="number" step="0.01" 
-                                            {...register("monto", { required: "Requerido", min: 1 })} 
+                                            {...register("monto", { 
+                                                required: !tieneAdeudo ? "Requerido" : false, 
+                                                min: !tieneAdeudo ? 1 : 0 
+                                            })} 
                                             className={styles.input} 
                                             style={{ fontWeight: 'bold', color: 'var(--primary)' }}
                                         />
@@ -199,23 +206,44 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                                 <div className={styles.formGroup}>
                                     <label>Tipo Movimiento</label>
                                     <select {...register("tipo_pago")} className={styles.select}>
-                                        <option value="LIQUIDACION">Liquidación</option>
+                                        <option value="LIQUIDACION">Liquidacion</option>
                                         <option value="ABONO">Abono parcial</option>
-                                        <option value="APLAZADO">Aplazar / Prórroga</option>
+                                        <option value="APLAZADO">Aplazar / Prorroga</option>
                                     </select>
                                 </div>
                             </div>
 
+                            {tipoPago !== 'APLAZADO' && (
+                                <div className={styles.adeudoBox}>
+                                    <label className={`${styles.adeudoLabel} ${tieneAdeudo ? styles.adeudoLabelActive : ''}`}>
+                                        <input type="checkbox" {...register("tiene_adeudo")} />
+                                        La empresa tiene un adeudo con este cliente
+                                    </label>
+                                    
+                                    {tieneAdeudo && (
+                                        <div className={styles.inputIconWrap}>
+                                            <DollarSign size={18} />
+                                            <input 
+                                                type="number" step="0.01" 
+                                                placeholder="Monto a descontar a favor del cliente"
+                                                {...register("monto_descuento", { required: "Ingresa el monto del adeudo", min: 1 })} 
+                                                className={`${styles.input} ${styles.inputDescuento}`} 
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className={styles.gridRow}>
                                 {tipoPago !== 'APLAZADO' && (
                                     <div className={styles.formGroup}>
-                                        <label>Método</label>
+                                        <label>Metodo</label>
                                         <div className={styles.inputIconWrap}>
                                             <CreditCard size={18} />
                                             <select {...register("metodo_pago")} className={styles.select}>
                                                 <option value="EFECTIVO">Efectivo</option>
                                                 <option value="TRANSFERENCIA">Transferencia</option>
-                                                <option value="DEPOSITO">Depósito</option>
+                                                <option value="DEPOSITO">Deposito</option>
                                                 <option value="TARJETA">Tarjeta</option>
                                             </select>
                                         </div>
@@ -233,7 +261,7 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
 
                             {tipoPago !== 'APLAZADO' && metodoPago !== 'EFECTIVO' && (
                                 <div className={styles.formGroup} style={{marginBottom: '15px'}}>
-                                    <label>Referencia / Folio / Autorización</label>
+                                    <label>Referencia / Folio / Autorizacion</label>
                                     <input 
                                         {...register("referencia", { required: "Este campo es requerido" })} 
                                         className={styles.input} 
@@ -251,7 +279,7 @@ function PagoModal({ isOpen, onClose, cliente, onSuccess }) {
                             <div className={styles.modalActions}>
                                 <button type="button" onClick={onClose} className={styles.btnCancel}>Cancelar</button>
                                 <button type="submit" className={styles.btnSubmit} disabled={loading}>
-                                    {loading ? 'Procesando...' : 'Confirmar Operación'}
+                                    {loading ? 'Procesando...' : 'Confirmar Operacion'}
                                 </button>
                             </div>
                         </form>

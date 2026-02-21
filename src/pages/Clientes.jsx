@@ -20,6 +20,7 @@ function Clientes() {
     // Estado de filtros y paginación sincronizados con Backend
     const [tabActual, setTabActual] = useState("TODOS"); 
     const [busqueda, setBusqueda] = useState("");
+    const [filtroConexion, setFiltroConexion] = useState("TODAS"); // <-- Nuevo estado para el filtro
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     
@@ -33,7 +34,7 @@ function Clientes() {
     // Carga de datos al cambiar cualquier parámetro de filtro o página
     useEffect(() => { 
         cargarDatos(); 
-    }, [currentPage, tabActual, busqueda, sortConfig]);
+    }, [currentPage, tabActual, busqueda, sortConfig, filtroConexion]);
 
     const cargarDatos = async () => {
         try {
@@ -45,7 +46,8 @@ function Clientes() {
                     tab: tabActual,
                     search: busqueda,
                     sortKey: sortConfig.key,
-                    sortDir: sortConfig.direction
+                    sortDir: sortConfig.direction,
+                    conexion: filtroConexion // <-- Se envía el filtro al backend
                 }
             });
             
@@ -127,9 +129,24 @@ function Clientes() {
                     <button className={`${styles.tab} ${tabActual === 'CORTADO' ? `${styles.tabActive} ${styles.textRed}` : ''}`} onClick={() => handleTabChange("CORTADO")}><Scissors size={16}/> Cortados</button>
                     <button className={`${styles.tab} ${tabActual === 'BAJA' ? `${styles.tabActive} ${styles.textSlate}` : ''}`} onClick={() => handleTabChange("BAJA")}><Ban size={16}/> Bajas</button>
                 </div>
-                <div className={styles.searchBox}>
-                    <Search size={18} className={styles.searchIcon}/>
-                    <input type="text" placeholder="Buscar nombre, IP, tel..." value={busqueda} onChange={handleSearchChange} className={styles.searchInput}/>
+                
+                {/* --- NUEVA ZONA DE BÚSQUEDA Y FILTRO --- */}
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <select 
+                        value={filtroConexion} 
+                        onChange={(e) => {setFiltroConexion(e.target.value); setCurrentPage(1);}} 
+                        className={styles.searchInput}
+                        style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', backgroundColor: 'var(--body-bg)', color: 'var(--text-main)' }}
+                    >
+                        <option value="TODAS">Toda la Red</option>
+                        <option value="FIBRA">Solo Fibra</option>
+                        <option value="RADIO">Solo Radio</option>
+                    </select>
+
+                    <div className={styles.searchBox}>
+                        <Search size={18} className={styles.searchIcon}/>
+                        <input type="text" placeholder="Buscar nombre, IP, tel..." value={busqueda} onChange={handleSearchChange} className={styles.searchInput}/>
+                    </div>
                 </div>
             </div>
 

@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import client from "../api/axios";
 import { toast } from "sonner";
 import { 
-    Plus, Search, Filter, ArrowUpRight, ArrowDownRight, 
-    Calendar, Wallet, Landmark, Banknote, FileText, Printer
+    Plus, Search, Filter, ArrowUpRight, 
+    Wallet, Landmark, Banknote, FileText, Printer
 } from "lucide-react";
 import TablePagination from "../components/TablePagination";
 import PagoModal from "../components/PagoModal";
@@ -13,6 +13,7 @@ import { APP_CONFIG } from "../config/appConfig";
 function Pagos() {
     const [movimientos, setMovimientos] = useState([]);
     const [totalItems, setTotalItems] = useState(0); 
+    const [ingresosHoy, setIngresosHoy] = useState(0); // Nuevo estado
     const [loading, setLoading] = useState(true);
     
     const [busqueda, setBusqueda] = useState("");
@@ -24,8 +25,13 @@ function Pagos() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 15;
 
+    // Generar un delay para la busqueda (Debounce) para no saturar el backend mientras escribes
     useEffect(() => {
-        cargarDatos();
+        const delayDebounceFn = setTimeout(() => {
+            cargarDatos();
+        }, 300); // Espera 300ms despues de dejar de escribir
+
+        return () => clearTimeout(delayDebounceFn);
     }, [currentPage, busqueda, filtroTipo, filtroMetodo]);
 
     const cargarDatos = async () => {
@@ -41,10 +47,12 @@ function Pagos() {
                 }
             });
 
-            // Extracción robusta de datos y prevención de NaN
             const movsArray = Array.isArray(res.data.movimientos) ? res.data.movimientos : (Array.isArray(res.data) ? res.data : []);
             setMovimientos(movsArray);
             setTotalItems(res.data.total ?? movsArray.length);
+            
+            // Recibimos el calculo total del dia desde el backend
+            setIngresosHoy(res.data.ingresosHoy ?? 0);
 
         } catch (error) {
             console.error(error);
@@ -53,11 +61,6 @@ function Pagos() {
             setLoading(false);
         }
     };
-
-    const hoy = new Date().toDateString();
-    const ingresosHoy = movimientos
-        .filter(m => m.tipo === 'ABONO' && new Date(m.fecha).toDateString() === hoy)
-        .reduce((acc, curr) => acc + parseFloat(curr.monto), 0);
 
     const getMetodoIcon = (metodo) => {
         switch(metodo) {
@@ -74,8 +77,8 @@ function Pagos() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <div>
-                    <h1 className={styles.title}>Auditoría Financiera</h1>
-                    <p className={styles.subtitle}>Registro histórico de pagos, abonos y cargos</p>
+                    <h1 className={styles.title}>Auditoria Financiera</h1>
+                    <p className={styles.subtitle}>Registro historico de pagos, abonos y cargos</p>
                 </div>
                 <div className={styles.headerActions}>
                     <button className={styles.btnPrint} onClick={handlePrint} title="Imprimir Reporte">
@@ -99,7 +102,7 @@ function Pagos() {
                     <div className={styles.iconBoxTransacciones}><FileText size={24}/></div>
                     <div className={styles.statInfo}>
                         <span className={styles.statLabel}>Total Operaciones</span>
-                        <h3 className={styles.statValue}>{totalItems} <small className={styles.smallText}>históricas</small></h3>
+                        <h3 className={styles.statValue}>{totalItems} <small className={styles.smallText}>historicas</small></h3>
                     </div>
                 </div>
             </div>
@@ -130,10 +133,10 @@ function Pagos() {
                     <div className={styles.selectGroup}>
                         <Wallet size={16} className={styles.selectIcon}/>
                         <select value={filtroMetodo} onChange={(e) => {setFiltroMetodo(e.target.value); setCurrentPage(1);}} className={styles.selectFilter}>
-                            <option value="TODOS">Cualquier Método</option>
+                            <option value="TODOS">Cualquier Metodo</option>
                             <option value="EFECTIVO">Efectivo</option>
                             <option value="TRANSFERENCIA">Transferencia</option>
-                            <option value="DEPOSITO">Depósito</option>
+                            <option value="DEPOSITO">Deposito</option>
                             <option value="SISTEMA">Sistema (Cargos)</option>
                         </select>
                     </div>
@@ -151,13 +154,13 @@ function Pagos() {
                                     <th className={styles.colFecha}>Fecha y Hora</th>
                                     <th>Cliente</th>
                                     <th className={styles.colConcepto}>Concepto / Notas</th>
-                                    <th>Método</th>
+                                    <th>Metodo</th>
                                     <th className={styles.colMontoRight}>Monto</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {movimientos.length === 0 ? (
-                                    <tr><td colSpan="5" className={styles.emptyState}>No hay movimientos que coincidan con la búsqueda.</td></tr>
+                                    <tr><td colSpan="5" className={styles.emptyState}>No hay movimientos que coincidan con la busqueda.</td></tr>
                                 ) : (
                                     movimientos.map(m => (
                                         <tr key={m.id}>
