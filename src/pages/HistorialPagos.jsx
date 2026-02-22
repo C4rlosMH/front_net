@@ -142,6 +142,16 @@ function HistorialPagos() {
                                 {APP_CONFIG.currencySymbol}{deudaCorriente.toFixed(2)}
                             </span>
                         </div>
+
+                        {/* Tarjeta de Saldo a Favor (Oculta si es 0) */}
+                        {aFavor > 0 && (
+                            <div className={styles.balanceBox} style={{ borderLeft: '4px solid #10b981', backgroundColor: 'rgba(16, 185, 129, 0.05)' }}>
+                                <span className={styles.balanceLabel} style={{ color: '#10b981', fontWeight: '600' }}>Saldo a Favor</span>
+                                <span className={styles.balanceAmount} style={{ color: '#10b981' }}>
+                                    + {APP_CONFIG.currencySymbol}{aFavor.toFixed(2)}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
