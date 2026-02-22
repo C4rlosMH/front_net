@@ -176,8 +176,14 @@ function HistorialPagos() {
                         {esFibra ? <Cable size={18} className={styles.detailIcon} /> : <Wifi size={18} className={styles.detailIcon} />}
                         <div className={styles.detailContent}>
                             <span className={styles.detailLabel}>Infraestructura ({esFibra ? 'Fibra' : 'Radio'})</span>
+                            {/* --- AQUÍ ESTÁ EL CAMBIO PARA MOSTRAR EL PPPoE --- */}
                             {esFibra ? (
-                                <span className={styles.detailValue}>NAP: {datosCliente.caja?.nombre}</span>
+                                <>
+                                    <span className={styles.detailValue}>NAP: {datosCliente.caja?.nombre || 'No asignada'}</span>
+                                    <span className={styles.detailSubValue}>
+                                        PPPoE: <strong style={{color: 'var(--text-main)'}}>{datosCliente.usuario_pppoe || 'No configurado'}</strong>
+                                    </span>
+                                </>
                             ) : (
                                 <span className={styles.detailValue}>Conexión Inalámbrica</span>
                             )}

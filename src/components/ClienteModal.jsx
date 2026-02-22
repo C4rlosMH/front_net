@@ -11,7 +11,7 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
     const [antenasLibres, setAntenasLibres] = useState([]);
     const [routersLibres, setRoutersLibres] = useState([]);
     const [cajasList, setCajasList] = useState([]);
-    const [clientesMapa, setClientesMapa] = useState([]); // NUEVO ESTADO PARA EL MAPA
+    const [clientesMapa, setClientesMapa] = useState([]);
     const [tipoInstalacion, setTipoInstalacion] = useState("FIBRA");
 
     const { register, handleSubmit, setValue, reset } = useForm();
@@ -24,6 +24,7 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                 setValue("nombre_completo", clienteEditar.nombre_completo);
                 setValue("telefono", clienteEditar.telefono);
                 setValue("ip_asignada", clienteEditar.ip_asignada);
+                setValue("usuario_pppoe", clienteEditar.usuario_pppoe || ""); // CARGA DEL NUEVO CAMPO
                 setValue("direccion", clienteEditar.direccion);
                 setValue("planId", clienteEditar.plan?.id);
                 setValue("dia_pago", clienteEditar.dia_pago);
@@ -56,7 +57,6 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
 
     const cargarDependencias = async () => {
         try {
-            // Añadimos la petición de clientes al Promise.all
             const [resPlanes, resEquipos, resCajas, resClientes] = await Promise.all([
                 client.get("/planes"),
                 client.get("/equipos?limit=1000"), 
@@ -66,8 +66,6 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
 
             setPlanes(resPlanes.data);
             setCajasList(resCajas.data);
-            
-            // Guardamos los clientes extraídos de la respuesta
             setClientesMapa(resClientes.data.clientes || []);
 
             const arrayEquipos = resEquipos.data.equipos || []; 
@@ -111,6 +109,8 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                 planId: data.planId ? parseInt(data.planId) : null,
                 dia_pago: parseInt(data.dia_pago),
                 cajaId: tipoInstalacion === 'FIBRA' && data.cajaId ? parseInt(data.cajaId) : null,
+                // Si es fibra y se escribio un usuario, se guarda. Si es radio, se fuerza a null.
+                usuario_pppoe: tipoInstalacion === 'FIBRA' && data.usuario_pppoe ? data.usuario_pppoe.trim() : null,
                 equiposIds,
                 tipo_conexion: tipoInstalacion.toLowerCase(),
             };
@@ -188,10 +188,16 @@ function ClienteModal({ isOpen, onClose, clienteEditar, clientesContext, onSucce
                     <div className={styles.specificSection}>
                         <h4 className={styles.sectionTitle}>{tipoInstalacion==='FIBRA'?'Conexión por Fibra':'Conexión Inalámbrica (Radio)'}</h4>
                         {tipoInstalacion==='FIBRA' ? (
-                            <div className={styles.formRow}>
-                                <div className={styles.formGroup}><label>Caja NAP</label><select {...register("cajaId")} className={styles.select}><option value="">-- Seleccionar --</option>{cajasList.map(c=><option key={c.id} value={c.id}>{c.nombre}</option>)}</select></div>
+                            <>
+                                <div className={styles.formRow}>
+                                    <div className={styles.formGroup}><label>Caja NAP</label><select {...register("cajaId")} className={styles.select}><option value="">-- Seleccionar --</option>{cajasList.map(c=><option key={c.id} value={c.id}>{c.nombre}</option>)}</select></div>
+                                    <div className={styles.formGroup}>
+                                        <label>Usuario PPPoE (MikroTik)</label>
+                                        <input {...register("usuario_pppoe")} className={styles.input} placeholder="Ej: user_123" />
+                                    </div>
+                                </div>
                                 <div className={styles.formGroup}><label>Router (Opcional)</label><select {...register("routerId")} className={styles.select}><option value="">-- Seleccionar --</option>{routersLibres.map(e=><option key={e.id} value={e.id}>{e.nombre ? e.nombre : `${e.modelo} (${e.mac_address})`}</option>)}</select></div>
-                            </div>
+                            </>
                         ) : (
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}><label>Antena Receptora *</label><select {...register("antenaId")} className={styles.select}><option value="">-- Seleccionar --</option>{antenasLibres.map(e=><option key={e.id} value={e.id}>{e.modelo}</option>)}</select></div>
