@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import client from "../api/axios";
 import { toast } from "sonner";
-import { Plus, Pencil, Gauge, Zap } from "lucide-react";
+import { Plus, Pencil, Gauge, Zap, Globe } from "lucide-react";
 import PlanModal from "../components/PlanModal";
 import styles from "./styles/Planes.module.css";
 import { APP_CONFIG } from "../config/appConfig";
@@ -30,6 +30,19 @@ function Planes() {
             toast.success("Estado del plan actualizado");
         } catch (error) {
             toast.error("Error al cambiar estado");
+        }
+    };
+
+    const toggleWeb = async (id) => {
+        try {
+            await client.put(`/planes/${id}/toggle-web`);
+            setPlanes(planes.map(p => {
+                if (p.id === id) return { ...p, visible_web: !p.visible_web };
+                return p;
+            }));
+            toast.success("Visibilidad del plan en el portal actualizada");
+        } catch (error) {
+            toast.error("Error al cambiar visibilidad");
         }
     };
 
@@ -73,6 +86,17 @@ function Planes() {
                                     {p.descripcion}
                                 </div>
                             )}
+                            
+                            <div className={styles.detailRowWeb}>
+                                <div className={styles.webLabel}>
+                                    <Globe size={18} style={{color: p.visible_web ? 'var(--primary)' : 'gray'}}/> 
+                                    <span style={{color: p.visible_web ? 'var(--text-main)' : 'gray'}}>Mostrar en Portal</span>
+                                </div>
+                                <label className={styles.switch} title={p.visible_web ? "Ocultar del Portal" : "Mostrar en Portal"}>
+                                    <input type="checkbox" checked={p.visible_web} onChange={() => toggleWeb(p.id)} />
+                                    <span className={styles.sliderWeb}></span>
+                                </label>
+                            </div>
                         </div>
 
                         <div className={styles.cardActions}>

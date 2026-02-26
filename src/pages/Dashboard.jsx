@@ -4,9 +4,9 @@ import client from "../api/axios";
 import { toast } from "sonner";
 import useSWR from "swr"; 
 import { 
-    Wifi, Activity, AlertTriangle, 
+    Wifi, Activity, AlertTriangle, AlertCircle, Flame,
     Banknote, Landmark, DollarSign, Bell, 
-    Clock, CheckCircle, ArrowRight
+    Clock, CheckCircle, ArrowRight, LifeBuoy
 } from "lucide-react";
 import styles from "./styles/Dashboard.module.css";
 import PagoModal from "../components/PagoModal";
@@ -18,23 +18,21 @@ const fetcher = (url) => client.get(url).then(res => res.data);
 function Dashboard() {
     const [modalPagoOpen, setModalPagoOpen] = useState(false);
     const [clienteCobrar, setClienteCobrar] = useState(null);
-
-    // --- ESTADO PARA EL KONAMI CODE ---
     const [konamiTriggered, setKonamiTriggered] = useState(false);
+    
+    // Estado para los KPIs de los tickets
+    const [kpisTickets, setKpisTickets] = useState({ abiertos: 0, criticos: 0 });
 
     const { data: stats, error, isLoading, mutate } = useSWR("/dashboard/stats", fetcher, {
         revalidateOnFocus: false,
         dedupingInterval: 10000, 
     });
 
-    // --- LISTENER DEL KONAMI CODE ---
     useEffect(() => {
-        // Todo en minúsculas para evitar errores
         const konamiCode = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
         let keySequence = [];
 
         const handleKeyDown = (e) => {
-            // Convertimos la tecla presionada a minúsculas
             keySequence.push(e.key.toLowerCase());
             
             if (keySequence.length > konamiCode.length) {
@@ -51,6 +49,19 @@ function Dashboard() {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // Llamada a la API para cargar los KPIs de tickets
+    useEffect(() => {
+        const fetchTicketKpis = async () => {
+            try {
+                const res = await client.get("/tickets/dashboard-kpis");
+                setKpisTickets(res.data);
+            } catch (error) {
+                console.error("Error al cargar KPIs de tickets", error);
+            }
+        };
+        fetchTicketKpis();
     }, []);
 
     if (error) {
@@ -99,10 +110,9 @@ function Dashboard() {
     const enEfectivo = stats?.financiero?.arqueo?.efectivo || 0;
     const enBanco = stats?.financiero?.arqueo?.banco || 0;
     const vencimientosHoy = stats?.alertas?.vencimientos_hoy || [];
-    const logsRecientes = stats?.alertas?.actividad_reciente || [];
+    const ticketsActivos = stats?.alertas?.tickets_activos || [];
 
     return (
-        // APLICAMOS LA CLASE DE LA ANIMACIÓN SI SE ACTIVA EL KONAMI CODE
         <div className={`${styles.container} ${konamiTriggered ? styles.barrelRoll : ''}`}>
             <div className={styles.header}>
                 <div>
@@ -192,7 +202,33 @@ function Dashboard() {
                 </div>
             </div>
 
+            {/* --- SECCIÓN DE ALERTAS DE SOPORTE --- */}
+            <div className={styles.kpiTicketsGrid}>
+                {/* Tarjeta de Tickets Abiertos */}
+                <div className={styles.kpiTicketCard}>
+                    <div className={`${styles.kpiTicketIcon} ${styles.kpiIconBlue}`}>
+                        <AlertCircle size={24} />
+                    </div>
+                    <div className={styles.kpiTicketInfo}>
+                        <span className={styles.kpiTicketValue}>{kpisTickets.abiertos}</span>
+                        <span className={styles.kpiTicketLabel}>Tickets Abiertos</span>
+                    </div>
+                </div>
+
+                {/* Tarjeta de Emergencias */}
+                <div className={styles.kpiTicketCard}>
+                    <div className={`${styles.kpiTicketIcon} ${styles.kpiIconRed}`}>
+                        <Flame size={24} />
+                    </div>
+                    <div className={styles.kpiTicketInfo}>
+                        <span className={styles.kpiTicketValue}>{kpisTickets.criticos}</span>
+                        <span className={styles.kpiTicketLabel}>Emergencias Activas</span>
+                    </div>
+                </div>
+            </div>
+
             <div className={styles.panelsGrid}>
+                {/* PANEL IZQUIERDO: VENCIMIENTOS */}
                 <div className={styles.panelCard}>
                     <div className={styles.panelHeader}>    
                         <h3><Clock size={18} /> Vencimientos y Periodos de Gracia</h3>
@@ -236,29 +272,38 @@ function Dashboard() {
                     </div>
                 </div>
 
+                {/* PANEL DERECHO: TICKETS ACTIVOS */}
                 <div className={styles.panelCard}>
                     <div className={styles.panelHeader}>
-                        <h3><Activity size={18} /> Actividad Reciente</h3>
-                        <Link to="/logs" className={styles.viewAllLink}>Ver historial</Link>
+                        <h3><LifeBuoy size={18} /> Soporte Técnico Activo</h3>
+                        <Link to="/tickets" className={styles.viewAllLink}>Ver todos</Link>
                     </div>
                     <div className={styles.listContainer}>
-                        {logsRecientes.length > 0 ? (
-                            logsRecientes.slice(0, 5).map((log, index) => (
-                                <div key={index} className={styles.logItem}>
-                                    <div className={styles.logBullet}></div>
-                                    <div className={styles.logContent}>
-                                        <p className={styles.logDesc}>
-                                            <strong>{log.usuario || 'Sistema'}</strong> {log.detalle}
-                                        </p>
-                                        <span className={styles.logTime}>
-                                            {new Date(log.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                        </span>
+                        {ticketsActivos.length > 0 ? (
+                            ticketsActivos.map((ticket, index) => (
+                                <div key={index} className={styles.listItem}>
+                                    <div className={styles.itemInfo}>
+                                        <div className={styles.itemNameWrapper}>
+                                            <strong>{ticket.cliente?.nombre_completo || 'Cliente Eliminado'}</strong>
+                                            <span className={`${styles.badge} ${styles['badge' + ticket.estado]}`}>
+                                                {ticket.estado.replace('_', ' ')}
+                                            </span>
+                                        </div>
+                                        <span>#{ticket.id} - {ticket.asunto}</span>
                                     </div>
+                                    <Link 
+                                        to="/tickets" 
+                                        className={styles.itemAction}
+                                        style={{ backgroundColor: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)' }}
+                                    >
+                                        Atender
+                                    </Link>
                                 </div>
                             ))
                         ) : (
                             <div className={styles.emptyState}>
-                                <p>Sin actividad reciente hoy.</p>
+                                <CheckCircle size={32} color="#10b981" style={{marginBottom: 10}}/>
+                                <p>No hay tickets pendientes de atención.</p>
                             </div>
                         )}
                     </div>

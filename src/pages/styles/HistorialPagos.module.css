@@ -33,7 +33,6 @@
   color: var(--text-main);
 }
 
-/* Tarjeta de Perfil Completo */
 .profileCard {
   background: var(--card-bg);
   border-radius: 16px;
@@ -107,7 +106,6 @@
   align-items: center;
 }
 
-/* --- Tarjeta de Deuda Histórica --- */
 .historicalDebtCard {
   display: flex;
   align-items: center;
@@ -182,8 +180,10 @@
 .textGreen {
   color: #10b981;
 }
+.textOrange {
+  color: #f59e0b;
+}
 
-/* Panel de Detalles del Cliente */
 .clientDetailsPanel {
   background: var(--body-bg);
   border-top: 1px solid var(--border);
@@ -230,7 +230,27 @@
   margin-top: 2px;
 }
 
-/* Grid de Estadísticas */
+.btnResetPassword {
+  margin-top: 8px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  background-color: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-main);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btnResetPassword:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -288,7 +308,6 @@
   color: var(--text-main);
 }
 
-/* Timeline (Línea de tiempo) */
 .timelineSection {
   background: var(--card-bg);
   border-radius: 16px;
@@ -355,6 +374,10 @@
   background: #ef4444;
   color: white;
 }
+.iconOrange {
+  background: #f59e0b;
+  color: white;
+}
 
 .timelineContent {
   background: var(--body-bg);
@@ -414,7 +437,6 @@
   color: var(--text-muted);
 }
 
-/* --- SECCIÓN DE COMPORTAMIENTO (SCORE Y HEATMAP) --- */
 .behaviorSection {
   display: flex;
   background: var(--card-bg);
@@ -427,7 +449,6 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-/* Score de Confiabilidad */
 .scoreContainer {
   display: flex;
   align-items: center;
@@ -472,7 +493,6 @@
   text-transform: uppercase;
 }
 
-/* Mapa de Calor */
 .heatmapContainer {
   flex: 1;
   display: flex;
@@ -490,7 +510,7 @@
 
 .heatBlocks {
   display: flex;
-  gap: 8px; /* Redujimos el gap para que quepan 10 */
+  gap: 8px;
 }
 
 .heatBlockWrapper {
@@ -501,8 +521,8 @@
 }
 
 .heatBlock {
-  width: 26px; /* Redujimos el ancho */
-  height: 26px; /* Redujimos el alto */
+  width: 26px;
+  height: 26px;
   border-radius: 6px;
   border: 1px solid var(--border);
   transition:
@@ -516,17 +536,14 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Colores de los bloques del mapa de calor */
 .pagado {
   background: rgba(16, 185, 129, 0.2);
   border-color: #10b981;
 }
-
 .deuda {
   background: rgba(239, 68, 68, 0.2);
   border-color: #ef4444;
 }
-
 .inactivo {
   background: var(--body-bg);
   border-color: var(--border);
@@ -537,4 +554,99 @@
   color: var(--text-muted);
   text-transform: capitalize;
   font-weight: 500;
+}
+
+.tableSection {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 25px;
+  border: 1px solid var(--border);
+  margin-top: 30px;
+}
+
+.sectionHeader {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-main);
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border);
+}
+
+.iconBlue {
+  color: #3b82f6;
+}
+.iconPurple {
+  color: #8b5cf6;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.dataTable th {
+  padding: 12px 15px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+}
+
+.dataTable td {
+  padding: 15px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.dataTable tr:last-child td {
+  border-bottom: none;
+}
+
+.dataTable tr:hover td {
+  background-color: var(--body-bg);
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badgeABIERTO {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+.badgeEN_PROGRESO {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+.badgeCERRADO {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.badgeBAJA {
+  background: rgba(100, 116, 139, 0.1);
+  color: #64748b;
+}
+.badgeMEDIA {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+.badgeALTA {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }

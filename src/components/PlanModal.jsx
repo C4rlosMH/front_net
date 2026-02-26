@@ -14,8 +14,10 @@ function PlanModal({ isOpen, onClose, planEditar, onSuccess }) {
                 setValue("velocidad_mb", planEditar.velocidad_mb);
                 setValue("precio_mensual", planEditar.precio_mensual);
                 setValue("descripcion", planEditar.descripcion);
+                // Cargar visibilidad web, por defecto true si no existe
+                setValue("visible_web", planEditar.visible_web ?? true); 
             } else {
-                reset();
+                reset({ visible_web: true }); // Por defecto marcado al crear
             }
         }
     }, [isOpen, planEditar, reset, setValue]);
@@ -67,12 +69,16 @@ function PlanModal({ isOpen, onClose, planEditar, onSuccess }) {
                         <label>Descripción</label>
                         <textarea {...register("descripcion")} className={styles.textarea} rows="3" placeholder="Descripción opcional..." />
                     </div>
+                    <div className={styles.formGroup} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', marginTop: '10px', marginBottom: '20px' }}>
+                        <input type="checkbox" {...register("visible_web")} id="visible_web" style={{ width: 'auto', cursor: 'pointer' }} />
+                        <label htmlFor="visible_web" style={{ margin: 0, cursor: 'pointer' }}>Mostrar este plan en el portal de clientes</label>
+                    </div>
                     <div className={styles.modalActions}>
                         <button type="button" onClick={onClose} className={styles.btnCancel}>Cancelar</button>
                         <button type="submit" className={styles.btnSubmit}>Guardar</button>
                     </div>
                 </form>
-            </div>
+            </div>  
         </div>
     );
 }

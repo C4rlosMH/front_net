@@ -16,9 +16,8 @@ import Estadisticas from "./pages/Estadisticas";
 import Cajas from "./pages/Cajas";
 import Cortes from "./pages/Cortes";
 import Logs from "./pages/Logs";
-import Cierres from "./pages/Cierres"; // Agrégalo en los imports
+import Cierres from "./pages/Cierres"; 
 import EstadisticasAnuales from "./pages/EstadisticasAnuales";
-
 import Gastos from "./pages/Gastos";
 import Insumos from "./pages/Insumos";
 
@@ -26,6 +25,8 @@ import Insumos from "./pages/Insumos";
 import Usuarios from "./pages/Usuarios";
 import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound"; 
+import Tickets from "./pages/Tickets"; // <--- IMPORTAMOS TICKETS AQUÍ
+import MetricasSoporte from './pages/MetricasSoporte';
 
 function App() {
   return (
@@ -56,16 +57,18 @@ function App() {
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/cierres" element={<Cierres />} />
               <Route path="/estadisticas-anuales" element={<EstadisticasAnuales />} />
-
               <Route path="/gastos" element={<Gastos />} />
               <Route path="/insumos" element={<Insumos />} />
+              
+              
+              {/* <--- AÑADIMOS LA RUTA DE TICKETS AQUÍ ---> */}  
+              <Route path="/tickets" element={<Tickets />} /> 
+              <Route path="/soporte/metricas" element={<MetricasSoporte />} />
               
             </Route>
 
             {/* RUTA COMODÍN (404) FUERA DEL LAYOUT */}
-            {/* Al estar fuera de MainLayout, ocupará toda la pantalla sin el Sidebar */}
             <Route path="*" element={<NotFound />} />
-            
             
           </Routes>
         </BrowserRouter>

@@ -1,257 +1,301 @@
 /* --- ESTRUCTURA GENERAL --- */
 .layout {
-    display: flex;
-    height: 100vh;
-    background-color: var(--body-bg);
-    overflow: hidden;
+  display: flex;
+  height: 100vh;
+  background-color: var(--body-bg);
+  overflow: hidden;
 }
 
 /* --- SIDEBAR LATERAL --- */
 .sidebar {
-    width: 270px;
-    background-color: var(--card-bg);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    z-index: 100;
-    transition: width 0.3s ease;
+  width: 270px;
+  background-color: var(--card-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 100;
+  transition: width 0.3s ease;
 }
 
 /* Cabecera del Sidebar */
 .sidebarHeader {
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
-    height: 75px; 
-    box-sizing: border-box;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  height: 75px;
+  box-sizing: border-box;
 }
 
 .logoBox {
-    width: 36px;
-    height: 36px;
-    background-color: var(--primary);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  width: 36px;
+  height: 36px;
+  background-color: var(--primary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .brandName {
-    margin: 0;
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--text-main);
-    letter-spacing: -0.5px;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
 }
 
 /* --- MENÚ DE NAVEGACIÓN --- */
 .navMenu {
-    flex: 1;
-    overflow-y: auto;
-    padding: 25px 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 30px; 
+  flex: 1;
+  overflow-y: auto;
+  padding: 25px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Reducido levemente para que quepan mejor los grupos */
 }
 
 .navMenu::-webkit-scrollbar {
-    width: 4px;
+  width: 4px;
 }
 .navMenu::-webkit-scrollbar-thumb {
-    background-color: var(--border);
-    border-radius: 4px;
+  background-color: var(--border);
+  border-radius: 4px;
 }
 
 /* Secciones */
 .navSection {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .sectionTitle {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-    margin-bottom: 5px;
-    padding-left: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+  padding-left: 12px;
 }
 
-/* Items individuales (Links) */
+/* Items individuales (Links directos como Dashboard) */
 .navItem {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    text-decoration: none;
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
 }
 
 .navItem:hover {
-    background-color: var(--body-bg);
-    color: var(--text-main);
+  background-color: var(--body-bg);
+  color: var(--text-main);
 }
 
-.active {
-    background-color: rgba(37, 99, 235, 0.1);
-    color: var(--primary);
+.navItem.active {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
 }
 
-.active:hover {
-    background-color: rgba(37, 99, 235, 0.15);
+/* --- BOTONES DESPLEGABLES --- */
+.dropdownBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-/* --- NUEVA CLASE PARA EL BOTÓN (Estilo idéntico a navItem) --- */
-.navButton {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.2s ease;
-    background: transparent;
-    border: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-    font-family: inherit;
+.dropdownBtn:hover {
+  background-color: var(--body-bg);
+  color: var(--text-main);
 }
 
-.navButton:hover {
-    background-color: var(--body-bg);
-    color: var(--text-main);
+.dropdownActive {
+  color: var(--primary);
+}
+
+.dropdownIcon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- SUB MENÚS (CONTENIDO DESPLEGABLE) --- */
+.subMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 36px; /* Sangría visual para alinearse con el texto, no con el icono */
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease,
+    margin 0.3s ease;
+}
+
+.subMenuOpen {
+  max-height: 300px; /* Suficiente para que se abra completo suavemente */
+  opacity: 1;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.subNavItem {
+  padding: 8px 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.subNavItem:hover {
+  color: var(--text-main);
+}
+
+.subNavItem.active {
+  color: var(--primary);
+  font-weight: 600;
+  background-color: rgba(37, 99, 235, 0.05); /* Fondo muy sutil */
 }
 
 /* --- PIE DEL SIDEBAR (FOOTER) --- */
 .sidebarFooter {
-    padding: 20px 15px;
-    border-top: 1px solid var(--border);
-    background-color: var(--card-bg);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  padding: 20px 15px;
+  border-top: 1px solid var(--border);
+  background-color: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 /* Tarjeta de Usuario */
 .userInfo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px;
-    background-color: var(--body-bg);
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    text-decoration: none; 
-    cursor: pointer; 
-    transition: all 0.2s ease; 
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background-color: var(--body-bg);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .userInfo:hover {
-    background-color: var(--card-bg);
-    border-color: var(--primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background-color: var(--card-bg);
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .avatar {
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
-    background-color: var(--primary);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.1rem;
-    flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background-color: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .userDetails {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .userName {
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: var(--text-main);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .userRole {
-    font-size: 0.75rem;
-    color: var(--text-muted);
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
 /* Botones de acción inferiores */
 .footerActions {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
 }
 
 .actionBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background-color: transparent;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
+  flex: 1; /* Distribuye el espacio equitativamente entre los 3 botones */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background-color: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .actionBtn:hover {
-    background-color: var(--body-bg);
-    color: var(--text-main);
-    border-color: var(--primary);
+  background-color: var(--body-bg);
+  color: var(--text-main);
+  border-color: var(--primary);
 }
 
 .logoutBtn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    height: 42px;
-    border-radius: 8px;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    background-color: rgba(239, 68, 68, 0.05);
-    color: #ef4444;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.2s;
+  flex: 1; /* Mismo ancho que los demás botones */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background-color: rgba(239, 68, 68, 0.05);
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .logoutBtn:hover {
-    background-color: #ef4444;
-    color: white;
+  background-color: #ef4444;
+  color: white;
 }
 
 /* --- ÁREA PRINCIPAL --- */
 .mainContent {
-    flex: 1;
-    overflow-y: auto;
-    background-color: var(--body-bg);
-    position: relative;
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--body-bg);
+  position: relative;
 }

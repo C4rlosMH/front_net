@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { 
     ArrowLeft, User, DollarSign, Calendar, 
     CreditCard, TrendingUp, History, CheckCircle2, AlertCircle,
-    MapPin, Phone, CalendarDays, Wifi, Cable
+    MapPin, Phone, CalendarDays, Wifi, Cable, KeyRound, Activity, LifeBuoy
 } from "lucide-react";
 import styles from "./styles/HistorialPagos.module.css"; 
 import { APP_CONFIG } from "../config/appConfig";
@@ -16,22 +16,24 @@ function HistorialPagos() {
     
     const [historial, setHistorial] = useState([]);
     const [datosCliente, setDatosCliente] = useState(null);
+    const [logsCliente, setLogsCliente] = useState([]);
+    const [ticketsCliente, setTicketsCliente] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                // Pedimos el historial y SOLAMENTE el cliente específico por su ID
-                const [resHistorial, resCliente] = await Promise.all([
+                const [resHistorial, resCliente, resLogs, resTickets] = await Promise.all([
                     client.get(`/pagos/historial/${id}`),
-                    client.get(`/clientes/${id}`) 
+                    client.get(`/clientes/${id}`),
+                    client.get(`/clientes/${id}/logs`),
+                    client.get(`/clientes/${id}/tickets`)
                 ]);
                 
-                // Aseguramos que el historial sea un arreglo
                 setHistorial(Array.isArray(resHistorial.data) ? resHistorial.data : (resHistorial.data.movimientos || []));
-                
-                // Asignamos directamente la data del cliente
                 setDatosCliente(resCliente.data);
+                setLogsCliente(resLogs.data);
+                setTicketsCliente(resTickets.data);
 
             } catch (error) {
                 toast.error("Error al cargar la información del cliente");
@@ -41,6 +43,21 @@ function HistorialPagos() {
         };
         cargarDatos();
     }, [id]);
+
+    const handleResetPassword = async () => {
+        if (!window.confirm("¿Estás seguro de restablecer la contraseña del portal para este cliente? Se generará una nueva contraseña temporal.")) return;
+        
+        try {
+            const res = await client.post(`/clientes/${id}/reset-password`);
+            toast.success(`Contraseña restablecida con éxito. Nueva clave: ${res.data.password}`, {
+                duration: 20000, 
+                position: 'top-center',
+                style: { fontSize: '1.1rem', padding: '15px' }
+            });
+        } catch (error) {
+            toast.error("Error al restablecer la contraseña");
+        }
+    };
 
     if (loading) return <div style={{padding: 20, color: 'var(--text-main)'}}>Cargando perfil del cliente...</div>;
     if (!datosCliente) return <div style={{padding: 20, color: 'var(--text-main)'}}>No se encontró información del cliente.</div>;
@@ -122,7 +139,6 @@ function HistorialPagos() {
                     </div>
 
                     <div className={styles.balancesWrapper}>
-                        {/* Tarjeta de Deuda Histórica Mejorada */}
                         {deudaHistorica > 0 && (
                             <div className={styles.historicalDebtCard}>
                                 <div className={styles.historicalIcon}>
@@ -135,7 +151,6 @@ function HistorialPagos() {
                             </div>
                         )}
 
-                        {/* Deuda del mes actual */}
                         <div className={styles.balanceBox}>
                             <span className={styles.balanceLabel}>Deuda Mes Actual</span>
                             <span className={`${styles.balanceAmount} ${deudaCorriente > 0 ? styles.textRed : styles.textGreen}`}>
@@ -143,7 +158,6 @@ function HistorialPagos() {
                             </span>
                         </div>
 
-                        {/* Tarjeta de Saldo a Favor (Oculta si es 0) */}
                         {aFavor > 0 && (
                             <div className={styles.balanceBox} style={{ borderLeft: '4px solid #10b981', backgroundColor: 'rgba(16, 185, 129, 0.05)' }}>
                                 <span className={styles.balanceLabel} style={{ color: '#10b981', fontWeight: '600' }}>Saldo a Favor</span>
@@ -186,7 +200,6 @@ function HistorialPagos() {
                         {esFibra ? <Cable size={18} className={styles.detailIcon} /> : <Wifi size={18} className={styles.detailIcon} />}
                         <div className={styles.detailContent}>
                             <span className={styles.detailLabel}>Infraestructura ({esFibra ? 'Fibra' : 'Radio'})</span>
-                            {/* --- AQUÍ ESTÁ EL CAMBIO PARA MOSTRAR EL PPPoE --- */}
                             {esFibra ? (
                                 <>
                                     <span className={styles.detailValue}>NAP: {datosCliente.caja?.nombre || 'No asignada'}</span>
@@ -202,6 +215,21 @@ function HistorialPagos() {
                                     ? datosCliente.equipos.map(e => e.modelo || e.nombre).join(', ') 
                                     : 'Ninguno registrado'}
                             </span>
+                        </div>
+                    </div>
+
+                    <div className={styles.detailItem}>
+                        <KeyRound size={18} className={styles.detailIcon} />
+                        <div className={styles.detailContent}>
+                            <span className={styles.detailLabel}>Portal de Clientes</span>
+                            <span className={styles.detailValue}>
+                                N° Suscriptor: <strong style={{ color: 'var(--primary)' }}>{datosCliente.numero_suscriptor || 'Pendiente'}</strong>
+                            </span>
+                            {datosCliente.numero_suscriptor && (
+                                <button onClick={handleResetPassword} className={styles.btnResetPassword}>
+                                    <KeyRound size={14} /> Restablecer Contraseña
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -302,6 +330,80 @@ function HistorialPagos() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+            </div>
+
+            <div className={styles.tableSection}>
+                <div className={styles.sectionHeader}>
+                    <LifeBuoy size={22} className={styles.iconBlue} /> Historial de Tickets / Soporte
+                </div>
+                {ticketsCliente.length === 0 ? (
+                    <div className={styles.emptyState}>No hay tickets registrados para este cliente.</div>
+                ) : (
+                    <div className={styles.tableContainer}>
+                        <table className={styles.dataTable}>
+                            <thead>
+                                <tr>
+                                    <th>Asunto</th>
+                                    <th>Categoría</th>
+                                    <th>Estado</th>
+                                    <th>Prioridad</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {ticketsCliente.map(ticket => (
+                                    <tr key={ticket.id}>
+                                        <td style={{ fontWeight: '600' }}>{ticket.asunto}</td>
+                                        <td>{ticket.categoria}</td>
+                                        <td>
+                                            <span className={`${styles.badge} ${styles['badge' + ticket.estado]}`}>
+                                                {ticket.estado.replace('_', ' ')}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={`${styles.badge} ${styles['badge' + ticket.prioridad]}`}>
+                                                {ticket.prioridad}
+                                            </span>
+                                        </td>
+                                        <td>{new Date(ticket.fecha_creacion).toLocaleDateString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            <div className={styles.tableSection}>
+                <div className={styles.sectionHeader}>
+                    <Activity size={22} className={styles.iconPurple} /> Últimos Movimientos en Portal (Logs)
+                </div>
+                {logsCliente.length === 0 ? (
+                    <div className={styles.emptyState}>No hay actividad reciente registrada en el portal.</div>
+                ) : (
+                    <div className={styles.tableContainer}>
+                        <table className={styles.dataTable}>
+                            <thead>
+                                <tr>
+                                    <th>Acción</th>
+                                    <th>Descripción</th>
+                                    <th>Fecha y Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {logsCliente.map(log => (
+                                    <tr key={log.id}>
+                                        <td style={{ fontWeight: '600', color: 'var(--text-main)' }}>{log.accion}</td>
+                                        <td>{log.descripcion}</td>
+                                        <td>
+                                            {new Date(log.fecha).toLocaleDateString()} a las {new Date(log.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 )}
             </div>

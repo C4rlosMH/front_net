@@ -6,7 +6,7 @@ import {
     LayoutDashboard, Users, Server, Wifi, Map as MapIcon, 
     LogOut, Activity, BarChart2, DollarSign, Package, 
     Scissors, ShieldCheck, Sun, Moon, Hexagon,
-    MessageCircle 
+    MessageCircle, LifeBuoy, ChevronDown, ChevronUp
 } from "lucide-react";
 import WhatsAppStatus from "../components/WhatsAppStatus";
 import styles from "./MainLayout.module.css";
@@ -19,10 +19,16 @@ function MainLayout() {
     const navigate = useNavigate();
 
     const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
+    // Estado para controlar qué menú desplegable está abierto
+    const [openMenu, setOpenMenu] = useState("");
 
     const handleLogout = () => {
         logout();
         navigate("/login");
+    };
+
+    const toggleMenu = (menuName) => {
+        setOpenMenu(openMenu === menuName ? "" : menuName);
     };
 
     return (
@@ -41,66 +47,106 @@ function MainLayout() {
                 {/* MENÚ DE NAVEGACIÓN */}
                 <div className={styles.navMenu}>
                     
-                    {/* SECCIÓN 1: Principal */}
+                    {/* ACCESOS DIRECTOS (Siempre visibles) */}
                     <div className={styles.navSection}>
                         <span className={styles.sectionTitle}>Principal</span>
                         <NavLink to="/dashboard" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
                             <LayoutDashboard size={20} /> <span>Inicio</span>
                         </NavLink>
-                        <NavLink to="/estadisticas" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-                            <BarChart2 size={20} /> <span>Estadísticas</span>
+                        <NavLink to="/tickets" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                            <LifeBuoy size={20} /> <span>Soporte Técnico</span>
                         </NavLink>
                         <NavLink to="/mapa" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
                             <MapIcon size={20} /> <span>Mapa de Red</span>
                         </NavLink>
                     </div>
 
-                    {/* SECCIÓN 2: Gestión Comercial */}
+                    {/* MENÚ: COMERCIAL */}
                     <div className={styles.navSection}>
-                        <span className={styles.sectionTitle}>Comercial</span>
-                        <NavLink to="/clientes" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-                            <Users size={20} /> <span>Cartera de Clientes</span>
-                        </NavLink>
-                        <NavLink to="/pagos" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-                            <DollarSign size={20} /> <span>Finanzas y Pagos</span>
-                        </NavLink>
-                        <NavLink to="/cortes" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-                            <Scissors size={20} /> <span>Cortes de Servicio</span>
-                        </NavLink>
-                    </div>
-
-                    {/* SECCIÓN 3: Infraestructura Técnica */}
-                    <div className={styles.navSection}>
-                        <span className={styles.sectionTitle}>Infraestructura</span>
-                        <NavLink to="/cajas" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-                            <Server size={20} /> <span>Cajas NAP</span>
-                        </NavLink>
-                        <NavLink to="/equipos" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-                            <Package size={20} /> <span>Inventario Equipos</span>
-                        </NavLink>
-                        <NavLink to="/planes" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-                            <Wifi size={20} /> <span>Planes de Internet</span>
-                        </NavLink>
-                    </div>
-
-                    {/* SECCIÓN 4: Administración */}
-                    <div className={styles.navSection}>
-                        <span className={styles.sectionTitle}>Administración</span>
-                        <NavLink to="/usuarios" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-                            <ShieldCheck size={20} /> <span>Usuarios del Sistema</span>
-                        </NavLink>
-                        <NavLink to="/logs" className={({isActive}) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}>
-                            <Activity size={20} /> <span>Registro de Actividad</span>
-                        </NavLink>
-                        
                         <button 
-                            onClick={() => setIsWhatsAppOpen(true)}
-                            className={styles.navButton} 
+                            className={`${styles.dropdownBtn} ${openMenu === 'comercial' ? styles.dropdownActive : ''}`}
+                            onClick={() => toggleMenu('comercial')}
                         >
-                            <MessageCircle size={20} /> 
-                            <span>Conexión WhatsApp</span>
+                            <div className={styles.dropdownIcon}><Users size={20} /> <span>Comercial</span></div>
+                            {openMenu === 'comercial' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
+                        
+                        <div className={`${styles.subMenu} ${openMenu === 'comercial' ? styles.subMenuOpen : ''}`}>
+                            <NavLink to="/clientes" className={({isActive}) => isActive ? `${styles.subNavItem} ${styles.active}` : styles.subNavItem}>
+                                Cartera de Clientes
+                            </NavLink>
+                            <NavLink to="/cortes" className={({isActive}) => isActive ? `${styles.subNavItem} ${styles.active}` : styles.subNavItem}>
+                                Cortes de Servicio
+                            </NavLink>
+                        </div>
                     </div>
+
+                    {/* MENÚ: FINANZAS */}
+                    <div className={styles.navSection}>
+                        <button 
+                            className={`${styles.dropdownBtn} ${openMenu === 'finanzas' ? styles.dropdownActive : ''}`}
+                            onClick={() => toggleMenu('finanzas')}
+                        >
+                            <div className={styles.dropdownIcon}><DollarSign size={20} /> <span>Finanzas</span></div>
+                            {openMenu === 'finanzas' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+                        
+                        <div className={`${styles.subMenu} ${openMenu === 'finanzas' ? styles.subMenuOpen : ''}`}>
+                            <NavLink to="/pagos" className={({isActive}) => isActive ? `${styles.subNavItem} ${styles.active}` : styles.subNavItem}>
+                                Finanzas y Pagos
+                            </NavLink>
+                            <NavLink to="/gastos" className={({isActive}) => isActive ? `${styles.subNavItem} ${styles.active}` : styles.subNavItem}>
+                                Gastos
+                            </NavLink>
+                            <NavLink to="/estadisticas" className={({isActive}) => isActive ? `${styles.subNavItem} ${styles.active}` : styles.subNavItem}>
+                                Estadísticas
+                            </NavLink>
+                        </div>
+                    </div>
+
+                    {/* MENÚ: INFRAESTRUCTURA */}
+                    <div className={styles.navSection}>
+                        <button 
+                            className={`${styles.dropdownBtn} ${openMenu === 'infra' ? styles.dropdownActive : ''}`}
+                            onClick={() => toggleMenu('infra')}
+                        >
+                            <div className={styles.dropdownIcon}><Server size={20} /> <span>Infraestructura</span></div>
+                            {openMenu === 'infra' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+                        
+                        <div className={`${styles.subMenu} ${openMenu === 'infra' ? styles.subMenuOpen : ''}`}>
+                            <NavLink to="/cajas" className={({isActive}) => isActive ? `${styles.subNavItem} ${styles.active}` : styles.subNavItem}>
+                                Cajas NAP
+                            </NavLink>
+                            <NavLink to="/equipos" className={({isActive}) => isActive ? `${styles.subNavItem} ${styles.active}` : styles.subNavItem}>
+                                Inventario
+                            </NavLink>
+                            <NavLink to="/planes" className={({isActive}) => isActive ? `${styles.subNavItem} ${styles.active}` : styles.subNavItem}>
+                                Planes de Internet
+                            </NavLink>
+                        </div>
+                    </div>
+
+                    {/* MENÚ: ADMINISTRACIÓN */}
+                    <div className={styles.navSection}>
+                        <button 
+                            className={`${styles.dropdownBtn} ${openMenu === 'admin' ? styles.dropdownActive : ''}`}
+                            onClick={() => toggleMenu('admin')}
+                        >
+                            <div className={styles.dropdownIcon}><ShieldCheck size={20} /> <span>Sistema</span></div>
+                            {openMenu === 'admin' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+                        
+                        <div className={`${styles.subMenu} ${openMenu === 'admin' ? styles.subMenuOpen : ''}`}>
+                            <NavLink to="/usuarios" className={({isActive}) => isActive ? `${styles.subNavItem} ${styles.active}` : styles.subNavItem}>
+                                Usuarios
+                            </NavLink>
+                            <NavLink to="/logs" className={({isActive}) => isActive ? `${styles.subNavItem} ${styles.active}` : styles.subNavItem}>
+                                Registro de Actividad
+                            </NavLink>
+                        </div>
+                    </div>
+
                 </div>
 
                 {/* PIE DEL SIDEBAR */}
@@ -116,8 +162,15 @@ function MainLayout() {
                     </Link>
 
                     <div className={styles.footerActions}>
+                        {/* Botón de WhatsApp integrado al pie */}
+                        <button 
+                            className={styles.actionBtn} 
+                            onClick={() => setIsWhatsAppOpen(true)} 
+                            title="Estado de WhatsApp"
+                        >
+                            <MessageCircle size={18} />
+                        </button>
 
-                        {/* 2. Botón de Tema */}
                         <button 
                             className={styles.actionBtn} 
                             onClick={toggleTheme} 
@@ -126,9 +179,8 @@ function MainLayout() {
                             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                         </button>
                         
-                        {/* 3. Botón de Logout */}
                         <button onClick={handleLogout} className={styles.logoutBtn} title="Cerrar Sesión">
-                            <LogOut size={18} /> <span>Salir</span>
+                            <LogOut size={18} />
                         </button>
                     </div>
                 </div>
