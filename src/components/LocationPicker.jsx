@@ -6,7 +6,10 @@ import { User, Server, Building2, Map as MapIcon, Satellite, Wifi, MapPin } from
 import "leaflet/dist/leaflet.css";
 import styles from "./styles/LocationPicker.module.css";
 
-const Sede = [17.687171, -91.029577];
+const Sede = [
+    parseFloat(import.meta.env.VITE_SEDE_LAT),
+    parseFloat(import.meta.env.VITE_SEDE_LNG)
+];
 
 // Creador de iconos personalizados
 const createCustomIcon = (iconComponent, bgColor) => {

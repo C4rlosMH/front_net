@@ -8,8 +8,15 @@ import styles from "./styles/Mapa.module.css";
 import { User, Server, Building2, Map as MapIcon, Satellite, Wifi } from "lucide-react"; 
 import ReactDOMServer from "react-dom/server";
 
-const UBICACION_NEGOCIO = [17.6852292,-91.0269451];
-const Sede = [17.687171, -91.029577];
+const UBICACION_NEGOCIO = [
+    parseFloat(import.meta.env.VITE_UBICACION_NEGOCIO_LAT),
+    parseFloat(import.meta.env.VITE_UBICACION_NEGOCIO_LNG)
+];
+
+const Sede = [
+    parseFloat(import.meta.env.VITE_SEDE_LAT),
+    parseFloat(import.meta.env.VITE_SEDE_LNG)
+];
 
 const createCustomIcon = (iconComponent, bgColor) => {
     const iconHtml = ReactDOMServer.renderToString(
